@@ -42,10 +42,11 @@ export function BestSelling() {
 
   useEffect(() => {
     const container = scrollContainerRef.current
-    if (!container) return
+    if (!container || products.length === 0) return
 
     let scrollAmount = 0
     const scrollSpeed = 0.5 // pixels per frame
+    let intervalId: NodeJS.Timeout | null = null
 
     const scroll = () => {
       if (container) {
@@ -60,24 +61,34 @@ export function BestSelling() {
       }
     }
 
-    const intervalId = setInterval(scroll, 16) // ~60fps
+    const startScrolling = () => {
+      if (intervalId) clearInterval(intervalId)
+      intervalId = setInterval(scroll, 16) // ~60fps
+    }
+
+    const stopScrolling = () => {
+      if (intervalId) {
+        clearInterval(intervalId)
+        intervalId = null
+      }
+    }
+
+    // Start auto-scroll
+    startScrolling()
 
     // Pause on hover
-    const handleMouseEnter = () => clearInterval(intervalId)
-    const handleMouseLeave = () => {
-      const newIntervalId = setInterval(scroll, 16)
-      return () => clearInterval(newIntervalId)
-    }
+    const handleMouseEnter = () => stopScrolling()
+    const handleMouseLeave = () => startScrolling()
 
     container.addEventListener("mouseenter", handleMouseEnter)
     container.addEventListener("mouseleave", handleMouseLeave)
 
     return () => {
-      clearInterval(intervalId)
+      stopScrolling()
       container.removeEventListener("mouseenter", handleMouseEnter)
       container.removeEventListener("mouseleave", handleMouseLeave)
     }
-  }, [])
+  }, [products])
 
   // Duplicate products for seamless infinite scroll
   const duplicatedProducts = [...products, ...products]

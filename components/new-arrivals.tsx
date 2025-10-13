@@ -1,0 +1,85 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import Link from "next/link"
+import { ProductCard } from "@/components/product-card"
+import { useLocale } from "@/lib/locale-context"
+
+interface Product {
+  id: string
+  name: string
+  price: number
+  discountPrice?: number
+  thumbnail?: string
+  images?: string[]
+  salePercentage?: number
+  isNew?: boolean
+}
+
+export function NewArrivals() {
+  const { t } = useLocale()
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchNewArrivals()
+  }, [])
+
+  const fetchNewArrivals = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch("/api/products?isNew=true&limit=8")
+      if (response.ok) {
+        const data = await response.json()
+        setProducts(data.data || [])
+      }
+    } catch (error) {
+      console.error("Error fetching new arrivals:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <section className="container mx-auto px-4 py-12">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold">{t.products.newArrivals}</h2>
+        </div>
+        <p className="text-center text-gray-600 dark:text-gray-400">{t.common.loading}</p>
+      </section>
+    )
+  }
+
+  if (products.length === 0) {
+    return null
+  }
+
+  return (
+    <section className="container mx-auto px-4 py-12">
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-2xl font-bold">{t.products.newArrivals}</h2>
+        <Link href="/products" className="text-sm font-medium text-blue-600 hover:underline">
+          {t.products.viewAll}
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {products.map((product) => (
+          <ProductCard 
+            key={product.id} 
+            product={{
+              id: product.id,
+              name: product.name,
+              price: product.discountPrice || product.price,
+              originalPrice: product.discountPrice ? product.price : undefined,
+              image: product.thumbnail || product.images?.[0] || "/placeholder.svg",
+              salePercentage: product.salePercentage,
+              isNew: product.isNew
+            }} 
+          />
+        ))}
+      </div>
+    </section>
+  )
+}

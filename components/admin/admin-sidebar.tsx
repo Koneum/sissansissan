@@ -16,8 +16,14 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
 import { useLocale } from "@/lib/locale-context"
+import { Sheet, SheetContent } from "@/components/ui/sheet"
 
-export function AdminSidebar() {
+interface AdminSidebarProps {
+  open: boolean
+  onClose: () => void
+}
+
+export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
   const { t } = useLocale()
   const pathname = usePathname()
   const [expandedItems, setExpandedItems] = useState<string[]>([])
@@ -76,10 +82,10 @@ export function AdminSidebar() {
     },
   ]
 
-  return (
-    <aside className="w-64 bg-background border-r min-h-screen p-4 overflow-y-auto">
-      <Link href="/" className="flex items-center gap-2 mb-8 px-2">
-        <img src="/logo.png" alt="Zissan-Sissan" className="h-12 w-auto" />
+  const sidebarContent = (
+    <>
+      <Link href="/" className="flex items-center gap-2 mb-6 sm:mb-8 px-2">
+        <img src="/logo.png" alt="Zissan-Sissan" className="h-10 sm:h-12 w-auto" />
       </Link>
 
       <div className="mb-4 px-2">
@@ -99,41 +105,41 @@ export function AdminSidebar() {
                 <Button
                   variant="ghost"
                   className={cn(
-                    "w-full justify-between text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800",
+                    "w-full justify-between text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 h-10 sm:h-auto",
                     isActive && "bg-blue-50 dark:bg-blue-950 text-[#2E5BA8] dark:text-[#4F7FD5]",
                   )}
                   onClick={() => toggleExpand(item.label)}
                 >
                   <div className="flex items-center">
-                    <Icon className="w-4 h-4 mr-3" />
+                    <Icon className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
                     <span className="text-sm">{item.label}</span>
                   </div>
                   <ChevronDown className={cn("w-4 h-4 transition-transform", isExpanded && "rotate-180")} />
                 </Button>
               ) : (
-                <Link href={item.href}>
+                <Link href={item.href} onClick={onClose}>
                   <Button
                     variant="ghost"
                     className={cn(
-                      "w-full justify-start text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800",
+                      "w-full justify-start text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 h-10 sm:h-auto",
                       isActive && "bg-blue-50 dark:bg-blue-950 text-[#2E5BA8] dark:text-[#4F7FD5]",
                     )}
                   >
-                    <Icon className="w-4 h-4 mr-3" />
+                    <Icon className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
                     <span className="text-sm">{item.label}</span>
                   </Button>
                 </Link>
               )}
 
               {hasSubmenu && isExpanded && (
-                <div className="ml-4 mt-1 space-y-1 border-l-2 border-slate-200 dark:border-slate-700 pl-4">
+                <div className="ml-3 sm:ml-4 mt-1 space-y-1 border-l-2 border-slate-200 dark:border-slate-700 pl-3 sm:pl-4">
                   {item.submenu?.map((subitem) => (
-                    <Link key={subitem.href} href={subitem.href}>
+                    <Link key={subitem.href} href={subitem.href} onClick={onClose}>
                       <Button
                         variant="ghost"
                         size="sm"
                         className={cn(
-                          "w-full justify-start text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800",
+                          "w-full justify-start text-xs sm:text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 h-9",
                           pathname === subitem.href && "bg-blue-50 dark:bg-blue-950 text-[#2E5BA8] dark:text-[#4F7FD5]",
                         )}
                       >
@@ -147,6 +153,40 @@ export function AdminSidebar() {
           )
         })}
       </nav>
-    </aside>
+    </>
+  )
+
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:block w-64 bg-background border-r min-h-screen p-4 overflow-y-auto sticky top-0 h-screen">
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile Sidebar - Sheet Drawer */}
+      <Sheet open={open} onOpenChange={onClose} modal>
+        <SheetContent 
+          side="left" 
+          className="w-[280px] sm:w-[320px] p-0 flex flex-col h-full z-[100]"
+        >
+          {/* Header with close button */}
+          <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Menu Admin</h2>
+          </div>
+          
+          {/* Scrollable content */}
+          <div className="flex-1 overflow-y-auto p-4">
+            {sidebarContent}
+          </div>
+          
+          {/* Footer info */}
+          <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+            <p className="text-xs text-muted-foreground text-center">
+              Admin Panel v1.0
+            </p>
+          </div>
+        </SheetContent>
+      </Sheet>
+    </>
   )
 }

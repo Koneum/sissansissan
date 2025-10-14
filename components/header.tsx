@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Search, User, Heart, ShoppingCart, Menu, X } from "lucide-react"
+import { Search, User, Heart, ShoppingCart, Menu, X, Home, Store, FileText, BookOpen, Mail, LogOut, LogIn } from "lucide-react"
 import { ThemeToggle } from "./theme-toggle"
 import { LocaleToggle } from "./locale-toggle"
 import { useCart } from "@/lib/cart-context"
@@ -13,7 +13,8 @@ import { Button } from "./ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet"
 import { CartSidebar } from "./cart-sidebar"
 import { useState } from "react"
-import { Input } from "./ui/input"
+import { Separator } from "./ui/separator"
+import { SearchWithSuggestions } from "./search-with-suggestions"
 
 export function Header() {
   const { itemCount } = useCart()
@@ -23,25 +24,26 @@ export function Header() {
   const { headerData } = useHeader()
   const [cartOpen, setCartOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
     <>
       {/* Top banner */}
       {headerData.topBannerEnabled && (
-        <div className="bg-primary text-primary-foreground text-center py-2 text-sm px-4">
-          <p className="animate-in fade-in slide-in-from-top-2 duration-500">{headerData.topBannerText}</p>
+        <div className="bg-primary text-primary-foreground text-center py-2 sm:py-2.5 text-xs sm:text-sm px-3 sm:px-4">
+          <p className="animate-in fade-in slide-in-from-top-2 duration-500 truncate">{headerData.topBannerText}</p>
         </div>
       )}
 
       {/* Main header */}
-      <header className="bg-card border-b sticky top-0 z-50 backdrop-blur-sm bg-card/95">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16 gap-4">
-            <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+      <header className="border-b sticky top-0 z-50 backdrop-blur-sm bg-card/95 shadow-sm">
+        <div className="container mx-auto px-3 sm:px-4 md:px-6">
+          <div className="flex items-center justify-between h-14 sm:h-16 md:h-18 gap-2 sm:gap-4">
+            <Link href="/" className="flex items-center gap-2 flex-shrink-0 -ml-2 sm:ml-0">
               <img
                 src={headerData.logoUrl}
                 alt="Zissan-Sissan"
-                className="h-10 w-auto"
+                className="h-12 sm:h-16 md:h-20 w-auto"
               />
             </Link>
 
@@ -73,49 +75,51 @@ export function Header() {
             </nav>
 
             {/* Right actions */}
-            <div className="flex items-center gap-1 sm:gap-2">
-              {/* Search */}
+            <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
+              {/* Search - Desktop */}
               <Button
                 variant="ghost"
                 size="icon"
-                className="hover:scale-110 transition-transform"
+                className="hidden sm:flex hover:scale-110 transition-transform"
                 onClick={() => setSearchOpen(!searchOpen)}
               >
-                <Search className="w-4 h-4" />
+                <Search className="w-4 h-4 sm:w-5 sm:h-5" />
               </Button>
 
-              {/* User */}
-              {user ? (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={signOut}
-                  title={t.auth.signOut}
-                  className="hover:scale-110 transition-transform"
-                >
-                  <User className="w-4 h-4" />
-                </Button>
-              ) : (
-                <Link href="/signin">
+              {/* User - Desktop */}
+              <div className="hidden sm:block">
+                {user ? (
                   <Button
                     variant="ghost"
                     size="icon"
-                    title={t.auth.signIn}
+                    onClick={signOut}
+                    title={t.auth.signOut}
                     className="hover:scale-110 transition-transform"
                   >
-                    <User className="w-4 h-4" />
+                    <User className="w-4 h-4 sm:w-5 sm:h-5" />
                   </Button>
-                </Link>
-              )}
+                ) : (
+                  <Link href="/signin">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      title={t.auth.signIn}
+                      className="hover:scale-110 transition-transform"
+                    >
+                      <User className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </Button>
+                  </Link>
+                )}
+              </div>
 
-              {/* Wishlist - Hidden on mobile */}
-              <Link href="/wishlist">
+              {/* Wishlist - Desktop */}
+              <Link href="/wishlist" className="hidden md:block">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="hidden md:flex relative hover:scale-110 transition-transform"
+                  className="relative hover:scale-110 transition-transform"
                 >
-                  <Heart className="w-4 h-4" />
+                  <Heart className="w-4 h-4 sm:w-5 sm:h-5" />
                   {wishlistCount > 0 && (
                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center animate-in zoom-in duration-300">
                       {wishlistCount}
@@ -124,13 +128,14 @@ export function Header() {
                 </Button>
               </Link>
 
+              {/* Cart */}
               <Button
                 variant="ghost"
                 size="icon"
                 className="relative hover:scale-110 transition-transform"
                 onClick={() => setCartOpen(true)}
               >
-                <ShoppingCart className="w-4 h-4" />
+                <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
                 {itemCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center animate-in zoom-in duration-300">
                     {itemCount}
@@ -138,78 +143,164 @@ export function Header() {
                 )}
               </Button>
 
-              {/* Theme & Locale - Hidden on small mobile */}
-              <div className="hidden sm:flex items-center gap-1">
+              {/* Theme & Locale - Desktop */}
+              <div className="hidden md:flex items-center gap-1">
                 <ThemeToggle />
                 <LocaleToggle />
               </div>
 
               {/* Mobile menu */}
-              <Sheet>
+              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="lg:hidden">
+                  <Button variant="ghost" size="icon" className="lg:hidden hover:scale-110 transition-transform">
                     <Menu className="w-5 h-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-[300px] sm:w-[400px]">
-                  <nav className="flex flex-col gap-6 mt-8">
-                    <Link href="/" className="text-lg font-medium hover:text-primary transition-colors">
-                      {t.nav.home}
-                    </Link>
-                    <Link href="/shop" className="text-lg font-medium hover:text-primary transition-colors">
-                      {t.nav.shop}
-                    </Link>
-                    <Link href="/products" className="text-lg font-medium hover:text-primary transition-colors">
-                      {t.nav.pages}
-                    </Link>
-                    <Link href="/blog" className="text-lg font-medium hover:text-primary transition-colors">
-                      {t.nav.blog}
-                    </Link>
-                    <Link href="/contact" className="text-lg font-medium hover:text-primary transition-colors">
-                      {t.nav.contact}
-                    </Link>
-                    <Link href="/wishlist" className="text-lg font-medium hover:text-primary transition-colors flex items-center justify-between">
-                      <span>Wishlist</span>
-                      {wishlistCount > 0 && (
-                        <span className="bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
-                          {wishlistCount}
-                        </span>
-                      )}
-                    </Link>
+                <SheetContent side="right" className="w-full sm:w-[380px] p-0">
+                  <div className="flex flex-col h-full">
+                    {/* Header */}
+                    <div className="flex items-center justify-between p-6 border-b">
+                      <h2 className="text-lg font-semibold">Menu</h2>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="hover:scale-110 transition-transform"
+                      >
+                        <X className="w-5 h-5" />
+                      </Button>
+                    </div>
 
-                    {/* Mobile-only options */}
-                    <div className="border-t pt-6 mt-4 space-y-4">
+                    {/* Navigation */}
+                    <nav className="flex-1 overflow-y-auto p-6">
+                      <div className="space-y-1">
+                        <Link
+                          href="/"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
+                        >
+                          <Home className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                          <span className="font-medium">{t.nav.home}</span>
+                        </Link>
+                        <Link
+                          href="/shop"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
+                        >
+                          <Store className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                          <span className="font-medium">{t.nav.shop}</span>
+                        </Link>
+                        <Link
+                          href="/products"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
+                        >
+                          <FileText className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                          <span className="font-medium">{t.nav.pages}</span>
+                        </Link>
+                        <Link
+                          href="/blog"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
+                        >
+                          <BookOpen className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                          <span className="font-medium">{t.nav.blog}</span>
+                        </Link>
+                        <Link
+                          href="/contact"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
+                        >
+                          <Mail className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                          <span className="font-medium">{t.nav.contact}</span>
+                        </Link>
+                      </div>
+
+                      <Separator className="my-6" />
+
+                      {/* Quick Actions */}
+                      <div className="space-y-1">
+                        <Link
+                          href="/wishlist"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="flex items-center justify-between px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
+                        >
+                          <div className="flex items-center gap-3">
+                            <Heart className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                            <span className="font-medium">Wishlist</span>
+                          </div>
+                          {wishlistCount > 0 && (
+                            <span className="bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
+                              {wishlistCount}
+                            </span>
+                          )}
+                        </Link>
+
+                        {/* Search - Mobile */}
+                        <button
+                          onClick={() => {
+                            setMobileMenuOpen(false)
+                            setSearchOpen(true)
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
+                        >
+                          <Search className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                          <span className="font-medium">Search</span>
+                        </button>
+                      </div>
+
+                      <Separator className="my-6" />
+
+                      {/* User Actions */}
+                      <div className="space-y-1">
+                        {user ? (
+                          <button
+                            onClick={() => {
+                              signOut()
+                              setMobileMenuOpen(false)
+                            }}
+                            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
+                          >
+                            <LogOut className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                            <span className="font-medium">{t.auth.signOut}</span>
+                          </button>
+                        ) : (
+                          <Link
+                            href="/signin"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
+                          >
+                            <LogIn className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                            <span className="font-medium">{t.auth.signIn}</span>
+                          </Link>
+                        )}
+                      </div>
+                    </nav>
+
+                    {/* Footer Settings */}
+                    <div className="border-t p-6 space-y-4 bg-muted/30">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Theme</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">Theme</span>
+                        </div>
                         <ThemeToggle />
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Language</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">Language</span>
+                        </div>
                         <LocaleToggle />
                       </div>
                     </div>
-                  </nav>
+                  </div>
                 </SheetContent>
               </Sheet>
             </div>
           </div>
 
-          {/* Search bar - Expandable */}
+          {/* Search bar - Expandable with Suggestions */}
           {searchOpen && (
-            <div className="pb-4 animate-in fade-in slide-in-from-top-4 duration-300">
-              <div className="relative max-w-2xl mx-auto">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input type="search" placeholder="Search products..." className="pl-10 pr-10" autoFocus />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-1 top-1/2 -translate-y-1/2"
-                  onClick={() => setSearchOpen(false)}
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
+            <SearchWithSuggestions onClose={() => setSearchOpen(false)} />
           )}
         </div>
       </header>

@@ -1,12 +1,7 @@
 "use client"
 
-import { Home, User, Settings, LogOut } from "lucide-react"
+import { Home, User, Settings, LogOut, ChevronDown, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { LocaleToggle } from "@/components/locale-toggle"
-import { useAuth } from "@/lib/auth-context"
-import { useLocale } from "@/lib/locale-context"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,19 +10,38 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ChevronDown } from "lucide-react"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { useAuth } from "@/lib/auth-context"
 import Link from "next/link"
+import { useLocale } from "@/lib/locale-context"
+import { ThemeToggle } from "../theme-toggle"
+import { LocaleToggle } from "../locale-toggle"
 
-export function AdminHeader() {
+interface AdminHeaderProps {
+  onMenuClick: () => void
+}
+
+export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
   const { user, signOut } = useAuth()
   const { t } = useLocale()
 
   return (
-    <header className="bg-background border-b sticky top-0 z-50">
-      <div className="flex items-center justify-between h-16 px-8">
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-foreground">{t.admin.dashboard}</h1>
+    <header className="bg-background border-b sticky top-0 z-40 shadow-sm">
+      <div className="flex items-center justify-between h-14 sm:h-16 px-3 sm:px-4 md:px-6 lg:px-8">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lg:hidden hover:scale-110 transition-transform hover:bg-slate-100 dark:hover:bg-slate-800"
+            onClick={onMenuClick}
+            aria-label="Open menu"
+          >
+            <Menu className="w-5 h-5" />
+          </Button>
+          <h1 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 dark:text-foreground truncate">{t.admin.dashboard}</h1>
+        </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
           <Link href="/">
             <Button variant="outline" size="sm" className="gap-2 bg-transparent">
               <Home className="w-4 h-4" />

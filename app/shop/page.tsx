@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, Suspense } from "react"
+import { useState, useEffect, Suspense, useMemo, useCallback } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
@@ -48,20 +48,11 @@ function ShopContent() {
   
   // Filters
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "")
+  const [searchInput, setSearchInput] = useState(searchParams.get("search") || "")
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [priceRange, setPriceRange] = useState({ min: "", max: "" })
   const [sortBy, setSortBy] = useState(searchParams.get("sort") || "newest")
   const [inStockOnly, setInStockOnly] = useState(false)
-
-  useEffect(() => {
-    fetchCategories()
-    fetchProducts()
-  }, [])
-
-  // Fetch when filters change
-  useEffect(() => {
-    fetchProducts()
-  }, [selectedCategories, sortBy, inStockOnly])
 
   const fetchCategories = async () => {
     try {
@@ -74,7 +65,7 @@ function ShopContent() {
     }
   }
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       setLoading(true)
       
@@ -126,31 +117,51 @@ function ShopContent() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [searchQuery, selectedCategories, priceRange, sortBy, inStockOnly])
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
+  useEffect(() => {
+    fetchCategories()
     fetchProducts()
-  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-  const handleCategoryToggle = (categoryId: string) => {
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchQuery(searchInput)
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [searchInput])
+
+  // Fetch when filters change
+  useEffect(() => {
+    fetchProducts()
+  }, [searchQuery, selectedCategories, sortBy, inStockOnly, fetchProducts])
+
+  const handleSearch = useCallback((e: React.FormEvent) => {
+    e.preventDefault()
+    setSearchQuery(searchInput)
+  }, [searchInput])
+
+  const handleCategoryToggle = useCallback((categoryId: string) => {
     setSelectedCategories(prev =>
       prev.includes(categoryId)
         ? prev.filter(id => id !== categoryId)
         : [...prev, categoryId]
     )
-  }
+  }, [])
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setSearchQuery("")
+    setSearchInput("")
     setSelectedCategories([])
     setPriceRange({ min: "", max: "" })
     setSortBy("newest")
     setInStockOnly(false)
     router.push("/shop")
-  }
+  }, [router])
 
-  const FiltersContent = () => (
+  const filtersContent = useMemo(() => (
     <div className="space-y-6">
       {/* Search */}
       <div className="space-y-2">
@@ -158,8 +169,8 @@ function ShopContent() {
         <form onSubmit={handleSearch} className="flex gap-2">
           <Input
             placeholder={t.common.search}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
           />
           <Button type="submit" size="icon">
             <Search className="w-4 h-4" />
@@ -244,7 +255,7 @@ function ShopContent() {
         {t.shop.clearFilters}
       </Button>
     </div>
-  )
+  ), [t, searchInput, handleSearch, categories, selectedCategories, handleCategoryToggle, priceRange, fetchProducts, inStockOnly, clearFilters])
 
   return (
     <>
@@ -266,7 +277,7 @@ function ShopContent() {
                 <h2 className="font-semibold text-lg">{t.common.filter}</h2>
                 <SlidersHorizontal className="w-5 h-5" />
               </div>
-              <FiltersContent />
+              {filtersContent}
             </div>
           </aside>
 
@@ -287,7 +298,7 @@ function ShopContent() {
                     <SheetTitle>{t.common.filter}</SheetTitle>
                   </SheetHeader>
                   <div className="mt-6">
-                    <FiltersContent />
+                    {filtersContent}
                   </div>
                 </SheetContent>
               </Sheet>

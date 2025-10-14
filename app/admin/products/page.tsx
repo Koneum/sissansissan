@@ -128,31 +128,31 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="space-y-6 pb-8">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6 pb-4 sm:pb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">{t.admin.allProducts}</h1>
-          <p className="text-sm text-muted-foreground">{t.common.total} : {products.length} {t.admin.products.toLowerCase()}</p>
+          <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 dark:text-white">{t.admin.allProducts}</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">{t.common.total} : {products.length} {t.admin.products.toLowerCase()}</p>
         </div>
         <Link href="/admin/products/add">
-          <Button className="bg-[#1e293b] hover:bg-[#334155]">+ {t.admin.addProduct}</Button>
+          <Button size="sm" className="bg-[#1e293b] hover:bg-[#334155] w-full sm:w-auto text-sm">+ {t.admin.addProduct}</Button>
         </Link>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="relative md:col-span-2">
+      <div className="bg-white dark:bg-slate-900 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-800 p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="relative sm:col-span-2">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input
               placeholder={t.common.search + "..."}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-11"
+              className="pl-9 h-9 sm:h-10 md:h-11 text-sm"
             />
           </div>
 
           <Select value={stockFilter} onValueChange={setStockFilter}>
-            <SelectTrigger className="h-11">
+            <SelectTrigger className="h-9 sm:h-10 md:h-11 text-sm">
               <SelectValue placeholder={t.common.filter} />
             </SelectTrigger>
             <SelectContent>
@@ -163,7 +163,7 @@ export default function ProductsPage() {
           </Select>
 
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="h-11">
+            <SelectTrigger className="h-9 sm:h-10 md:h-11 text-sm">
               <SelectValue placeholder={t.common.sort} />
             </SelectTrigger>
             <SelectContent>
@@ -178,22 +178,22 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[640px]">
             <thead className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
               <tr>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-slate-700 dark:text-slate-300">{t.admin.productName}</th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-slate-700 dark:text-slate-300">{t.common.category}</th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-slate-700 dark:text-slate-300">{t.common.price}</th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-slate-700 dark:text-slate-300">{t.common.stock}</th>
-                <th className="text-right py-4 px-6 text-sm font-semibold text-slate-700 dark:text-slate-300">{t.common.actions}</th>
+                <th className="text-left py-3 px-3 sm:py-4 sm:px-6 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300">{t.admin.productName}</th>
+                <th className="text-left py-3 px-3 sm:py-4 sm:px-6 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300">{t.common.category}</th>
+                <th className="text-left py-3 px-3 sm:py-4 sm:px-6 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300">{t.common.price}</th>
+                <th className="text-left py-3 px-3 sm:py-4 sm:px-6 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300">{t.common.stock}</th>
+                <th className="text-right py-3 px-3 sm:py-4 sm:px-6 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300">{t.common.actions}</th>
               </tr>
             </thead>
             <tbody>
               {filteredAndSortedProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-8 text-center text-muted-foreground">
+                  <td colSpan={5} className="py-6 sm:py-8 text-center text-muted-foreground text-sm">
                     {t.admin.noData}
                   </td>
                 </tr>
@@ -203,63 +203,63 @@ export default function ProductsPage() {
                     key={product.id}
                     className={index !== filteredAndSortedProducts.length - 1 ? "border-b border-slate-200 dark:border-slate-800" : ""}
                   >
-                    <td className="py-4 px-6">
-                      <div className="flex items-center gap-3">
-                        <div className="relative w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded overflow-hidden">
+                    <td className="py-3 px-3 sm:py-4 sm:px-6">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="relative w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-slate-100 dark:bg-slate-800 rounded overflow-hidden flex-shrink-0">
                           <Image
                             src={product.thumbnail || product.images?.[0] || "/placeholder.svg"}
                             alt={product.name}
                             fill
-                            className="object-contain p-2"
+                            className="object-contain p-1 sm:p-2"
                           />
                         </div>
-                        <div>
-                          <p className="font-medium text-slate-900 dark:text-white">{product.name}</p>
+                        <div className="min-w-0">
+                          <p className="font-medium text-slate-900 dark:text-white text-xs sm:text-sm truncate">{product.name}</p>
                           {product.description && (
-                            <p className="text-sm text-muted-foreground line-clamp-1">{product.description}</p>
+                            <p className="text-xs sm:text-sm text-muted-foreground line-clamp-1 hidden sm:block">{product.description}</p>
                           )}
                         </div>
                       </div>
                     </td>
-                    <td className="py-4 px-6">
-                      <span className="text-sm text-muted-foreground">{product.category?.name || "-"}</span>
+                    <td className="py-3 px-3 sm:py-4 sm:px-6">
+                      <span className="text-xs sm:text-sm text-muted-foreground">{product.category?.name || "-"}</span>
                     </td>
-                    <td className="py-4 px-6">
+                    <td className="py-3 px-3 sm:py-4 sm:px-6">
                       <div>
                         {product.discountPrice && product.discountPrice < product.price ? (
                           <>
-                            <span className="font-semibold text-slate-900 dark:text-white">{formatPrice(product.discountPrice)}</span>
-                            <span className="ml-2 text-sm text-muted-foreground line-through">
+                            <span className="font-semibold text-slate-900 dark:text-white text-xs sm:text-sm">{formatPrice(product.discountPrice)}</span>
+                            <span className="ml-1 sm:ml-2 text-[10px] sm:text-xs text-muted-foreground line-through">
                               {formatPrice(product.price)}
                             </span>
                           </>
                         ) : (
-                          <span className="font-semibold text-slate-900 dark:text-white">{formatPrice(product.price)}</span>
+                          <span className="font-semibold text-slate-900 dark:text-white text-xs sm:text-sm">{formatPrice(product.price)}</span>
                         )}
                       </div>
                     </td>
-                    <td className="py-4 px-6">
-                      <Badge variant={product.stock < 10 ? "destructive" : "default"}>
-                        {product.stock} {t.admin.inStock.toLowerCase()}
+                    <td className="py-3 px-3 sm:py-4 sm:px-6">
+                      <Badge variant={product.stock < 10 ? "destructive" : "default"} className="text-[10px] sm:text-xs">
+                        {product.stock}
                       </Badge>
                     </td>
-                    <td className="py-4 px-6">
-                      <div className="flex gap-2 justify-end">
+                    <td className="py-3 px-3 sm:py-4 sm:px-6">
+                      <div className="flex gap-1 sm:gap-2 justify-end">
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-9 w-9 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950"
+                          className="h-8 w-8 sm:h-9 sm:w-9 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950"
                           onClick={() => setProductToDelete(product)}
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-9 w-9 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-950"
+                          className="h-8 w-8 sm:h-9 sm:w-9 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-950"
                           onClick={() => router.push(`/admin/products/edit/${product.id}`)}
                         >
-                          <Edit className="w-4 h-4" />
+                          <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
                         </Button>
                       </div>
                     </td>

@@ -31,4 +31,5 @@ export const auth = betterAuth({
     useSecureCookies: process.env.NODE_ENV === 'production',
     cookiePrefix: 'sissan',
   },
+   trustedOrigins: ['http://localhost:3000', 'https://sissansissan.vercel.app'],
 })

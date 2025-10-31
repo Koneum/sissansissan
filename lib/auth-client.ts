@@ -1,8 +1,7 @@
 import { createAuthClient } from 'better-auth/react'
 
 export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-  'https://sissansissan.vercel.app': {},
+  baseURL: process.env.NEXT_PUBLIC_BASE_URL || 'https://sissansissan.vercel.app',
 })
 
 export const { signIn, signUp, signOut, useSession } = authClient

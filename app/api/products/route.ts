@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch products with pagination
-    const [products, total] = await Promise.all([
+    const [products, total, ratings] = await Promise.all([
       prisma.product.findMany({
         where,
         include: {
@@ -76,29 +76,25 @@ export async function GET(request: NextRequest) {
           [sortBy]: sortOrder
         }
       }),
-      prisma.product.count({ where })
+      prisma.product.count({ where }),
+      prisma.review.groupBy({
+        by: ['productId'],
+        where: { status: 'APPROVED' },
+        _avg: { rating: true },
+      })
     ])
 
-    // Calculate average rating for each product
-    const productsWithRatings = await Promise.all(
-      products.map(async (product) => {
-        const ratings = await prisma.review.aggregate({
-          where: {
-            productId: product.id,
-            status: "APPROVED"
-          },
-          _avg: {
-            rating: true
-          }
-        })
+    // Map productId to average rating
+    const ratingMap = new Map<string, number>()
+    ratings.forEach(r => {
+      ratingMap.set(r.productId, r._avg.rating ?? 0)
+    })
 
-        return {
-          ...product,
-          averageRating: ratings._avg.rating || 0,
-          reviewCount: product._count.reviews
-        }
-      })
-    )
+    const productsWithRatings = products.map(product => ({
+      ...product,
+      averageRating: ratingMap.get(product.id) ?? 0,
+      reviewCount: product._count.reviews
+    }))
 
     return NextResponse.json({
       success: true,

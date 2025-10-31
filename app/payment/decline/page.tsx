@@ -1,17 +1,13 @@
 "use client"
 
-import { useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { Suspense } from "react"
 import Link from "next/link"
 import { XCircle, ArrowLeft, RefreshCw } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 
-export default function PaymentDeclinePage() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-
+function PaymentDeclineContent() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
@@ -68,5 +64,20 @@ export default function PaymentDeclinePage() {
 
       <Footer />
     </div>
+  )
+}
+
+export default function PaymentDeclinePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Chargement...</p>
+        </div>
+      </div>
+    }>
+      <PaymentDeclineContent />
+    </Suspense>
   )
 }

@@ -88,28 +88,16 @@ export function Header() {
 
               {/* User - Desktop */}
               <div className="hidden sm:block">
-                {user ? (
+                <Link href={user ? "/account" : "/signin"}>
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={signOut}
-                    title={t.auth.signOut}
+                    title={user ? "Mon Compte" : t.auth.signIn}
                     className="hover:scale-110 transition-transform"
                   >
                     <User className="w-4 h-4 sm:w-5 sm:h-5" />
                   </Button>
-                ) : (
-                  <Link href="/signin">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      title={t.auth.signIn}
-                      className="hover:scale-110 transition-transform"
-                    >
-                      <User className="w-4 h-4 sm:w-5 sm:h-5" />
-                    </Button>
-                  </Link>
-                )}
+                </Link>
               </div>
 
               {/* Wishlist - Desktop */}
@@ -254,16 +242,26 @@ export function Header() {
                       {/* User Actions */}
                       <div className="space-y-1">
                         {user ? (
-                          <button
-                            onClick={() => {
-                              signOut()
-                              setMobileMenuOpen(false)
-                            }}
-                            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
-                          >
-                            <LogOut className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                            <span className="font-medium">{t.auth.signOut}</span>
-                          </button>
+                          <>
+                            <Link
+                              href="/account"
+                              onClick={() => setMobileMenuOpen(false)}
+                              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
+                            >
+                              <User className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                              <span className="font-medium">Mon Compte</span>
+                            </Link>
+                            <button
+                              onClick={() => {
+                                signOut()
+                                setMobileMenuOpen(false)
+                              }}
+                              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
+                            >
+                              <LogOut className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                              <span className="font-medium">{t.auth.signOut}</span>
+                            </button>
+                          </>
                         ) : (
                           <Link
                             href="/signin"

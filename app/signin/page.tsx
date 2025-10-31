@@ -8,23 +8,70 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/lib/auth-context"
 import { useLocale } from "@/lib/locale-context"
+import { useToast } from "@/hooks/use-toast"
 
 export default function SignInPage() {
+  const [mode, setMode] = useState<"signin" | "signup">("signin")
+  const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const { signIn } = useAuth()
+  const { signIn, signUp } = useAuth()
   const { t } = useLocale()
   const router = useRouter()
+  const { toast } = useToast()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     try {
-      await signIn(email, password)
-      router.push("/")
+      if (mode === "signin") {
+        const result = await signIn(email, password)
+        if (result.error) {
+          toast({
+            title: "❌ Erreur de connexion",
+            description: "Email ou mot de passe incorrect",
+            variant: "destructive",
+          })
+        } else {
+          toast({
+            title: "✅ Connexion réussie",
+            description: "Bienvenue!",
+          })
+          // Utiliser window.location pour forcer le rechargement et récupérer la session
+          // Cela permet à Better Auth de charger correctement le rôle
+          window.location.href = "/check-role"
+        }
+      } else {
+        const result = await signUp(email, password, name)
+        if (result.error) {
+          // Vérifier si c'est une erreur d'email existant
+          const errorMessage = result.error?.message || ""
+          const isEmailExists = errorMessage.includes("already") || errorMessage.includes("exists") || errorMessage.includes("unique")
+          
+          toast({
+            title: "❌ Erreur d'inscription",
+            description: isEmailExists 
+              ? "Cet email existe déjà. Utilisez la connexion ou un autre email."
+              : "Impossible de créer le compte. Vérifiez vos informations.",
+            variant: "destructive",
+          })
+        } else {
+          toast({
+            title: "✅ Inscription réussie",
+            description: "Votre compte a été créé avec succès",
+          })
+          // Redirection vers le compte utilisateur après inscription
+          router.push("/account")
+        }
+      }
     } catch (error) {
-      console.error("Sign in error:", error)
+      console.error("Auth error:", error)
+      toast({
+        title: "❌ Erreur",
+        description: "Une erreur est survenue lors de l'authentification",
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false)
     }
@@ -33,8 +80,20 @@ export default function SignInPage() {
   const handleQuickLogin = async (role: "user" | "admin") => {
     setIsLoading(true)
     try {
-      await signIn(role === "admin" ? "admin@cozy.com" : "user@cozy.com", "password")
-      router.push(role === "admin" ? "/admin/dashboard" : "/")
+      const result = await signIn(
+        role === "admin" ? "admin@sissan.com" : "customer1@example.com",
+        role === "admin" ? "admin123" : "customer123"
+      )
+      if (result.error) {
+        toast({
+          title: "❌ Erreur de connexion",
+          description: "Impossible de se connecter avec ce compte",
+          variant: "destructive",
+        })
+      } else {
+        // Utiliser window.location pour forcer le rechargement
+        window.location.href = role === "admin" ? "/check-role" : "/"
+      }
     } finally {
       setIsLoading(false)
     }
@@ -47,11 +106,33 @@ export default function SignInPage() {
         <div className="w-full md:w-1/2 bg-gradient-to-br from-slate-700 via-slate-600 to-slate-700 rounded-3xl shadow-[0_30px_80px_rgba(0,0,0,0.4),0_10px_40px_rgba(0,0,0,0.25)] p-8 md:p-12 z-10">
           <div className="max-w-md mx-auto">
             <h1 className="text-3xl md:text-4xl font-light text-white mb-2">
-              Welcome <span className="font-bold">back</span>
+              {mode === "signin" ? (
+                <>Welcome <span className="font-bold">back</span></>
+              ) : (
+                <>Create <span className="font-bold">Account</span></>
+              )}
             </h1>
-            <p className="text-slate-300 text-sm mb-8">Sign in to your account below.</p>
+            <p className="text-slate-300 text-sm mb-8">
+              {mode === "signin" ? "Sign in to your account below." : "Register a new account below."}
+            </p>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              {mode === "signup" && (
+                <div className="space-y-2">
+                  <label htmlFor="name" className="text-white text-sm font-medium">
+                    Nom complet
+                  </label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="John Doe"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    className="bg-transparent border-2 border-slate-400 text-white placeholder:text-slate-400 rounded-xl h-12 focus:border-teal-400 focus:ring-teal-400"
+                  />
+                </div>
+              )}
               <div className="space-y-2">
                 <label htmlFor="email" className="text-white text-sm font-medium">
                   Email
@@ -88,12 +169,24 @@ export default function SignInPage() {
                 disabled={isLoading}
                 className="w-full bg-teal-400 hover:bg-teal-500 text-slate-900 font-semibold rounded-xl h-12 text-base"
               >
-                {isLoading ? "Signing in..." : t.auth.signIn}
+                {isLoading ? (mode === "signin" ? "Connexion..." : "Inscription...") : (mode === "signin" ? t.auth.signIn : "S'inscrire")}
               </Button>
 
-              <Button variant="secondary" onClick={() => handleQuickLogin("user")} disabled={isLoading}>
-                {t.auth.quickUserLogin}
-              </Button>
+              {mode === "signin" && (
+                <Button variant="secondary" className="w-full" onClick={() => handleQuickLogin("user")} disabled={isLoading}>
+                  {t.auth.quickUserLogin}
+                </Button>
+              )}
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+                  className="text-white text-sm hover:text-teal-400 transition-colors underline"
+                >
+                  {mode === "signin" ? "Pas de compte? S'inscrire" : "Déjà un compte? Se connecter"}
+                </button>
+              </div>
             </form>
 
             <div className="text-center flex justify-between mt-8">
@@ -139,9 +232,10 @@ export default function SignInPage() {
             <div className="flex gap-4 mb-8">
               <Button
                 variant="outline"
+                onClick={() => setMode("signup")}
                 className="border-2 border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white rounded-xl px-8 bg-transparent"
               >
-                Register
+                S'inscrire
               </Button>
               <Button variant="default" onClick={() => handleQuickLogin("admin")} disabled={isLoading}>
                 {t.auth.quickAdminLogin}

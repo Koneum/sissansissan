@@ -103,9 +103,9 @@ export default function CheckoutPage() {
         billingAddress: {
           company: formData.get('company'),
           country: formData.get('region'),
-          address: formData.get('address'),
+          address: formData.get('street'),
           city: formData.get('city'),
-          zipCode: formData.get('zipCode'),
+          zipCode: formData.get('country'),
         },
         // Shipping address (if different)
         shippingAddress: showShippingAddress ? {
@@ -139,16 +139,63 @@ export default function CheckoutPage() {
         
         clearCart()
         router.push("/order-success")
+      } else if (paymentMethod === 'orangemoney') {
+        // Intégration VitePay pour Orange Money
+        const email = formData.get('email') as string
+        const phone = formData.get('phone') as string
+        const omPhone = formData.get('omPhone') as string
+        
+        console.log('Données de paiement:', { email, phone, omPhone, orderData })
+        
+        // Créer la commande en base de données d'abord
+        const createOrderResponse = await fetch('/api/orders/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(orderData),
+        })
+        
+        const createOrderData = await createOrderResponse.json()
+        console.log('Réponse création commande:', createOrderData)
+        
+        if (!createOrderResponse.ok) {
+          throw new Error(createOrderData.error || 'Erreur lors de la création de la commande')
+        }
+        
+        const { orderId } = createOrderData
+        
+        // Initier le paiement VitePay
+        const paymentResponse = await fetch('/api/payments/initiate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId,
+            amount: finalTotal,
+            description: `Commande #${orderId} - ${items.length} article(s)`,
+            email,
+            phoneNumber: omPhone || phone,
+          }),
+        })
+        
+        const paymentData = await paymentResponse.json()
+        console.log('Réponse paiement:', paymentData)
+        
+        if (paymentData.success && paymentData.redirectUrl) {
+          // Rediriger vers VitePay
+          window.location.href = paymentData.redirectUrl
+        } else {
+          throw new Error(paymentData.error || 'Erreur lors de l\'initialisation du paiement')
+        }
       } else {
         // For other payment methods, process payment
-        // TODO: Integrate with payment gateway
+        // TODO: Integrate with other payment gateways
         await new Promise((resolve) => setTimeout(resolve, 2000))
         clearCart()
         router.push("/order-success")
       }
     } catch (error) {
       console.error('Order error:', error)
-      alert('Une erreur est survenue lors de la commande')
+      const errorMessage = error instanceof Error ? error.message : 'Une erreur est survenue lors de la commande'
+      alert(`Erreur: ${errorMessage}`)
     } finally {
       setIsProcessing(false)
     }
@@ -190,9 +237,10 @@ export default function CheckoutPage() {
           </div>
         )}
 
+        <form onSubmit={handleSubmit}>
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-6">
               {/* Billing Details */}
               <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
                 <h2 className="text-xl font-bold mb-6">Détails de facturation</h2>
@@ -202,17 +250,17 @@ export default function CheckoutPage() {
                       <Label htmlFor="firstName">
                         Prénom <span className="text-red-500">*</span>
                       </Label>
-                      <Input id="firstName" required defaultValue={user?.name || "Admin"} />
+                      <Input id="firstName" name="firstName" required defaultValue={user?.name || "Admin"} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="lastName">Nom</Label>
-                      <Input id="lastName" placeholder="Traore" />
+                      <Input id="lastName" name="lastName" placeholder="Traore" />
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="company">Nom de l'entreprise (optionnel)</Label>
-                    <Input id="company" />
+                    <Input id="company" name="company" />
                   </div>
 
                   <div className="space-y-2">
@@ -222,6 +270,7 @@ export default function CheckoutPage() {
                     <div className="relative">
                       <select
                         id="region"
+                        name="region"
                         className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring appearance-none"
                         required
                       >
@@ -240,39 +289,39 @@ export default function CheckoutPage() {
                     <Label htmlFor="street">
                       Adresse <span className="text-red-500">*</span>
                     </Label>
-                    <Input id="street" placeholder="Numéro et nom de la rue" required />
+                    <Input id="street" name="street" placeholder="Numéro et nom de la rue" required />
                   </div>
 
                   <div className="space-y-2">
-                    <Input id="apartment" placeholder="Appartement, bâtiment (optionnel)" />
+                    <Input id="apartment" name="apartment" placeholder="Appartement, bâtiment (optionnel)" />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="city">
                       Ville <span className="text-red-500">*</span>
                     </Label>
-                    <Input id="city" required />
+                    <Input id="city" name="city" required />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="country">
                       Quartier <span className="text-red-500">*</span>
                     </Label>
-                    <Input id="country" required />
+                    <Input id="country" name="country" required />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="phone">
                       Téléphone <span className="text-red-500">*</span>
                     </Label>
-                    <Input id="phone" type="tel" required placeholder="+223 00 00 00 00" />
+                    <Input id="phone" name="phone" type="tel" required placeholder="+223 00 00 00 00" />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="email">
                       Adresse email <span className="text-red-500">*</span>
                     </Label>
-                    <Input id="email" type="email" required defaultValue={user?.email || "admin@gmail.com"} />
+                    <Input id="email" name="email" type="email" required defaultValue={user?.email || "admin@gmail.com"} />
                   </div>
                 </div>
               </div>
@@ -303,7 +352,7 @@ export default function CheckoutPage() {
                   className="mt-2 min-h-[100px]"
                 />
               </div>
-            </form>
+            </div>
           </div>
 
           <div className="lg:col-span-1">
@@ -425,11 +474,14 @@ export default function CheckoutPage() {
                       </div>
                     </Label>
                   </div>
-                  <div className="flex items-center space-x-3 p-3 border rounded-lg mb-3">
+                  <div className="flex items-center space-x-3 p-3 border rounded-lg mb-3 bg-orange-50 dark:bg-orange-950/20">
                     <RadioGroupItem value="orangemoney" id="orangemoney" />
                     <Image src="/OM.jpg" alt="Orange Money" width={40} height={25} />
                     <Label htmlFor="orangemoney" className="flex-1 cursor-pointer">
-                      Orange Money
+                      <div>
+                        <div className="font-medium">Orange Money</div>
+                        <div className="text-xs text-muted-foreground">Paiement via VitePay</div>
+                      </div>
                     </Label>
                   </div>
                   <div className="flex items-center space-x-3 p-3 border rounded-lg">
@@ -440,6 +492,52 @@ export default function CheckoutPage() {
                     </Label>
                   </div>
                 </RadioGroup>
+
+                {/* Orange Money Details - Affichage conditionnel */}
+                {paymentMethod === "orangemoney" && (
+                  <div className="mt-6 space-y-4 border-t pt-6">
+                    <div className="flex items-center gap-2 text-sm font-medium mb-4">
+                      <Lock className="h-4 w-4 text-orange-600" />
+                      <span>Paiement sécurisé via VitePay</span>
+                    </div>
+
+                    <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4 mb-4">
+                      <h4 className="font-semibold text-orange-900 dark:text-orange-100 mb-2">
+                        Comment ça marche ?
+                      </h4>
+                      <ol className="text-sm text-orange-700 dark:text-orange-300 space-y-1 list-decimal list-inside">
+                        <li>Cliquez sur "Payer"</li>
+                        <li>Vous serez redirigé vers VitePay</li>
+                        <li>Entrez votre numéro Orange Money</li>
+                        <li>Confirmez le paiement sur votre téléphone</li>
+                      </ol>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="omPhone">
+                        Numéro Orange Money <span className="text-red-500">*</span>
+                      </Label>
+                      <Input 
+                        id="omPhone" 
+                        name="omPhone"
+                        type="tel"
+                        placeholder="+223 70 00 00 01" 
+                        required={paymentMethod === "orangemoney"}
+                        className="text-lg"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Format: +223 XX XX XX XX (Mali)
+                      </p>
+                    </div>
+
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                      <p className="text-xs text-blue-700 dark:text-blue-300">
+                        💡 <strong>Mode Test:</strong> Utilisez le numéro <strong>77000001</strong> pour simuler un paiement réussi, 
+                        ou <strong>77000009</strong> pour simuler un échec.
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 {/* Card Details - Affichage conditionnel pour CB */}
                 {paymentMethod === "stripe" && (
@@ -532,7 +630,6 @@ export default function CheckoutPage() {
               {/* Pay Button */}
               <Button
                 type="submit"
-                onClick={handleSubmit}
                 className="w-full h-12 text-lg font-semibold bg-primary hover:bg-primary/90"
                 disabled={isProcessing}
               >
@@ -541,6 +638,7 @@ export default function CheckoutPage() {
             </div>
           </div>
         </div>
+        </form>
       </main>
 
       <Footer />

@@ -9,17 +9,20 @@ import { AdminSidebar } from "@/components/admin/admin-sidebar"
 import { AdminHeader } from "@/components/admin/admin-header"
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user, isAdmin } = useAuth()
+  const { user } = useAuth()
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
+  // Check if user has admin access (PERSONNEL, MANAGER, ADMIN, SUPER_ADMIN)
+  const hasAdminAccess = user && ['PERSONNEL', 'MANAGER', 'ADMIN', 'SUPER_ADMIN'].includes((user as any).role)
+
   useEffect(() => {
-    if (!user || !isAdmin) {
+    if (!user || !hasAdminAccess) {
       router.push("/signin")
     }
-  }, [user, isAdmin, router])
+  }, [user, hasAdminAccess, router])
 
-  if (!user || !isAdmin) return null
+  if (!user || !hasAdminAccess) return null
 
   return (
     <div className="min-h-screen bg-background">

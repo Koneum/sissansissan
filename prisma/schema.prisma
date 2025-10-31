@@ -7,6 +7,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
 }
 
 datasource db {
@@ -14,20 +15,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 // ============================================
 // USER MODELS
 // ============================================
 
 model User {
-  id            String    @id @default(cuid())
+  id            String         @id @default(cuid())
   name          String
-  email         String    @unique
-  password      String    // Hashed with bcrypt
-  phone         String?
-  role          UserRole  @default(CUSTOMER)
-  emailVerified DateTime?
+  email         String         @unique
+  emailVerified Boolean        @default(false)
   image         String?
+  password      String?        // Not used by Better Auth (uses Account.password)
+  phone         String?
+  role          UserRole       @default(CUSTOMER) 
   
   // Relations
   addresses     Address[]
@@ -35,36 +35,72 @@ model User {
   reviews       Review[]
   wishlistItems WishlistItem[]
   cartItems     CartItem[]
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  sessions Session[]
+  accounts Account[]
+  permissions UserPermission[]
 
   @@index([email])
+  @@map("user")
 }
 
 enum UserRole {
   CUSTOMER
+  PERSONNEL
+  MANAGER
   ADMIN
   SUPER_ADMIN
 }
 
+// Permission system for granular access control
+model Permission {
+  id          String   @id @default(cuid())
+  name        String   @unique  // e.g., "products.view", "orders.edit"
+  description String?
+  category    String   // e.g., "products", "orders", "customers"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userPermissions UserPermission[]
+
+  @@map("permission")
+}
+
+model UserPermission {
+  id           String   @id @default(cuid())
+  userId       String
+  permissionId String
+  canView      Boolean  @default(true)
+  canCreate    Boolean  @default(false)
+  canEdit      Boolean  @default(false)
+  canDelete    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, permissionId])
+  @@map("user_permission")
+}
+
 model Address {
-  id         String   @id @default(cuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  firstName  String
-  lastName   String
-  address    String
-  city       String
-  state      String?
-  country    String
-  zipCode    String
-  phone      String
-  isDefault  Boolean  @default(false)
-  
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName String
+  lastName  String
+  address   String
+  city      String
+  state     String?
+  country   String
+  zipCode   String
+  phone     String
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
 }
@@ -74,22 +110,19 @@ model Address {
 // ============================================
 
 model Category {
-  id          String    @id @default(cuid())
+  id          String     @id @default(cuid())
   name        String
-  slug        String    @unique
-  description String?   @db.Text
+  slug        String     @unique
+  description String?    @db.Text
   image       String?
-  
   // Hierarchical structure
   parentId    String?
   parent      Category?  @relation("SubCategories", fields: [parentId], references: [id], onDelete: SetNull)
   children    Category[] @relation("SubCategories")
-  
   // Relations
   products    Product[]
-  
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
   @@index([slug])
   @@index([parentId])
@@ -100,47 +133,39 @@ model Category {
 // ============================================
 
 model Product {
-  id              String   @id @default(cuid())
-  name            String
-  slug            String   @unique
-  description     String?  @db.Text
-  shortDesc       String?  @db.Text
-  
+  id             String           @id @default(cuid())
+  name           String
+  slug           String           @unique
+  description    String?          @db.Text
+  shortDesc      String?          @db.Text
   // Pricing
-  price           Float
-  discountPrice   Float?
-  salePercentage  Int?
-  
+  price          Float
+  discountPrice  Float?
+  salePercentage Int?
   // Inventory
-  sku             String?  @unique
-  stock           Int      @default(0)
-  
+  sku            String?          @unique
+  stock          Int              @default(0)
   // Category
-  categoryId      String
-  category        Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  
+  categoryId     String
+  category       Category         @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   // Media
-  images          String[] // Array of image URLs
-  thumbnail       String?  // Main image
-  
+  images         String[] // Array of image URLs
+  thumbnail      String? // Main image
   // Flags
-  isNew           Boolean  @default(false)
-  isFeatured      Boolean  @default(false)
-  isActive        Boolean  @default(true)
-  
+  isNew          Boolean          @default(false)
+  isFeatured     Boolean          @default(false)
+  isActive       Boolean          @default(true)
   // Metadata
-  tags            String[]
-  attributes      Json?    // Custom attributes { color: "red", size: "L" }
-  
+  tags           String[]
+  attributes     Json? // Custom attributes { color: "red", size: "L" }
   // Relations
-  variants        ProductVariant[]
-  reviews         Review[]
-  orderItems      OrderItem[]
-  cartItems       CartItem[]
-  wishlistItems   WishlistItem[]
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  variants       ProductVariant[]
+  reviews        Review[]
+  orderItems     OrderItem[]
+  cartItems      CartItem[]
+  wishlistItems  WishlistItem[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
 
   @@index([slug])
   @@index([categoryId])
@@ -153,14 +178,12 @@ model ProductVariant {
   id        String   @id @default(cuid())
   productId String
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  
-  name      String   // ex: "Color: Red, Size: L"
+  name      String // ex: "Color: Red, Size: L"
   sku       String?  @unique
-  price     Float?   // Override product price if set
+  price     Float? // Override product price if set
   stock     Int      @default(0)
-  image     String?  // Variant-specific image
-  options   Json     // { color: "Red", size: "L" }
-  
+  image     String? // Variant-specific image
+  options   Json // { color: "Red", size: "L" }
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -177,14 +200,11 @@ model Review {
   user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   productId  String
   product    Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
-  
-  rating     Int          // 1-5
+  rating     Int // 1-5
   comment    String       @db.Text
-  images     String[]     // Review images
-  
+  images     String[] // Review images
   status     ReviewStatus @default(PENDING)
   isVerified Boolean      @default(false) // Verified purchase
-  
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
 
@@ -206,46 +226,36 @@ enum ReviewStatus {
 model Order {
   id              String        @id @default(cuid())
   orderNumber     String        @unique
-  
   userId          String
   user            User          @relation(fields: [userId], references: [id], onDelete: Restrict)
-  
   // Order items
   items           OrderItem[]
-  
   // Pricing
   subtotal        Float
   tax             Float?
   shipping        Float?
   discount        Float?
   total           Float
-  
   // Coupon
   couponCode      String?
   couponId        String?
   coupon          Coupon?       @relation(fields: [couponId], references: [id], onDelete: SetNull)
-  
   // Status
   status          OrderStatus   @default(PENDING)
   paymentStatus   PaymentStatus @default(PENDING)
-  
   // Payment
   paymentMethod   String?
-  paymentId       String?       // Stripe payment intent ID
-  
+  paymentId       String? // Stripe payment intent ID
   // Addresses (stored as JSON for historical record)
   shippingAddress Json
   billingAddress  Json?
-  
   // Shipping
   trackingNumber  String?
   shippedAt       DateTime?
   deliveredAt     DateTime?
-  
   // Notes
   customerNotes   String?       @db.Text
   adminNotes      String?       @db.Text
-  
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
@@ -272,21 +282,17 @@ enum PaymentStatus {
 }
 
 model OrderItem {
-  id         String   @id @default(cuid())
-  orderId    String
-  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
-  productId  String
-  product    Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
-  
-  quantity   Int
-  price      Float    // Price at time of purchase
-  variantId  String?
-  
+  id              String   @id @default(cuid())
+  orderId         String
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId       String
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  quantity        Int
+  price           Float // Price at time of purchase
+  variantId       String?
   // Snapshot of product details at time of purchase
   productSnapshot Json?
-  
-  createdAt  DateTime @default(now())
+  createdAt       DateTime @default(now())
 
   @@index([orderId])
   @@index([productId])
@@ -297,18 +303,15 @@ model OrderItem {
 // ============================================
 
 model CartItem {
-  id         String   @id @default(cuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  productId  String
-  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  
-  quantity   Int      @default(1)
-  variantId  String?
-  
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity  Int      @default(1)
+  variantId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([userId, productId, variantId])
   @@index([userId])
@@ -323,10 +326,8 @@ model WishlistItem {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
   productId String
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  
   createdAt DateTime @default(now())
 
   @@unique([userId, productId])
@@ -341,31 +342,24 @@ model WishlistItem {
 model Coupon {
   id                   String       @id @default(cuid())
   code                 String       @unique
-  
   discountType         DiscountType
   discountValue        Float
-  
   // Conditions
   minPurchase          Float?
   maxDiscount          Float?
-  
   // Usage limits
   usageLimit           Int?
   usedCount            Int          @default(0)
   perUserLimit         Int?
-  
   // Validity
   validFrom            DateTime?
   validUntil           DateTime?
   status               CouponStatus @default(ACTIVE)
-  
   // Applicability
-  applicableProducts   String[]     // Product IDs
-  applicableCategories String[]     // Category IDs
-  
+  applicableProducts   String[] // Product IDs
+  applicableCategories String[] // Category IDs
   // Relations
   orders               Order[]
-  
   createdAt            DateTime     @default(now())
   updatedAt            DateTime     @updatedAt
 
@@ -392,11 +386,54 @@ enum CouponStatus {
 model SiteSettings {
   id        String   @id @default(cuid())
   key       String   @unique // "footer", "header", "seo", etc.
-  value     Json     // Stores configuration
-  
+  value     Json // Stores configuration
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([key])
 }
 
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@map("verification")
+}

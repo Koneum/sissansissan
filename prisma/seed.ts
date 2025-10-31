@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '../app/generated/prisma'
 
 const prisma = new PrismaClient()
 
@@ -52,39 +52,24 @@ async function main() {
 
   console.log(`✅ Created ${categories.length} categories`)
 
-  // 2. Create Admin User
-  console.log('👤 Creating admin user...')
+  // 2. Skip User creation - will be created via Better Auth API
+  console.log('👤 Skipping user creation...')
+  console.log('⚠️  Users will be created via Better Auth API (run create-auth-accounts.ts)')
+  
+  // Create a dummy admin user for orders (will be replaced by real users)
   const adminUser = await prisma.user.upsert({
-    where: { email: 'admin@sissan.com' },
+    where: { email: 'system@sissan.com' },
     update: {},
     create: {
-      name: 'Admin User',
-      email: 'admin@sissan.com',
-      password: '$2a$10$YourHashedPasswordHere', // In production, hash this properly
+      name: 'System',
+      email: 'system@sissan.com',
+      password: '',
       role: 'ADMIN',
-      phone: '+1234567890'
+      emailVerified: true
     }
   })
-
-  // 3. Create Test Customers
-  console.log('👥 Creating customers...')
-  const customers = []
-  for (let i = 1; i <= 10; i++) {
-    const customer = await prisma.user.upsert({
-      where: { email: `customer${i}@example.com` },
-      update: {},
-      create: {
-        name: `Customer ${i}`,
-        email: `customer${i}@example.com`,
-        password: '$2a$10$YourHashedPasswordHere',
-        role: 'CUSTOMER',
-        phone: `+123456789${i}`
-      }
-    })
-    customers.push(customer)
-  }
-
-  console.log(`✅ Created ${customers.length} customers`)
+  
+  const customers = [adminUser] // Use system user for orders
 
   // 4. Create Products
   console.log('🛍️ Creating products...')

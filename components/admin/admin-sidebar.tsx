@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils"
 import { useState } from "react"
 import { useLocale } from "@/lib/locale-context"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
+import { usePermissions } from "@/lib/use-permissions"
 
 interface AdminSidebarProps {
   open: boolean
@@ -27,19 +28,21 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
   const { t } = useLocale()
   const pathname = usePathname()
   const [expandedItems, setExpandedItems] = useState<string[]>([])
+  const { hasAnyPermission } = usePermissions()
 
   const toggleExpand = (label: string) => {
     setExpandedItems((prev) => (prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label]))
   }
 
-  const menuItems = [
-    { icon: LayoutDashboard, label: t.admin.dashboard, href: "/admin/dashboard" },
-    { icon: ShoppingBag, label: t.admin.orders, href: "/admin/orders" },
-    { icon: Users, label: t.admin.customers, href: "/admin/customers" },
+  const allMenuItems = [
+    { icon: LayoutDashboard, label: t.admin.dashboard, href: "/admin/dashboard", permission: "dashboard" },
+    { icon: ShoppingBag, label: t.admin.orders, href: "/admin/orders", permission: "orders" },
+    { icon: Users, label: t.admin.customers, href: "/admin/customers", permission: "customers" },
     {
       icon: Package,
       label: t.admin.products,
       href: "/admin/products",
+      permission: "products",
       submenu: [
         { label: t.admin.allProducts, href: "/admin/products" },
         { label: t.admin.addProduct, href: "/admin/products/add" },
@@ -49,26 +52,29 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
       icon: FolderTree,
       label: t.admin.categories,
       href: "/admin/categories",
+      permission: "categories",
       submenu: [
         { label: t.admin.allCategories, href: "/admin/categories" },
         { label: t.admin.addCategory, href: "/admin/categories/add" },
       ],
     },
-    // { icon: Ticket, label: t.admin.coupons, href: "/admin/coupons" },
-    // { icon: Star, label: t.admin.reviews, href: "/admin/reviews" },
+    // { icon: Ticket, label: t.admin.coupons, href: "/admin/coupons", permission: "coupons" },
+    // { icon: Star, label: t.admin.reviews, href: "/admin/reviews", permission: "reviews" },
     {
       icon: Settings,
       label: t.admin.settings,
       href: "/admin/settings",
+      permission: "settings",
       submenu: [
         { label: t.admin.settings, href: "/admin/settings" },
-        { label: t.admin.manager, href: "/admin/settings/users" },
+        { label: t.admin.manager, href: "/admin/settings/users", permission: "staff" },
       ],
     },
     {
       icon: Palette,
       label: t.admin.customization,
       href: "/admin/customization",
+      permission: "customization",
       submenu: [
         { label: t.admin.seo, href: "/admin/customization/seo" },
         { label: t.admin.header, href: "/admin/customization/header" },
@@ -81,6 +87,24 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
       ],
     },
   ]
+
+  // Filter menu items based on permissions
+  const menuItems = allMenuItems.filter(item => {
+    // If no permission specified, show to everyone
+    if (!item.permission) return true
+    // Check if user has any permission for this category
+    return hasAnyPermission(item.permission)
+  }).map(item => {
+    // Filter submenu items if they have permissions
+    if (item.submenu) {
+      const filteredSubmenu = item.submenu.filter((subitem: any) => {
+        if (!subitem.permission) return true
+        return hasAnyPermission(subitem.permission)
+      })
+      return { ...item, submenu: filteredSubmenu }
+    }
+    return item
+  })
 
   const sidebarContent = (
     <>

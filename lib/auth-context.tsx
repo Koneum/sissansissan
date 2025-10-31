@@ -1,71 +1,75 @@
 "use client"
 
 import type React from "react"
-import { createContext, useContext, useState, useEffect } from "react"
+import { createContext, useContext } from "react"
+import { useSession, signIn as betterAuthSignIn, signOut as betterAuthSignOut, signUp as betterAuthSignUp } from "./auth-client"
 
 interface User {
   id: string
   email: string
   name: string
-  role: "user" | "admin"
+  role: "CUSTOMER" | "PERSONNEL" | "MANAGER" | "ADMIN" | "SUPER_ADMIN"
 }
 
 interface AuthContextType {
   user: User | null
   isLoading: boolean
-  signIn: (email: string, password: string) => Promise<void>
-  signOut: () => void
+  signIn: (email: string, password: string) => Promise<{ error?: any; data?: any }>
+  signUp: (email: string, password: string, name: string) => Promise<{ error?: any; data?: any }>
+  signOut: () => Promise<void>
   isAdmin: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const { data: session, isPending } = useSession()
 
-  useEffect(() => {
-    // Check for stored user session
-    const storedUser = localStorage.getItem("cozy_user")
-    if (storedUser) {
-      setUser(JSON.parse(storedUser))
-    }
-    setIsLoading(false)
-  }, [])
+  const user = session?.user ? {
+    id: session.user.id,
+    email: session.user.email,
+    name: session.user.name,
+    role: (session.user as any).role as "CUSTOMER" | "PERSONNEL" | "MANAGER" | "ADMIN" | "SUPER_ADMIN"
+  } : null
 
-  const signIn = async (email: string, password: string) => {
-    setIsLoading(true)
+  const handleSignIn = async (email: string, password: string) => {
     try {
-      // Mock authentication - replace with real API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      const mockUser: User = {
-        id: "1",
+      const result = await betterAuthSignIn.email({
         email,
-        name: email.split("@")[0],
-        role: email.includes("admin") ? "admin" : "user",
-      }
-
-      setUser(mockUser)
-      localStorage.setItem("cozy_user", JSON.stringify(mockUser))
-    } finally {
-      setIsLoading(false)
+        password,
+      })
+      return result
+    } catch (error) {
+      return { error }
     }
   }
 
-  const signOut = () => {
-    setUser(null)
-    localStorage.removeItem("cozy_user")
+  const handleSignUp = async (email: string, password: string, name: string) => {
+    try {
+      const result = await betterAuthSignUp.email({
+        email,
+        password,
+        name,
+      })
+      return result
+    } catch (error) {
+      return { error }
+    }
+  }
+
+  const handleSignOut = async () => {
+    await betterAuthSignOut()
   }
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        isLoading,
-        signIn,
-        signOut,
-        isAdmin: user?.role === "admin",
+        isLoading: isPending,
+        signIn: handleSignIn,
+        signUp: handleSignUp,
+        signOut: handleSignOut,
+        isAdmin: user ? ['PERSONNEL', 'MANAGER', 'ADMIN', 'SUPER_ADMIN'].includes(user.role) : false,
       }}
     >
       {children}

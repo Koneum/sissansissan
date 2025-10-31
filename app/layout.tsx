@@ -15,6 +15,7 @@ import { PagesProvider } from "@/lib/pages-context"
 import { CountdownProvider } from "@/lib/countdown-context"
 import { Chatbot } from "@/components/chatbot"
 import { Toaster } from "sonner"
+import { Toaster as ShadcnToaster } from "@/components/ui/toaster"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -58,6 +59,7 @@ export default function RootLayout({
                           <WishlistProvider>
                             <CartProvider>
                               <Toaster position="bottom-right" richColors />
+                              <ShadcnToaster />
                               {children}
                               {/* <Chatbot /> */}
                             </CartProvider>

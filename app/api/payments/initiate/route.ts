@@ -4,6 +4,8 @@ import crypto from "crypto"
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
+    console.log("📥 Body reçu:", body)
+    
     const {
       orderId,
       amount,
@@ -14,8 +16,13 @@ export async function POST(request: NextRequest) {
 
     // Validation des paramètres
     if (!orderId || !amount || !email) {
+      console.error("❌ Paramètres manquants:", { orderId, amount, email })
       return NextResponse.json(
-        { error: "Paramètres manquants: orderId, amount, email requis" },
+        { 
+          success: false,
+          error: "Paramètres manquants: orderId, amount, email requis",
+          received: { orderId, amount, email, phoneNumber }
+        },
         { status: 400 }
       )
     }
@@ -25,9 +32,20 @@ export async function POST(request: NextRequest) {
     const apiSecret = process.env.VITEPAY_API_SECRET
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
 
+    console.log("🔑 Config VitePay:", { 
+      hasApiKey: !!apiKey, 
+      hasApiSecret: !!apiSecret,
+      baseUrl 
+    })
+
     if (!apiKey || !apiSecret) {
+      console.error("❌ Configuration VitePay manquante")
       return NextResponse.json(
-        { error: "Configuration VitePay manquante" },
+        { 
+          success: false,
+          error: "Configuration VitePay manquante",
+          details: "VITEPAY_API_KEY ou VITEPAY_API_SECRET non défini"
+        },
         { status: 500 }
       )
     }
@@ -35,11 +53,14 @@ export async function POST(request: NextRequest) {
     // Montant en centimes (multiplier par 100)
     const amount100 = Math.round(amount * 100)
 
+    // Nettoyer baseUrl (enlever le slash final s'il existe)
+    const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl
+
     // URLs de callback
-    const callbackUrl = `${baseUrl}/api/payments/callback`
-    const returnUrl = `${baseUrl}/payment/success`
-    const declineUrl = `${baseUrl}/payment/decline`
-    const cancelUrl = `${baseUrl}/payment/cancel`
+    const callbackUrl = `${cleanBaseUrl}/api/payments/callback`
+    const returnUrl = `${cleanBaseUrl}/payment/success`
+    const declineUrl = `${cleanBaseUrl}/payment/decline`
+    const cancelUrl = `${cleanBaseUrl}/payment/cancel`
 
     // Générer le hash SHA1
     // Format: SHA1(UPPERCASE("order_id;amount_100;currency_code;callback_url;api_secret"))
@@ -48,7 +69,7 @@ export async function POST(request: NextRequest) {
       .createHash("sha1")
       .update(hashString.toUpperCase())
       .digest("hex")
-      .toUpperCase()
+      .toLowerCase() // VitePay attend le hash en minuscules !
 
     // Préparer les données pour VitePay
     const formData = new URLSearchParams({

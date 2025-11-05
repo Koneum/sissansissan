@@ -9,244 +9,170 @@ export async function GET() {
     const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
     const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0)
 
-    // 1. Total Revenue (all time)
-    const totalRevenueResult = await prisma.order.aggregate({
-      where: {
-        status: {
-          in: ["DELIVERED", "SHIPPED"]
-        }
-      },
-      _sum: {
-        total: true
-      }
-    })
+    // Prepare all monthly data queries (parallel)
+    const monthlyQueries = []
+    for (let i = 11; i >= 0; i--) {
+      const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1)
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0)
 
-    // Revenue this month
-    const thisMonthRevenue = await prisma.order.aggregate({
-      where: {
-        status: {
-          in: ["DELIVERED", "SHIPPED"]
+      monthlyQueries.push({
+        monthStart,
+        monthEnd,
+        monthName: monthStart.toLocaleString('en-US', { month: 'short' })
+      })
+    }
+
+    // Execute all basic stats queries in parallel
+    const [
+      totalRevenueResult,
+      thisMonthRevenue,
+      lastMonthRevenue,
+      totalOrders,
+      thisMonthOrders,
+      lastMonthOrders,
+      pendingOrders,
+      lastMonthPending,
+      totalCustomers,
+      thisMonthCustomers,
+      lastMonthCustomers,
+      recentOrders,
+      bestSelling,
+      // Monthly data (parallel)
+      ...monthlyDataResults
+    ] = await Promise.all([
+      // Revenue queries
+      prisma.order.aggregate({
+        where: { status: { in: ["DELIVERED", "SHIPPED"] } },
+        _sum: { total: true }
+      }),
+      prisma.order.aggregate({
+        where: {
+          status: { in: ["DELIVERED", "SHIPPED"] },
+          createdAt: { gte: firstDayOfMonth }
         },
-        createdAt: {
-          gte: firstDayOfMonth
-        }
-      },
-      _sum: {
-        total: true
-      }
-    })
-
-    // Revenue last month
-    const lastMonthRevenue = await prisma.order.aggregate({
-      where: {
-        status: {
-          in: ["DELIVERED", "SHIPPED"]
+        _sum: { total: true }
+      }),
+      prisma.order.aggregate({
+        where: {
+          status: { in: ["DELIVERED", "SHIPPED"] },
+          createdAt: { gte: lastMonth, lte: lastMonthEnd }
         },
-        createdAt: {
-          gte: lastMonth,
-          lte: lastMonthEnd
-        }
-      },
-      _sum: {
-        total: true
-      }
-    })
+        _sum: { total: true }
+      }),
 
+      // Order queries
+      prisma.order.count(),
+      prisma.order.count({ where: { createdAt: { gte: firstDayOfMonth } } }),
+      prisma.order.count({
+        where: { createdAt: { gte: lastMonth, lte: lastMonthEnd } }
+      }),
+
+      // Pending orders
+      prisma.order.count({ where: { status: "PENDING" } }),
+      prisma.order.count({
+        where: {
+          status: "PENDING",
+          createdAt: { gte: lastMonth, lte: lastMonthEnd }
+        }
+      }),
+
+      // Customer queries
+      prisma.user.count(),
+      prisma.user.count({ where: { createdAt: { gte: firstDayOfMonth } } }),
+      prisma.user.count({
+        where: { createdAt: { gte: lastMonth, lte: lastMonthEnd } }
+      }),
+
+      // Recent orders
+      prisma.order.findMany({
+        take: 5,
+        orderBy: { createdAt: "desc" },
+        include: {
+          user: { select: { name: true, email: true } },
+          items: { select: { id: true } }
+        }
+      }),
+
+      // Best selling products
+      prisma.orderItem.groupBy({
+        by: ["productId"],
+        _sum: { price: true, quantity: true },
+        orderBy: { _sum: { price: "desc" } },
+        take: 4
+      }),
+
+      // Monthly analytics (parallel queries for all months)
+      ...monthlyQueries.map(({ monthStart, monthEnd }) =>
+        Promise.all([
+          // Revenue
+          prisma.order.aggregate({
+            where: {
+              status: { in: ["DELIVERED", "SHIPPED"] },
+              createdAt: { gte: monthStart, lte: monthEnd }
+            },
+            _sum: { total: true }
+          }),
+          // Orders
+          prisma.order.count({
+            where: { createdAt: { gte: monthStart, lte: monthEnd } }
+          }),
+          // Customers
+          prisma.user.count({
+            where: { createdAt: { gte: monthStart, lte: monthEnd } }
+          })
+        ])
+      )
+    ])
+
+    // Process results
     const totalRevenue = totalRevenueResult._sum.total || 0
     const thisMonthRev = thisMonthRevenue._sum.total || 0
-    const lastMonthRev = lastMonthRevenue._sum.total || 1 // Avoid division by 0
+    const lastMonthRev = lastMonthRevenue._sum.total || 1
     const revenueChange = ((thisMonthRev - lastMonthRev) / lastMonthRev) * 100
 
-    // 2. Total Orders
-    const totalOrders = await prisma.order.count()
-    const thisMonthOrders = await prisma.order.count({
-      where: {
-        createdAt: {
-          gte: firstDayOfMonth
-        }
-      }
-    })
-    const lastMonthOrders = await prisma.order.count({
-      where: {
-        createdAt: {
-          gte: lastMonth,
-          lte: lastMonthEnd
-        }
-      }
-    }) || 1
-    const ordersChange = ((thisMonthOrders - lastMonthOrders) / lastMonthOrders) * 100
-
-    // 3. Pending Orders
-    const pendingOrders = await prisma.order.count({
-      where: {
-        status: "PENDING"
-      }
-    })
-    const lastMonthPending = await prisma.order.count({
-      where: {
-        status: "PENDING",
-        createdAt: {
-          gte: lastMonth,
-          lte: lastMonthEnd
-        }
-      }
-    }) || 1
-    const pendingChange = ((pendingOrders - lastMonthPending) / lastMonthPending) * 100
-
-    // 4. Total Customers
-    const totalCustomers = await prisma.user.count()
-    const thisMonthCustomers = await prisma.user.count({
-      where: {
-        createdAt: {
-          gte: firstDayOfMonth
-        }
-      }
-    })
-    const lastMonthCustomers = await prisma.user.count({
-      where: {
-        createdAt: {
-          gte: lastMonth,
-          lte: lastMonthEnd
-        }
-      }
-    }) || 1
-    const customersChange = ((thisMonthCustomers - lastMonthCustomers) / lastMonthCustomers) * 100
-
-    // 5. Recent Orders (last 5)
-    const recentOrders = await prisma.order.findMany({
-      take: 5,
-      orderBy: {
-        createdAt: "desc"
-      },
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true
-          }
-        },
-        items: {
-          select: {
-            id: true
-          }
-        }
-      }
-    })
-
-    // 6. Best Selling Products (by revenue)
-    const bestSelling = await prisma.orderItem.groupBy({
-      by: ["productId"],
-      _sum: {
-        price: true,
-        quantity: true
-      },
-      orderBy: {
-        _sum: {
-          price: "desc"
-        }
-      },
-      take: 4
-    })
+    const ordersChange = ((thisMonthOrders - (lastMonthOrders || 1)) / (lastMonthOrders || 1)) * 100
+    const pendingChange = ((pendingOrders - (lastMonthPending || 1)) / (lastMonthPending || 1)) * 100
+    const customersChange = ((thisMonthCustomers - (lastMonthCustomers || 1)) / (lastMonthCustomers || 1)) * 100
 
     // Get product details for best selling
     const productIds = bestSelling.map(item => item.productId)
-    const products = await prisma.product.findMany({
-      where: {
-        id: {
-          in: productIds
-        }
-      },
-      include: {
-        category: {
-          select: {
-            name: true
-          }
-        }
-      }
-    })
+    const products = productIds.length > 0 ? await prisma.product.findMany({
+      where: { id: { in: productIds } },
+      include: { category: { select: { name: true } } }
+    }) : []
 
-    const bestSellingProducts = bestSelling.map((item, index) => {
+    const bestSellingProducts = bestSelling.map((item) => {
       const product = products.find(p => p.id === item.productId)
       const totalRevenue = item._sum.price || 0
       const totalUnits = item._sum.quantity || 0
-      
+
       return {
         name: product?.category?.name || product?.name || "Unknown",
         value: totalRevenue,
         units: totalUnits,
-        percentage: 0 // Will calculate after
+        percentage: 0
       }
     })
 
     // Calculate percentages
     const totalBestSellingRevenue = bestSellingProducts.reduce((sum, p) => sum + p.value, 0)
     bestSellingProducts.forEach(product => {
-      product.percentage = totalBestSellingRevenue > 0 
+      product.percentage = totalBestSellingRevenue > 0
         ? Math.round((product.value / totalBestSellingRevenue) * 100)
         : 0
     })
 
-    // 7. Monthly Analytics (last 12 months)
-    const monthlyRevenue = []
-    const monthlyOrders = []
-    const monthlyCustomers = []
-    
-    for (let i = 11; i >= 0; i--) {
-      const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1)
-      const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0)
-      const monthName = monthStart.toLocaleString('en-US', { month: 'short' })
-      
-      // Revenue
-      const monthRevenueData = await prisma.order.aggregate({
-        where: {
-          status: {
-            in: ["DELIVERED", "SHIPPED"]
-          },
-          createdAt: {
-            gte: monthStart,
-            lte: monthEnd
-          }
-        },
-        _sum: {
-          total: true
-        }
-      })
+    // Process monthly data
+    const monthlyRevenue: Array<{ month: string; value: number }> = []
+    const monthlyOrders: Array<{ month: string; value: number }> = []
+    const monthlyCustomers: Array<{ month: string; value: number }> = []
 
-      monthlyRevenue.push({
-        month: monthName,
-        value: monthRevenueData._sum.total || 0
-      })
-
-      // Orders
-      const monthOrdersCount = await prisma.order.count({
-        where: {
-          createdAt: {
-            gte: monthStart,
-            lte: monthEnd
-          }
-        }
-      })
-
-      monthlyOrders.push({
-        month: monthName,
-        value: monthOrdersCount
-      })
-
-      // Customers
-      const monthCustomersCount = await prisma.user.count({
-        where: {
-          createdAt: {
-            gte: monthStart,
-            lte: monthEnd
-          }
-        }
-      })
-
-      monthlyCustomers.push({
-        month: monthName,
-        value: monthCustomersCount
-      })
-    }
+    monthlyQueries.forEach(({ monthName }, index) => {
+      const [revenueData, ordersCount, customersCount] = monthlyDataResults[index]
+      monthlyRevenue.push({ month: monthName, value: revenueData._sum.total || 0 })
+      monthlyOrders.push({ month: monthName, value: ordersCount })
+      monthlyCustomers.push({ month: monthName, value: customersCount })
+    })
 
     return NextResponse.json({
       stats: {

@@ -55,13 +55,14 @@ export default function ProductsPage() {
   const fetchProducts = async () => {
     try {
       setLoading(true)
-      const response = await fetch("/api/products")
+      const response = await fetch("/api/products?admin=true")
       if (!response.ok) throw new Error("Failed to fetch products")
       const data = await response.json()
       setProducts(data.data || [])
     } catch (error) {
       console.error("Error fetching products:", error)
-      toast.error(t.admin.errorCreate)
+      toast.error("Erreur lors du chargement des produits")
+    } finally {
       setLoading(false)
     }
   }

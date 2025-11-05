@@ -43,6 +43,7 @@ model User {
   permissions UserPermission[]
 
   @@index([email])
+  @@index([createdAt])
   @@map("user")
 }
 
@@ -263,6 +264,7 @@ model Order {
   @@index([orderNumber])
   @@index([status])
   @@index([paymentStatus])
+  @@index([createdAt])
 }
 
 enum OrderStatus {

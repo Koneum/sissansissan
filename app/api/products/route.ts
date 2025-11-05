@@ -19,14 +19,18 @@ export async function GET(request: NextRequest) {
     const minPrice = searchParams.get("minPrice")
     const maxPrice = searchParams.get("maxPrice")
     const inStock = searchParams.get("inStock") === "true"
+    const admin = searchParams.get("admin") === "true"
     
     // Sorting
     const sortBy = searchParams.get("sortBy") || "createdAt"
     const sortOrder = (searchParams.get("sortOrder") || "desc") as "asc" | "desc"
 
     // Build where clause
-    const where: any = {
-      isActive: true
+    const where: any = {}
+
+    // Only filter by isActive if not admin
+    if (!admin) {
+      where.isActive = true
     }
 
     if (categoryId) {
@@ -35,8 +39,8 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       where.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { description: { contains: search, mode: "insensitive" } },
+        { name: { contains: search, mode: "insensitive" as const } },
+        { description: { contains: search, mode: "insensitive" as const } },
         { tags: { has: search } }
       ]
     }

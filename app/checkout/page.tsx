@@ -259,7 +259,7 @@ export default function CheckoutPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="company">Nom de l'entreprise (optionnel)</Label>
+                    <Label htmlFor="company">Nom de l&apos;entreprise (optionnel)</Label>
                     <Input id="company" name="company" />
                   </div>
 
@@ -277,7 +277,7 @@ export default function CheckoutPage() {
                         <option value="">Sélectionnez votre pays</option>
                         <option value="ml">Mali</option>
                         <option value="bf">Burkina Faso</option>
-                        <option value="ci">Côte d'Ivoire</option>
+                        <option value="ci">Côte d&apos;Ivoire</option>
                         <option value="sn">Sénégal</option>
                         <option value="fr">France</option>
                       </select>
@@ -506,7 +506,7 @@ export default function CheckoutPage() {
                         Comment ça marche ?
                       </h4>
                       <ol className="text-sm text-orange-700 dark:text-orange-300 space-y-1 list-decimal list-inside">
-                        <li>Cliquez sur "Payer"</li>
+                        <li>Cliquez sur &quot;Payer&quot;</li>
                         <li>Vous serez redirigé vers VitePay</li>
                         <li>Entrez votre numéro Orange Money</li>
                         <li>Confirmez le paiement sur votre téléphone</li>

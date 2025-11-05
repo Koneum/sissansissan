@@ -178,6 +178,18 @@ export default function SignInPage() {
                 </Button>
               )}
 
+              <div className="divide-y  divide-gray-200 flex items-center justify-center">
+                <div></div>
+                <div className="py-2">Ou connectez-vous avec
+                  <div className="flex items-center gap-3 justify-center">  
+                  <p>Google</p>
+                  <p>Facebook</p>
+                  <p>Apple</p>
+                  </div>
+                </div>
+                
+              </div>
+
               <div className="text-center">
                 <button
                   type="button"
@@ -235,7 +247,7 @@ export default function SignInPage() {
                 onClick={() => setMode("signup")}
                 className="border-2 border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white rounded-xl px-8 bg-transparent"
               >
-                S'inscrire
+                S&apos;inscrire
               </Button>
               <Button variant="default" onClick={() => handleQuickLogin("admin")} disabled={isLoading}>
                 {t.auth.quickAdminLogin}

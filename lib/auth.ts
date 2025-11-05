@@ -33,4 +33,4 @@ export const auth = betterAuth({
     cookiePrefix: 'sissan',
   },
    trustedOrigins: ['http://localhost:3000', 'https://sissansissan.vercel.app'],
-})
+}) 

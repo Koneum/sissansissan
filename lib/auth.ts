@@ -19,7 +19,7 @@ export const auth = betterAuth({
         defaultValue: 'CUSTOMER',
       },
       phone: {
-        type: 'string',
+        type: 'string', 
         required: false,
       },
     },
@@ -32,5 +32,5 @@ export const auth = betterAuth({
     useSecureCookies: process.env.NODE_ENV === 'production',
     cookiePrefix: 'sissan',
   },
-   trustedOrigins: ['http://localhost:3000', 'https://sissansissan.vercel.app'],
+   trustedOrigins: ['http://localhost:3000', 'https://sissansissan.com'],
 })

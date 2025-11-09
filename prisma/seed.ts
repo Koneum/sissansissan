@@ -1,4 +1,5 @@
 import { PrismaClient } from '../app/generated/prisma'
+import { hash } from 'bcrypt'
 
 const prisma = new PrismaClient()
 
@@ -52,24 +53,41 @@ async function main() {
 
   console.log(`✅ Created ${categories.length} categories`)
 
-  // 2. Skip User creation - will be created via Better Auth API
-  console.log('👤 Skipping user creation...')
-  console.log('⚠️  Users will be created via Better Auth API (run create-auth-accounts.ts)')
+  // 2. Create admin user with Better Auth account
+  console.log('👤 Creating admin user with Better Auth...')
+  console.log('📧 Email: admin@sissan.com')
+  console.log('🔑 Password: admin123')
   
-  // Create a dummy admin user for orders (will be replaced by real users)
+  // Create admin user
   const adminUser = await prisma.user.upsert({
-    where: { email: 'system@sissan.com' },
+    where: { email: 'admin@sissan.com' },
     update: {},
     create: {
-      name: 'System',
-      email: 'system@sissan.com',
-      password: '',
+      name: 'Admin',
+      email: 'admin@sissan.com',
       role: 'ADMIN',
       emailVerified: true
     }
   })
   
-  const customers = [adminUser] // Use system user for orders
+  // Create Better Auth account with hashed password
+  const hashedPassword = await hash('admin123', 10)
+  
+  await prisma.account.upsert({
+    where: { id: `${adminUser.id}_credential` },
+    update: {},
+    create: {
+      id: `${adminUser.id}_credential`,
+      accountId: adminUser.id,
+      providerId: 'credential',
+      userId: adminUser.id,
+      password: hashedPassword
+    }
+  })
+  
+  console.log('✅ Admin user and account created successfully')
+  
+  const customers = [adminUser] // Use admin user for orders
 
   // 4. Create Products
   console.log('🛍️ Creating products...')

@@ -1,7 +1,13 @@
 import { PrismaClient } from '../app/generated/prisma'
-import { hash } from 'bcrypt'
+import bcrypt from 'bcrypt'
 
 const prisma = new PrismaClient()
+
+// Hash password using bcrypt (same as Better Auth)
+async function hashPassword(password: string): Promise<string> {
+  // Better Auth uses bcrypt with 10 rounds by default
+  return await bcrypt.hash(password, 10)
+}
 
 async function createAdmin() {
   console.log('🔐 Creating admin account with Better Auth...')
@@ -42,8 +48,8 @@ async function createAdmin() {
       return
     }
 
-    // Hash password
-    const hashedPassword = await hash('admin123', 10)
+    // Hash password using bcrypt (same as Better Auth)
+    const hashedPassword = await hashPassword('admin123')
 
     // Create Better Auth account with password
     await prisma.account.create({

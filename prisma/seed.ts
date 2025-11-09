@@ -1,5 +1,5 @@
 import { PrismaClient } from '../app/generated/prisma'
-import { hash } from 'bcrypt'
+import { auth } from '../lib/auth'
 
 const prisma = new PrismaClient()
 
@@ -53,39 +53,52 @@ async function main() {
 
   console.log(`✅ Created ${categories.length} categories`)
 
-  // 2. Create admin user with Better Auth account
-  console.log('👤 Creating admin user with Better Auth...')
+  // 2. Create admin user with Better Auth API
+  console.log('👤 Creating admin user with Better Auth API...')
   console.log('📧 Email: admin@sissan.com')
   console.log('🔑 Password: admin123')
   
-  // Create admin user
-  const adminUser = await prisma.user.upsert({
-    where: { email: 'admin@sissan.com' },
-    update: {},
-    create: {
-      name: 'Admin',
-      email: 'admin@sissan.com',
-      role: 'ADMIN',
-      emailVerified: true
-    }
+  // Check if admin already exists
+  let adminUser = await prisma.user.findUnique({
+    where: { email: 'admin@sissan.com' }
   })
   
-  // Create Better Auth account with hashed password
-  const hashedPassword = await hash('admin123', 10)
-  
-  await prisma.account.upsert({
-    where: { id: `${adminUser.id}_credential` },
-    update: {},
-    create: {
-      id: `${adminUser.id}_credential`,
-      accountId: adminUser.id,
-      providerId: 'credential',
-      userId: adminUser.id,
-      password: hashedPassword
+  if (!adminUser) {
+    // Use Better Auth API to create the user (this handles password hashing correctly)
+    const signUpResult = await auth.api.signUpEmail({
+      body: {
+        name: 'Admin',
+        email: 'admin@sissan.com',
+        password: 'admin123'
+      }
+    })
+    
+    if (!signUpResult) {
+      throw new Error('Failed to create admin user')
     }
-  })
-  
-  console.log('✅ Admin user and account created successfully')
+    
+    // Get the created user
+    adminUser = await prisma.user.findUnique({
+      where: { email: 'admin@sissan.com' }
+    })
+    
+    if (!adminUser) {
+      throw new Error('Admin user not found after creation')
+    }
+    
+    // Update role to ADMIN (Better Auth creates as CUSTOMER by default)
+    adminUser = await prisma.user.update({
+      where: { id: adminUser.id },
+      data: { 
+        role: 'ADMIN',
+        emailVerified: true
+      }
+    })
+    
+    console.log('✅ Admin user created via Better Auth API')
+  } else {
+    console.log('ℹ️  Admin user already exists')
+  }
   
   const customers = [adminUser] // Use admin user for orders
 

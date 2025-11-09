@@ -3,7 +3,7 @@ import { createAuthClient } from 'better-auth/react'
 
 export const authClient = createAuthClient({
   plugins: [nextCookies()],
-  baseURL: process.env.NEXT_PUBLIC_BASE_URL || 'https://sissansissan.vercel.app',
+  baseURL: process.env.NEXT_PUBLIC_BASE_URL || 'https://sissan-sissan.net',
 })
 
 export const { signIn, signUp, signOut, useSession } = authClient

@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { writeFile, mkdir } from "fs/promises"
-import { join } from "path"
-import { existsSync } from "fs"
+import prisma from "@/lib/prisma"
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,9 +13,46 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate file type
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"]
-    if (!allowedTypes.includes(file.type)) {
+    // Validate file type - accepter tous les types d'images
+    const allowedTypes = [
+      "image/jpeg", 
+      "image/jpg", 
+      "image/png", 
+      "image/webp", 
+      "image/gif",
+      "image/bmp",
+      "image/svg+xml",
+      "image/tiff",
+      "image/avif",
+      "image/heic",
+      "image/heif"
+    ]
+    
+    // Si le type MIME n'est pas fourni ou est vide, vérifier l'extension du fichier
+    const fileExtension = file.name.toLowerCase().split('.').pop()
+    const validExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'svg', 'tiff', 'tif', 'avif', 'heic', 'heif']
+    
+    // Déterminer le type MIME
+    let mimeType = file.type
+    if (!mimeType || mimeType === '') {
+      const mimeTypes: Record<string, string> = {
+        'jpg': 'image/jpeg',
+        'jpeg': 'image/jpeg',
+        'png': 'image/png',
+        'gif': 'image/gif',
+        'webp': 'image/webp',
+        'bmp': 'image/bmp',
+        'svg': 'image/svg+xml',
+        'tiff': 'image/tiff',
+        'tif': 'image/tiff',
+        'avif': 'image/avif',
+        'heic': 'image/heic',
+        'heif': 'image/heif'
+      }
+      mimeType = mimeTypes[fileExtension || ''] || 'application/octet-stream'
+    }
+    
+    if (!allowedTypes.includes(mimeType) && !validExtensions.includes(fileExtension || '')) {
       return NextResponse.json(
         { error: "Invalid file type. Only images are allowed" },
         { status: 400 }
@@ -42,22 +77,23 @@ export async function POST(request: NextRequest) {
     const originalName = file.name.replace(/\s/g, "-")
     const filename = `${timestamp}-${originalName}`
 
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), "public", "uploads")
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true })
-    }
+    // Sauvegarder l'image dans PostgreSQL
+    const image = await prisma.image.create({
+      data: {
+        filename: filename,
+        mimeType: mimeType,
+        size: file.size,
+        data: buffer,
+      },
+    })
 
-    // Save file
-    const filepath = join(uploadsDir, filename)
-    await writeFile(filepath, buffer)
-
-    // Return the public URL
-    const publicUrl = `/uploads/${filename}`
+    // Return the image ID as URL
+    const imageUrl = `/api/images/${image.id}`
 
     return NextResponse.json({
       success: true,
-      url: publicUrl,
+      url: imageUrl,
+      id: image.id,
       filename: filename
     })
   } catch (error) {

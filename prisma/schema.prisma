@@ -122,11 +122,37 @@ model Category {
   children    Category[] @relation("SubCategories")
   // Relations
   products    Product[]
+  images      Image[]
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
   @@index([slug])
   @@index([parentId])
+}
+
+// ============================================
+// IMAGE MODELS
+// ============================================
+
+model Image {
+  id          String   @id @default(cuid())
+  filename    String
+  mimeType    String
+  size        Int
+  data        Bytes    @db.ByteA // Stockage binaire de l'image
+  // Relations
+  productId   String?
+  product     Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  reviewId    String?
+  review      Review?  @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([productId])
+  @@index([reviewId])
+  @@index([categoryId])
 }
 
 // ============================================
@@ -160,6 +186,7 @@ model Product {
   tags           String[]
   attributes     Json? // Custom attributes { color: "red", size: "L" }
   // Relations
+  productImages  Image[]
   variants       ProductVariant[]
   reviews        Review[]
   orderItems     OrderItem[]
@@ -196,18 +223,19 @@ model ProductVariant {
 // ============================================
 
 model Review {
-  id         String       @id @default(cuid())
-  userId     String
-  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  productId  String
-  product    Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
-  rating     Int // 1-5
-  comment    String       @db.Text
-  images     String[] // Review images
-  status     ReviewStatus @default(PENDING)
-  isVerified Boolean      @default(false) // Verified purchase
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
+  id           String       @id @default(cuid())
+  userId       String
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId    String
+  product      Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  rating       Int // 1-5
+  comment      String       @db.Text
+  images       String[] // Review images (legacy)
+  reviewImages Image[]
+  status       ReviewStatus @default(PENDING)
+  isVerified   Boolean      @default(false) // Verified purchase
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 
   @@index([productId])
   @@index([userId])

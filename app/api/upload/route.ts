@@ -28,13 +28,15 @@ export async function POST(request: NextRequest) {
       "image/heif"
     ]
     
-    // Si le type MIME n'est pas fourni ou est vide, vérifier l'extension du fichier
+    // Extraire l'extension du fichier
     const fileExtension = file.name.toLowerCase().split('.').pop()
     const validExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'svg', 'tiff', 'tif', 'avif', 'heic', 'heif']
     
-    // Déterminer le type MIME
+    // Déterminer le type MIME (iOS Photos peut envoyer un type vide)
     let mimeType = file.type
-    if (!mimeType || mimeType === '') {
+    
+    // Si pas de type MIME ou type générique, détecter depuis l'extension
+    if (!mimeType || mimeType === '' || mimeType === 'application/octet-stream') {
       const mimeTypes: Record<string, string> = {
         'jpg': 'image/jpeg',
         'jpeg': 'image/jpeg',
@@ -49,10 +51,15 @@ export async function POST(request: NextRequest) {
         'heic': 'image/heic',
         'heif': 'image/heif'
       }
-      mimeType = mimeTypes[fileExtension || ''] || 'application/octet-stream'
+      mimeType = mimeTypes[fileExtension || ''] || 'image/jpeg' // Défaut: JPEG
     }
     
-    if (!allowedTypes.includes(mimeType) && !validExtensions.includes(fileExtension || '')) {
+    // Validation plus permissive pour iOS
+    const isValidExtension = validExtensions.includes(fileExtension || '')
+    const isValidMimeType = allowedTypes.includes(mimeType)
+    
+    // Accepter si l'extension OU le type MIME est valide
+    if (!isValidExtension && !isValidMimeType) {
       return NextResponse.json(
         { error: "Invalid file type. Only images are allowed" },
         { status: 400 }

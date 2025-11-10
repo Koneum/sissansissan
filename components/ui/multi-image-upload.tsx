@@ -34,7 +34,11 @@ export function MultiImageUpload({
     try {
       setUploading(true)
       const uploadPromises = files.map(async (file) => {
-        if (!file.type.startsWith("image/")) {
+        // Validation plus permissive pour iOS - vérifier aussi l'extension
+        const isImage = file.type.startsWith("image/") || 
+                       /\.(jpg|jpeg|png|gif|webp|heic|heif|avif|bmp|tiff)$/i.test(file.name)
+        
+        if (!isImage) {
           throw new Error(`${file.name} is not an image`)
         }
 
@@ -62,9 +66,10 @@ export function MultiImageUpload({
       const urls = await Promise.all(uploadPromises)
       onChange([...values, ...urls])
       toast.success(`${urls.length} image(s) uploaded successfully!`)
-    } catch (error: any) {
+    } catch (error) {
       console.error("Upload error:", error)
-      toast.error(error.message || "Failed to upload images")
+      const errorMessage = error instanceof Error ? error.message : "Failed to upload images"
+      toast.error(errorMessage)
     } finally {
       setUploading(false)
       if (fileInputRef.current) {

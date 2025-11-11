@@ -34,7 +34,8 @@ export default function AddProductPage() {
     stock: "",
     categoryId: "",
     images: [] as string[],
-    featured: false
+    featured: false,
+    isNew: false
   })
 
   useEffect(() => {
@@ -91,12 +92,13 @@ export default function AddProductPage() {
         slug: formData.slug,
         description: formData.description,
         price: parseFloat(formData.price),
-        comparePrice: formData.comparePrice ? parseFloat(formData.comparePrice) : null,
+        discountPrice: formData.comparePrice ? parseFloat(formData.comparePrice) : null,
         stock: parseInt(formData.stock),
         categoryId: formData.categoryId,
         images: formData.images,
-        image: formData.images[0], // Primary image
-        featured: formData.featured
+        thumbnail: formData.images[0], // Primary image
+        isFeatured: formData.featured,
+        isNew: formData.isNew
       }
 
       const response = await fetch("/api/products", {
@@ -264,16 +266,28 @@ export default function AddProductPage() {
               />
             </div>
 
-            {/* Featured Checkbox */}
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="featured"
-                checked={formData.featured}
-                onCheckedChange={(checked) => setFormData({ ...formData, featured: checked as boolean })}
-              />
-              <Label htmlFor="featured" className="cursor-pointer">
-                {t.admin.featuredProduct}
-              </Label>
+            {/* Featured & New Checkboxes */}
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="featured"
+                  checked={formData.featured}
+                  onCheckedChange={(checked) => setFormData({ ...formData, featured: checked as boolean })}
+                />
+                <Label htmlFor="featured" className="cursor-pointer">
+                  {t.admin.featuredProduct}
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="isNew"
+                  checked={formData.isNew}
+                  onCheckedChange={(checked) => setFormData({ ...formData, isNew: checked as boolean })}
+                />
+                <Label htmlFor="isNew" className="cursor-pointer">
+                  Nouveau produit (apparaîtra dans la section Nouveautés)
+                </Label>
+              </div>
             </div>
 
             {/* Submit */}

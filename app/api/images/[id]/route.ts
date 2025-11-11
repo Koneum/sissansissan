@@ -3,10 +3,10 @@ import prisma from "@/lib/prisma"
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const imageId = params.id
+    const { id: imageId } = await params
 
     // Récupérer l'image depuis la base de données
     const image = await prisma.image.findUnique({

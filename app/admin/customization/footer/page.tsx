@@ -557,7 +557,6 @@ export default function FooterCustomizationPage() {
                           }}
                           placeholder="/payment-logo.png"
                           className="mt-2"
-                          size="sm"
                         />
                       </details>
                     </div>

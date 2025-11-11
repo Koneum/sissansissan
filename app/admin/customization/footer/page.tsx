@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Save, Plus, Trash2, ExternalLink } from "lucide-react"
+import { Save, Plus, Trash2, ExternalLink, Upload, Image as ImageIcon } from "lucide-react"
 import { useFooter } from "@/lib/footer-context"
 import { useLocale } from "@/lib/locale-context"
 import { toast } from "sonner"
+import Image from "next/image"
 
 interface ContactInfo {
   phone: string
@@ -40,11 +41,24 @@ interface AppDownload {
   googlePlayUrl: string
 }
 
+interface SocialMedia {
+  facebook?: string
+  twitter?: string
+  instagram?: string
+  linkedin?: string
+}
+
+interface PaymentMethod {
+  name: string
+  image: string
+}
+
 export default function FooterCustomizationPage() {
   const { footerData, updateFooterData } = useFooter()
   const { t } = useLocale()
   
   // Local state for editing
+  const [logoUrl, setLogoUrl] = useState("")
   const [companyDescription, setCompanyDescription] = useState("")
   const [contactInfo, setContactInfo] = useState<ContactInfo>({
     phone: "",
@@ -52,6 +66,13 @@ export default function FooterCustomizationPage() {
     address: ""
   })
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([])
+  const [socialMedia, setSocialMedia] = useState<SocialMedia>({
+    facebook: "",
+    twitter: "",
+    instagram: "",
+    linkedin: ""
+  })
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([])
   const [helpSupport, setHelpSupport] = useState<FooterLink[]>([])
   const [accountLinks, setAccountLinks] = useState<FooterLink[]>([])
   const [appDownload, setAppDownload] = useState<AppDownload>({
@@ -61,13 +82,75 @@ export default function FooterCustomizationPage() {
   const [copyrightText, setCopyrightText] = useState("")
   const [poweredByText, setPoweredByText] = useState("")
   const [poweredByUrl, setPoweredByUrl] = useState("")
+  const [isUploading, setIsUploading] = useState(false)
+
+  // Upload image function
+  const uploadImage = async (file: File): Promise<string> => {
+    setIsUploading(true)
+    const formData = new FormData()
+    formData.append('file', file)
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error('Upload failed')
+      }
+
+      const data = await response.json()
+      return data.url
+    } catch (error) {
+      toast.error('Erreur lors de l\'upload de l\'image')
+      throw error
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    try {
+      const url = await uploadImage(file)
+      setLogoUrl(url)
+      toast.success('Logo uploadé avec succès')
+    } catch (error) {
+      console.error('Error uploading logo:', error)
+    }
+  }
+
+  const handlePaymentImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    try {
+      const url = await uploadImage(file)
+      const updated = [...paymentMethods]
+      updated[index].image = url
+      setPaymentMethods(updated)
+      toast.success('Image uploadée avec succès')
+    } catch (error) {
+      console.error('Error uploading payment image:', error)
+    }
+  }
 
   // Load data from context on mount
   useEffect(() => {
     if (footerData) {
+      setLogoUrl(footerData.logoUrl || "")
       setCompanyDescription(footerData.companyDescription)
       setContactInfo(footerData.contactInfo)
       setSocialLinks(footerData.socialLinks)
+      setSocialMedia(footerData.socialMedia || { facebook: "", twitter: "", instagram: "", linkedin: "" })
+      setPaymentMethods(
+        (footerData.paymentMethods || []).filter(
+          (method): method is PaymentMethod => typeof method !== 'string'
+        )
+      )
       setHelpSupport(footerData.helpSupport)
       setAccountLinks(footerData.accountLinks)
       setAppDownload(footerData.appDownload)
@@ -79,9 +162,12 @@ export default function FooterCustomizationPage() {
 
   const handleSave = () => {
     const newFooterData = {
+      logoUrl,
       companyDescription,
       contactInfo,
       socialLinks,
+      socialMedia,
+      paymentMethods,
       helpSupport,
       accountLinks,
       appDownload,
@@ -142,33 +228,89 @@ export default function FooterCustomizationPage() {
       </div>
 
       <Tabs defaultValue="company" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-          <TabsTrigger value="company">{t.admin.companyTab}</TabsTrigger>
-          <TabsTrigger value="contact">{t.admin.contactTab}</TabsTrigger>
-          <TabsTrigger value="social">{t.admin.socialTab}</TabsTrigger>
-          <TabsTrigger value="links">{t.admin.linksTab}</TabsTrigger>
-          <TabsTrigger value="app">{t.admin.appTab}</TabsTrigger>
-          <TabsTrigger value="footer">{t.admin.footerTab}</TabsTrigger>
+        <TabsList className="w-full flex flex-wrap gap-1 h-auto p-1">
+          <TabsTrigger value="company" className="flex-1 min-w-[100px] text-xs sm:text-sm">Logo & Info</TabsTrigger>
+          <TabsTrigger value="contact" className="flex-1 min-w-[100px] text-xs sm:text-sm">Contact</TabsTrigger>
+          <TabsTrigger value="social" className="flex-1 min-w-[100px] text-xs sm:text-sm">Social</TabsTrigger>
+          <TabsTrigger value="payment" className="flex-1 min-w-[100px] text-xs sm:text-sm">Paiement</TabsTrigger>
+          <TabsTrigger value="links" className="flex-1 min-w-[100px] text-xs sm:text-sm">Liens</TabsTrigger>
+          <TabsTrigger value="app" className="flex-1 min-w-[100px] text-xs sm:text-sm">App</TabsTrigger>
+          <TabsTrigger value="footer" className="flex-1 min-w-[100px] text-xs sm:text-sm">Footer</TabsTrigger>
         </TabsList>
 
         {/* Company Info Tab */}
         <TabsContent value="company" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>{t.admin.companyInformation}</CardTitle>
+              <CardTitle>Logo & Informations</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="description">{t.admin.companyDescription}</Label>
+                <Label htmlFor="logoUrl">Logo du Footer</Label>
+                
+                {/* Preview du logo */}
+                {logoUrl && (
+                  <div className="relative w-32 h-32 border rounded-lg overflow-hidden bg-muted">
+                    <Image
+                      src={logoUrl}
+                      alt="Logo preview"
+                      fill
+                      className="object-contain p-2"
+                    />
+                  </div>
+                )}
+                
+                {/* Upload button */}
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById('logo-upload')?.click()}
+                    disabled={isUploading}
+                    className="w-full sm:w-auto"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    {isUploading ? 'Upload en cours...' : 'Choisir une image'}
+                  </Button>
+                  <input
+                    id="logo-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                    className="hidden"
+                  />
+                </div>
+                
+                {/* URL manuelle (optionnel) */}
+                <details className="text-xs">
+                  <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+                    Ou entrer une URL manuellement
+                  </summary>
+                  <Input
+                    id="logoUrl"
+                    value={logoUrl}
+                    onChange={(e) => setLogoUrl(e.target.value)}
+                    placeholder="/logo.png"
+                    className="mt-2"
+                  />
+                </details>
+                
+                <p className="text-xs text-muted-foreground">
+                  Logo affiché dans le pied de page du site
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="description">Description de l'entreprise</Label>
                 <Textarea
                   id="description"
                   value={companyDescription}
                   onChange={(e) => setCompanyDescription(e.target.value)}
                   rows={3}
-                  placeholder={t.admin.companyDescPlaceholder}
+                  placeholder="Votre description d'entreprise..."
                 />
                 <p className="text-xs text-muted-foreground">
-                  {t.admin.companyDescHelp}
+                  Brève description affichée dans le footer
                 </p>
               </div>
             </CardContent>
@@ -220,9 +362,53 @@ export default function FooterCustomizationPage() {
         <TabsContent value="social" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>{t.admin.socialMediaLinks}</CardTitle>
+              <CardTitle>Réseaux Sociaux</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <Label htmlFor="facebook">Facebook URL</Label>
+                  <Input
+                    id="facebook"
+                    value={socialMedia.facebook}
+                    onChange={(e) => setSocialMedia({ ...socialMedia, facebook: e.target.value })}
+                    placeholder="https://facebook.com/votrepage"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="twitter">Twitter URL</Label>
+                  <Input
+                    id="twitter"
+                    value={socialMedia.twitter}
+                    onChange={(e) => setSocialMedia({ ...socialMedia, twitter: e.target.value })}
+                    placeholder="https://twitter.com/votrecompte"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="instagram">Instagram URL</Label>
+                  <Input
+                    id="instagram"
+                    value={socialMedia.instagram}
+                    onChange={(e) => setSocialMedia({ ...socialMedia, instagram: e.target.value })}
+                    placeholder="https://instagram.com/votrecompte"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="linkedin">LinkedIn URL</Label>
+                  <Input
+                    id="linkedin"
+                    value={socialMedia.linkedin}
+                    onChange={(e) => setSocialMedia({ ...socialMedia, linkedin: e.target.value })}
+                    placeholder="https://linkedin.com/company/votreentreprise"
+                  />
+                </div>
+              </div>
+              
+              <div className="border-t pt-4 mt-4">
+                <h4 className="font-semibold mb-3">Anciens liens sociaux (legacy)</h4>
               {socialLinks.map((social, index) => (
                 <div key={index} className="grid grid-cols-3 gap-4 p-4 border rounded-lg">
                   <div className="space-y-2">
@@ -274,6 +460,115 @@ export default function FooterCustomizationPage() {
                   </div>
                 </div>
               ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Payment Methods Tab */}
+        <TabsContent value="payment" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Méthodes de Paiement</CardTitle>
+                <Button 
+                  size="sm" 
+                  onClick={() => setPaymentMethods([...paymentMethods, { name: "Nouvelle méthode", image: "/payment.png" }])}
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Ajouter
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {paymentMethods.map((method, index) => (
+                <div key={index} className="p-4 border rounded-lg space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="font-semibold">Méthode #{index + 1}</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setPaymentMethods(paymentMethods.filter((_, i) => i !== index))}
+                    >
+                      <Trash2 className="w-4 h-4 text-red-500" />
+                    </Button>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label>Nom</Label>
+                      <Input
+                        value={method.name}
+                        onChange={(e) => {
+                          const updated = [...paymentMethods]
+                          updated[index].name = e.target.value
+                          setPaymentMethods(updated)
+                        }}
+                        placeholder="Ex: Visa, Orange Money..."
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>Logo</Label>
+                      
+                      {/* Preview */}
+                      {method.image && (
+                        <div className="relative w-20 h-12 border rounded overflow-hidden bg-muted">
+                          <Image
+                            src={method.image}
+                            alt={method.name}
+                            fill
+                            className="object-contain p-1"
+                          />
+                        </div>
+                      )}
+                      
+                      {/* Upload button */}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => document.getElementById(`payment-upload-${index}`)?.click()}
+                        disabled={isUploading}
+                        className="w-full"
+                      >
+                        <ImageIcon className="w-4 h-4 mr-2" />
+                        {isUploading ? 'Upload...' : 'Choisir logo'}
+                      </Button>
+                      <input
+                        id={`payment-upload-${index}`}
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handlePaymentImageUpload(e, index)}
+                        className="hidden"
+                      />
+                      
+                      {/* URL manuelle */}
+                      <details className="text-xs">
+                        <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+                          Ou URL manuelle
+                        </summary>
+                        <Input
+                          value={method.image}
+                          onChange={(e) => {
+                            const updated = [...paymentMethods]
+                            updated[index].image = e.target.value
+                            setPaymentMethods(updated)
+                          }}
+                          placeholder="/payment-logo.png"
+                          className="mt-2"
+                          size="sm"
+                        />
+                      </details>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {paymentMethods.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  Aucune méthode de paiement. Cliquez sur "Ajouter" pour en créer une.
+                </p>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

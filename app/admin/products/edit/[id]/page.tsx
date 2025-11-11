@@ -1,43 +1,46 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter, useParams } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, X, Loader2 } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
-import { useParams, useRouter } from "next/navigation"
 import { MultiImageUpload } from "@/components/ui/multi-image-upload"
+import { ArrowLeft, Loader2 } from "lucide-react"
 import { toast } from "sonner"
+import { useLocale } from "@/lib/locale-context"
+import Link from "next/link"
+
+interface Category {
+  id: string
+  name: string
+}
 
 export default function EditProductPage() {
+  const { t } = useLocale()
   const params = useParams()
   const router = useRouter()
   const productId = params.id as string
 
-  const [title, setTitle] = useState("")
-  const [slug, setSlug] = useState("")
-  const [description, setDescription] = useState("")
-  const [shortDescription, setShortDescription] = useState("")
-  const [category, setCategory] = useState("")
-  const [price, setPrice] = useState("")
-  const [discountedPrice, setDiscountedPrice] = useState("")
-  const [salePercentage, setSalePercentage] = useState("")
-  const [isNew, setIsNew] = useState(false)
-  const [isFeatured, setIsFeatured] = useState(false)
-  const [sku, setSku] = useState("")
-  const [quantity, setQuantity] = useState("")
-  const [variants, setVariants] = useState<string[]>([])
-  const [attributes, setAttributes] = useState<string[]>([])
-  const [additionalInfo, setAdditionalInfo] = useState<string[]>([])
-  const [body, setBody] = useState("")
-  const [images, setImages] = useState<string[]>([])
-  const [categories, setCategories] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [categories, setCategories] = useState<Category[]>([])
+  const [formData, setFormData] = useState({
+    name: "",
+    slug: "",
+    description: "",
+    price: "",
+    comparePrice: "",
+    stock: "",
+    categoryId: "",
+    images: [] as string[],
+    featured: false,
+    isNew: false
+  })
 
   useEffect(() => {
     fetchProduct()
@@ -54,22 +57,18 @@ export default function EditProductPage() {
       const result = await response.json()
       const product = result.data || result
       
-      setTitle(product.name || "")
-      setSlug(product.slug || "")
-      setDescription(product.description || "")
-      setShortDescription(product.shortDesc || "")
-      setCategory(product.categoryId || "")
-      setPrice(product.price?.toString() || "")
-      setDiscountedPrice(product.discountPrice?.toString() || "")
-      setSalePercentage(product.salePercentage?.toString() || "")
-      setIsNew(product.isNew || false)
-      setIsFeatured(product.isFeatured || false)
-      setSku(product.sku || "")
-      setQuantity(product.stock?.toString() || "")
-      setImages(product.images || [])
-      setVariants(product.tags || [])
-      setAttributes(product.attributes ? Object.entries(product.attributes).map(([k, v]) => `${k}: ${v}`) : [])
-      setAdditionalInfo([])
+      setFormData({
+        name: product.name || "",
+        slug: product.slug || "",
+        description: product.description || "",
+        price: product.price?.toString() || "",
+        comparePrice: product.discountPrice?.toString() || "",
+        stock: product.stock?.toString() || "",
+        categoryId: product.categoryId || "",
+        images: product.images || [],
+        featured: product.isFeatured || false,
+        isNew: product.isNew || false
+      })
     } catch (error) {
       console.error("Error fetching product:", error)
       toast.error("Failed to load product")
@@ -82,58 +81,80 @@ export default function EditProductPage() {
   const fetchCategories = async () => {
     try {
       const response = await fetch("/api/categories")
-      if (response.ok) {
-        const data = await response.json()
-        setCategories(data.data || [])
-      }
+      if (!response.ok) throw new Error("Failed to fetch categories")
+      const data = await response.json()
+      setCategories(data.data || [])
     } catch (error) {
       console.error("Error fetching categories:", error)
+      toast.error(t.admin.errorCreate)
     }
   }
 
-  const handleSaveProduct = async () => {
-    if (!title || !price || !category) {
-      toast.error("Please fill in all required fields")
+  const generateSlug = (name: string) => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+  }
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const name = e.target.value
+    setFormData({
+      ...formData,
+      name,
+      slug: generateSlug(name)
+    })
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    // Validation
+    if (!formData.name || !formData.price || !formData.stock || !formData.categoryId) {
+      toast.error(t.admin.fillRequired)
+      return
+    }
+
+    if (formData.images.length === 0) {
+      toast.error(t.admin.uploadImage)
       return
     }
 
     try {
       setSaving(true)
+      
+      const productData = {
+        name: formData.name,
+        slug: formData.slug,
+        description: formData.description,
+        price: parseFloat(formData.price),
+        discountPrice: formData.comparePrice ? parseFloat(formData.comparePrice) : null,
+        stock: parseInt(formData.stock),
+        categoryId: formData.categoryId,
+        images: formData.images,
+        thumbnail: formData.images[0], // Primary image
+        isFeatured: formData.featured,
+        isNew: formData.isNew
+      }
+
       const response = await fetch(`/api/products/${productId}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: title,
-          slug: slug || title.toLowerCase().replace(/\s+/g, "-"),
-          description,
-          shortDesc: shortDescription,
-          categoryId: category,
-          price: parseFloat(price),
-          discountPrice: discountedPrice ? parseFloat(discountedPrice) : null,
-          salePercentage: salePercentage ? parseInt(salePercentage) : null,
-          isNew,
-          isFeatured,
-          sku,
-          stock: parseInt(quantity) || 0,
-          images,
-          tags: variants,
-          attributes: attributes.reduce((acc, attr) => {
-            const [key, value] = attr.split(":")
-            if (key && value) acc[key.trim()] = value.trim()
-            return acc
-          }, {} as Record<string, string>),
-        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(productData),
       })
 
       if (!response.ok) {
-        throw new Error("Failed to update product")
+        const error = await response.json()
+        throw new Error(error.error || t.admin.errorUpdate)
       }
 
-      toast.success("Product updated successfully!")
+      toast.success(t.admin.successUpdate)
       router.push("/admin/products")
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error updating product:", error)
-      toast.error("Failed to update product")
+      toast.error(error instanceof Error ? error.message : t.admin.errorUpdate)
     } finally {
       setSaving(false)
     }
@@ -148,139 +169,127 @@ export default function EditProductPage() {
   }
 
   return (
-    <div className="space-y-6 pb-8"> 
-      <div className="border-b pb-4">
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Edit Product</h1>
+    <div className="space-y-6 pb-8">
+      <div className="flex items-center gap-4">
+        <Link href="/admin/products">
+          <Button variant="ghost" size="icon">
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+        </Link>
+        <div>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">{t.admin.editProduct || "Edit Product"}</h1>
+          <p className="text-sm text-muted-foreground">Update product information</p>
+        </div>
       </div>
 
-      <Card className="border-0 shadow-sm">
-        <CardContent className="p-6 space-y-6">
-          {/* Product Images */}
-          <div className="space-y-2">
-            <Label>
-              Product Images <span className="text-red-500">*</span>
-            </Label>
-            <MultiImageUpload
-              values={images}
-              onChange={setImages}
-              maxImages={5}
-              disabled={saving}
-            />
-          </div>
+      <form onSubmit={handleSubmit}>
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-6 space-y-6">
+            {/* Basic Info */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">
+                  {t.admin.productName} <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="title"
+                  placeholder={t.admin.enterProductName}
+                  className="h-11"
+                  value={formData.name}
+                  onChange={handleNameChange}
+                  required
+                />
+              </div>
 
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="title" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                Title <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="title"
-                placeholder="Enter your product title.."
-                className="h-11"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-              />
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="slug">{t.admin.productSlug}</Label>
+                <Input
+                  id="slug"
+                  placeholder="product-slug"
+                  className="h-11"
+                  value={formData.slug}
+                  onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                />
+                <p className="text-xs text-muted-foreground">{t.admin.autoGeneratedSlug}</p>
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="slug" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                Slug
-              </Label>
-              <Input
-                id="slug"
-                placeholder="this-is-sample-slug"
-                className="h-11 text-slate-400"
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                Description
-              </Label>
-              <div className="border rounded-lg overflow-hidden">
-                <div className="flex items-center gap-1 p-2 border-b bg-slate-50 dark:bg-slate-900">
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                    <span className="font-bold">B</span>
-                  </Button>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                    <span className="italic">I</span>
-                  </Button>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                    <span className="underline">U</span>
-                  </Button>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                    <span className="line-through">S</span>
-                  </Button>
-                  <div className="w-px h-6 bg-slate-300 mx-1" />
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                    ≡
-                  </Button>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                    •
-                  </Button>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                    1.
-                  </Button>
-                  <div className="w-px h-6 bg-slate-300 mx-1" />
-                  <Select defaultValue="normal">
-                    <SelectTrigger className="h-8 w-24 border-0">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="normal">Normal</SelectItem>
-                      <SelectItem value="h1">Heading 1</SelectItem>
-                      <SelectItem value="h2">Heading 2</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Select defaultValue="normal">
-                    <SelectTrigger className="h-8 w-24 border-0">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="normal">Normal</SelectItem>
-                      <SelectItem value="large">Large</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">{t.admin.productDescription}</Label>
                 <Textarea
                   id="description"
-                  className="min-h-[200px] border-0 focus-visible:ring-0"
-                  placeholder="Write your product description..."
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder={t.admin.writeDescription}
+                  rows={6}
+                  className="resize-none"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 />
               </div>
             </div>
 
+            {/* Pricing */}
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="short-description" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Short Description <span className="text-red-500">*</span>
+                <Label htmlFor="price">
+                  {t.common.price} <span className="text-red-500">*</span>
                 </Label>
-                <Textarea
-                  id="short-description"
-                  placeholder="Write short description"
-                  rows={3}
-                  className="resize-none"
-                  value={shortDescription}
-                  onChange={(e) => setShortDescription(e.target.value)}
+                <Input
+                  id="price"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  className="h-11"
+                  value={formData.price}
+                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="category" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Category <span className="text-red-500">*</span>
+                <Label htmlFor="comparePrice">{t.admin.comparePrice}</Label>
+                <Input
+                  id="comparePrice"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  className="h-11"
+                  value={formData.comparePrice}
+                  onChange={(e) => setFormData({ ...formData, comparePrice: e.target.value })}
+                />
+              </div>
+            </div>
+
+            {/* Inventory & Category */}
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="stock">
+                  {t.admin.stockQuantity} <span className="text-red-500">*</span>
                 </Label>
-                <Select value={category} onValueChange={setCategory}>
+                <Input
+                  id="stock"
+                  type="number"
+                  placeholder="0"
+                  className="h-11"
+                  value={formData.stock}
+                  onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="category">
+                  {t.common.category} <span className="text-red-500">*</span>
+                </Label>
+                <Select
+                  value={formData.categoryId}
+                  onValueChange={(value) => setFormData({ ...formData, categoryId: value })}
+                >
                   <SelectTrigger className="h-11">
-                    <SelectValue placeholder="Select a category" />
+                    <SelectValue placeholder={t.admin.selectCategory} />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.name}
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -288,295 +297,63 @@ export default function EditProductPage() {
               </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="price" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Price <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="price"
-                  type="number"
-                  placeholder="0"
-                  className="h-11"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="discounted-price" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Discounted Price
-                </Label>
-                <Input
-                  id="discounted-price"
-                  type="number"
-                  placeholder="0"
-                  className="h-11"
-                  value={discountedPrice}
-                  onChange={(e) => setDiscountedPrice(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-4 p-4 border rounded-lg bg-slate-50 dark:bg-slate-900">
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Product Badges & Flags</h3>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="sale-percentage" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Sale Percentage (%)
-                  </Label>
-                  <Input
-                    id="sale-percentage"
-                    type="number"
-                    placeholder="e.g., 25 for 25% OFF"
-                    className="h-11"
-                    value={salePercentage}
-                    onChange={(e) => setSalePercentage(e.target.value)}
-                    min="0"
-                    max="100"
-                  />
-                  <p className="text-xs text-slate-500">This will display as "X% OFF" badge on the product card</p>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox id="is-new" checked={isNew} onCheckedChange={(checked) => setIsNew(checked as boolean)} />
-                    <Label
-                      htmlFor="is-new"
-                      className="text-sm font-medium text-slate-700 dark:text-slate-300 cursor-pointer"
-                    >
-                      Mark as NEW
-                    </Label>
-                  </div>
-                  <p className="text-xs text-slate-500 ml-6">Display "NEW" badge on product card</p>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="is-featured"
-                      checked={isFeatured}
-                      onCheckedChange={(checked) => setIsFeatured(checked as boolean)}
-                    />
-                    <Label
-                      htmlFor="is-featured"
-                      className="text-sm font-medium text-slate-700 dark:text-slate-300 cursor-pointer"
-                    >
-                      Featured Product
-                    </Label>
-                  </div>
-                  <p className="text-xs text-slate-500 ml-6">Show in featured products section</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2">
+            {/* Product Images */}
             <div className="space-y-2">
-              <Label htmlFor="sku" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                SKU
+              <Label>
+                {t.admin.productImages} <span className="text-red-500">*</span>
               </Label>
-              <Input
-                id="sku"
-                placeholder="Enter SKU"
-                className="h-11"
-                value={sku}
-                onChange={(e) => setSku(e.target.value)}
+              <MultiImageUpload
+                values={formData.images}
+                onChange={(urls) => setFormData({ ...formData, images: urls })}
+                maxImages={5}
+                disabled={saving}
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="quantity" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                Quantity
-              </Label>
-              <Input
-                id="quantity"
-                type="number"
-                placeholder="0"
-                className="h-11"
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-              Product Variants <span className="text-red-500">*</span>
-            </Label>
-            <div className="border rounded-lg p-4 bg-slate-50 dark:bg-slate-900">
-              {variants.length === 0 ? (
-                <p className="text-center text-slate-500 py-4">No items</p>
-              ) : (
-                <div className="space-y-2">
-                  {variants.map((variant, i) => (
-                    <div key={i} className="flex items-center justify-between p-2 bg-white dark:bg-slate-800 rounded">
-                      <span>{variant}</span>
-                      <X
-                        className="w-4 h-4 cursor-pointer"
-                        onClick={() => setVariants(variants.filter((_, idx) => idx !== i))}
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <Button
-              type="button"
-              variant="default"
-              className="bg-[#1e293b] hover:bg-[#334155]"
-              onClick={() => setVariants([...variants, `Variant ${variants.length + 1}`])}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add item
-            </Button>
-          </div>
-
-          <div className="space-y-3">
-            <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Custom Attributes</Label>
-            <div className="border rounded-lg p-4 bg-slate-50 dark:bg-slate-900">
-              {attributes.length === 0 ? (
-                <p className="text-center text-slate-500 py-4">No attributes added yet.</p>
-              ) : (
-                <div className="space-y-2">
-                  {attributes.map((attr, i) => (
-                    <div key={i} className="flex items-center justify-between p-2 bg-white dark:bg-slate-800 rounded">
-                      <span>{attr}</span>
-                      <X
-                        className="w-4 h-4 cursor-pointer"
-                        onClick={() => setAttributes(attributes.filter((_, idx) => idx !== i))}
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <Button
-              type="button"
-              variant="default"
-              className="bg-[#1e293b] hover:bg-[#334155]"
-              onClick={() => setAttributes([...attributes, `Attribute ${attributes.length + 1}`])}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add item
-            </Button>
-          </div>
-
-          <div className="space-y-3">
-            <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Additional Information</Label>
-            <div className="border rounded-lg p-4 bg-slate-50 dark:bg-slate-900">
-              {additionalInfo.length === 0 ? (
-                <p className="text-center text-slate-500 py-4">No items</p>
-              ) : (
-                <div className="space-y-2">
-                  {additionalInfo.map((info, i) => (
-                    <div key={i} className="flex items-center justify-between p-2 bg-white dark:bg-slate-800 rounded">
-                      <span>{info}</span>
-                      <X
-                        className="w-4 h-4 cursor-pointer"
-                        onClick={() => setAdditionalInfo(additionalInfo.filter((_, idx) => idx !== i))}
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <Button
-              type="button"
-              variant="default"
-              className="bg-[#1e293b] hover:bg-[#334155]"
-              onClick={() => setAdditionalInfo([...additionalInfo, `Info ${additionalInfo.length + 1}`])}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add item
-            </Button>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="body" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-              Body
-            </Label>
-            <div className="border rounded-lg overflow-hidden">
-              <div className="flex items-center gap-1 p-2 border-b bg-slate-50 dark:bg-slate-900">
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <span className="font-bold">B</span>
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <span className="italic">I</span>
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <span className="underline">U</span>
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <span className="line-through">S</span>
-                </Button>
-                <div className="w-px h-6 bg-slate-300 mx-1" />
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  ≡
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  •
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  1.
-                </Button>
-                <div className="w-px h-6 bg-slate-300 mx-1" />
-                <Select defaultValue="normal">
-                  <SelectTrigger className="h-8 w-24 border-0">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="normal">Normal</SelectItem>
-                    <SelectItem value="h1">Heading 1</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select defaultValue="normal">
-                  <SelectTrigger className="h-8 w-24 border-0">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="normal">Normal</SelectItem>
-                  </SelectContent>
-                </Select>
+            {/* Featured & New Checkboxes */}
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="featured"
+                  checked={formData.featured}
+                  onCheckedChange={(checked) => setFormData({ ...formData, featured: checked as boolean })}
+                />
+                <Label htmlFor="featured" className="cursor-pointer">
+                  {t.admin.featuredProduct}
+                </Label>
               </div>
-              <Textarea
-                id="body"
-                className="min-h-[300px] border-0 focus-visible:ring-0"
-                placeholder="Write detailed product information..."
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
-              />
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="isNew"
+                  checked={formData.isNew}
+                  onCheckedChange={(checked) => setFormData({ ...formData, isNew: checked as boolean })}
+                />
+                <Label htmlFor="isNew" className="cursor-pointer">
+                  Nouveau produit (apparaîtra dans la section Nouveautés)
+                </Label>
+              </div>
             </div>
-          </div>
 
-          <div className="pt-4 flex gap-4">
-            <Button
-              className="bg-[#4F46E5] hover:bg-[#4338CA] text-white px-8"
-              size="lg"
-              onClick={handleSaveProduct}
-              disabled={saving}
-            >
-              {saving ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Updating...
-                </>
-              ) : (
-                "Update Product"
-              )}
-            </Button>
-            <Button 
-              variant="outline" 
-              size="lg" 
-              onClick={() => router.push("/admin/products")}
-              disabled={saving}
-            >
-              Cancel
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+            {/* Submit */}
+            <div className="pt-4 flex gap-3">
+              <Button
+                type="submit"
+                className="bg-[#4F46E5] hover:bg-[#4338CA] text-white px-8"
+                size="lg"
+                disabled={saving}
+              >
+                {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                {saving ? "Updating..." : "Update Product"}
+              </Button>
+              <Link href="/admin/products">
+                <Button type="button" variant="outline" size="lg">
+                  {t.common.cancel}
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </form>
     </div>
   )
 }
-
-

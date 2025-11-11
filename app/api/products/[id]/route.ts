@@ -148,7 +148,7 @@ export async function PUT(
     if (body.price) updateData.price = parseFloat(body.price)
     if (body.discountPrice !== undefined) updateData.discountPrice = body.discountPrice ? parseFloat(body.discountPrice) : null
     if (body.salePercentage !== undefined) updateData.salePercentage = body.salePercentage ? parseInt(body.salePercentage) : null
-    if (body.sku !== undefined) updateData.sku = body.sku
+    if (body.sku !== undefined) updateData.sku = body.sku || null
     if (body.stock !== undefined) updateData.stock = parseInt(body.stock)
     if (body.categoryId) updateData.categoryId = body.categoryId
     if (body.images !== undefined) updateData.images = body.images

@@ -198,7 +198,7 @@ export async function POST(request: NextRequest) {
         price: parseFloat(price),
         discountPrice: discountPrice ? parseFloat(discountPrice) : null,
         salePercentage: salePercentage ? parseInt(salePercentage) : null,
-        sku,
+        sku: sku || null,
         stock: stock ? parseInt(stock) : 0,
         categoryId,
         images: images || [],

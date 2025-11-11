@@ -180,8 +180,10 @@ export default function CheckoutPage() {
         console.log('Réponse paiement:', paymentData)
         
         if (paymentData.success && paymentData.redirectUrl) {
-          // Rediriger vers VitePay
-          window.location.href = paymentData.redirectUrl
+          // Rediriger vers VitePay (côté client uniquement)
+          if (typeof window !== 'undefined') {
+            window.location.href = paymentData.redirectUrl
+          }
         } else {
           throw new Error(paymentData.error || 'Erreur lors de l\'initialisation du paiement')
         }

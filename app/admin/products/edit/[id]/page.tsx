@@ -51,7 +51,8 @@ export default function EditProductPage() {
       if (!response.ok) {
         throw new Error("Product not found")
       }
-      const product = await response.json()
+      const result = await response.json()
+      const product = result.data || result
       
       setTitle(product.name || "")
       setSlug(product.slug || "")
@@ -147,7 +148,7 @@ export default function EditProductPage() {
   }
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="space-y-6 pb-8"> 
       <div className="border-b pb-4">
         <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Edit Product</h1>
       </div>

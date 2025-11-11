@@ -28,7 +28,7 @@ export function NewArrivals() {
   const fetchNewArrivals = async () => {
     try {
       setLoading(true)
-      const response = await fetch("/api/products?isNew=true&limit=8")
+      const response = await fetch("/api/products?isNew=true&sortBy=createdAt&sortOrder=desc")
       if (response.ok) {
         const data = await response.json()
         setProducts(data.data || [])

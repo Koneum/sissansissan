@@ -54,36 +54,66 @@ const HeroSliderContext = createContext<HeroSliderContextType | undefined>(undef
 
 export function HeroSliderProvider({ children }: { children: ReactNode }) {
   const [slides, setSlides] = useState<HeroSlide[]>(defaultSlides)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("heroSliderCustomization")
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored)
-          setSlides(parsed)
-        } catch (error) {
-          console.error("Error loading hero slider data:", error)
-        }
-      }
-    }
+    fetchHeroSliderData()
   }, [])
 
-  const saveToLocalStorage = (newSlides: HeroSlide[]) => {
+  const fetchHeroSliderData = async () => {
+    try {
+      const response = await fetch("/api/settings/hero-slider")
+      if (response.ok) {
+        const result = await response.json()
+        if (result.data) {
+          setSlides(result.data)
+        }
+      }
+    } catch (error) {
+      console.error("Error loading hero slider data:", error)
+      // Fallback to localStorage for backward compatibility
+      if (typeof window !== "undefined") {
+        const stored = localStorage.getItem("heroSliderCustomization")
+        if (stored) {
+          try {
+            setSlides(JSON.parse(stored))
+          } catch (e) {
+            console.error("Error parsing localStorage:", e)
+          }
+        }
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const saveToDatabase = async (newSlides: HeroSlide[]) => {
+    // Save to localStorage as cache
     if (typeof window !== "undefined") {
       localStorage.setItem("heroSliderCustomization", JSON.stringify(newSlides))
+    }
+
+    // Save to database via API
+    try {
+      await fetch("/api/settings/hero-slider", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newSlides)
+      })
+    } catch (error) {
+      console.error("Error saving hero slider data to database:", error)
     }
   }
 
   const updateSlides = (newSlides: HeroSlide[]) => {
     setSlides(newSlides)
-    saveToLocalStorage(newSlides)
+    saveToDatabase(newSlides)
   }
 
   const addSlide = (slide: HeroSlide) => {
     const newSlides = [...slides, slide]
     setSlides(newSlides)
-    saveToLocalStorage(newSlides)
+    saveToDatabase(newSlides)
   }
 
   const updateSlide = (id: string, updatedSlide: Partial<HeroSlide>) => {
@@ -91,13 +121,13 @@ export function HeroSliderProvider({ children }: { children: ReactNode }) {
       slide.id === id ? { ...slide, ...updatedSlide } : slide
     )
     setSlides(newSlides)
-    saveToLocalStorage(newSlides)
+    saveToDatabase(newSlides)
   }
 
   const deleteSlide = (id: string) => {
     const newSlides = slides.filter(slide => slide.id !== id)
     setSlides(newSlides)
-    saveToLocalStorage(newSlides)
+    saveToDatabase(newSlides)
   }
 
   return (

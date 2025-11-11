@@ -36,15 +36,15 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
             onClick={onMenuClick}
             aria-label="Open menu"
           >
-            <Menu className="w-5 h-5" />
+            <Menu className="icon-responsive" />
           </Button>
-          <h1 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 dark:text-foreground truncate">{t.admin.dashboard}</h1>
+          <h1 className="heading-responsive-h2 text-gray-900 dark:text-foreground truncate">{t.admin.dashboard}</h1>
         </div>
 
         <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
           <Link href="/">
             <Button variant="outline" size="sm" className="gap-2 bg-transparent">
-              <Home className="w-4 h-4" />
+              <Home className="icon-responsive" />
               <span className="hidden sm:inline">{t.nav.home}</span>
             </Button>
           </Link>
@@ -61,38 +61,38 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
                   </AvatarFallback>
                 </Avatar>
                 <span className="hidden md:inline font-medium">{t.nav.account}</span>
-                <ChevronDown className="w-4 h-4" />
+                <ChevronDown className="icon-responsive" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>
                 <div>
-                  <p className="text-sm font-medium">{user?.name || "Admin"}</p>
+                  <p className="text-responsive-sm font-medium">{user?.name || "Admin"}</p>
                   <p className="text-xs text-muted-foreground capitalize">{user?.role || "Administrator"}</p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link href="/admin/dashboard" className="cursor-pointer">
-                  <Home className="w-4 h-4 mr-2" />
+                  <Home className="icon-responsive mr-2" />
                   {t.admin.dashboard}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href="/admin/settings/users" className="cursor-pointer">
-                  <User className="w-4 h-4 mr-2" />
+                  <User className="icon-responsive mr-2" />
                   {t.admin.customers}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href="/admin/settings" className="cursor-pointer">
-                  <Settings className="w-4 h-4 mr-2" />
+                  <Settings className="icon-responsive mr-2" />
                   {t.admin.settings}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={signOut} className="text-destructive cursor-pointer">
-                <LogOut className="w-4 h-4 mr-2" />
+                <LogOut className="icon-responsive mr-2" />
                 {t.account.logout}
               </DropdownMenuItem>
             </DropdownMenuContent>

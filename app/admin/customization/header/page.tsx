@@ -44,14 +44,14 @@ export default function HeaderSettingsPage() {
   }
 
   return (
-    <div className="space-y-6 pb-8">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6 pb-6 sm:pb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold">{t.admin.headerSettings}</h1>
-          <p className="text-muted-foreground">{t.admin.customizeHeader}</p>
+          <h1 className="heading-responsive-h1">{t.admin.headerSettings}</h1>
+          <p className="text-responsive-sm text-muted-foreground">{t.admin.customizeHeader}</p>
         </div>
-        <Button onClick={handleSave} className="bg-[#4F46E5] hover:bg-[#4338CA]">
-          <Save className="w-4 h-4 mr-2" />
+        <Button onClick={handleSave} className="bg-[#4F46E5] hover:bg-[#4338CA] btn-responsive w-full sm:w-auto">
+          <Save className="icon-responsive mr-2" />
           {t.admin.saveChanges}
         </Button>
       </div>
@@ -60,7 +60,7 @@ export default function HeaderSettingsPage() {
         <CardHeader className="border-b">
           <CardTitle className="text-xl font-semibold">{t.admin.topBanner}</CardTitle>
         </CardHeader>
-        <CardContent className="p-6 space-y-6">
+        <CardContent className="card-responsive space-y-4 sm:space-y-6">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label htmlFor="banner-enabled">{t.admin.enableTopBanner}</Label>
@@ -74,14 +74,14 @@ export default function HeaderSettingsPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="header-text" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            <Label htmlFor="header-text" className="text-responsive-sm font-medium text-slate-700 dark:text-slate-300">
               {t.admin.topBannerText}
             </Label>
             <Input 
               id="header-text" 
               value={topBannerText}
               onChange={(e) => setTopBannerText(e.target.value)}
-              className="h-11" 
+              className="h-10 sm:h-11" 
               placeholder={t.admin.topBannerPlaceholder}
             />
             <p className="text-xs text-muted-foreground">{t.admin.topBannerDesc}</p>
@@ -93,9 +93,9 @@ export default function HeaderSettingsPage() {
         <CardHeader className="border-b">
           <CardTitle className="text-xl font-semibold">{t.admin.logos}</CardTitle>
         </CardHeader>
-        <CardContent className="p-6 space-y-6">
+        <CardContent className="card-responsive space-y-4 sm:space-y-6">
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            <Label className="text-responsive-sm font-medium text-slate-700 dark:text-slate-300">
               {t.admin.headerLogo}
             </Label>
             <ImageUpload
@@ -105,7 +105,7 @@ export default function HeaderSettingsPage() {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            <Label className="text-responsive-sm font-medium text-slate-700 dark:text-slate-300">
               {t.admin.emailLogo}
             </Label>
             <ImageUpload
@@ -117,8 +117,8 @@ export default function HeaderSettingsPage() {
       </Card>
 
       <div className="flex justify-end">
-        <Button onClick={handleSave} size="lg" className="bg-[#4F46E5] hover:bg-[#4338CA]">
-          <Save className="w-4 h-4 mr-2" />
+        <Button onClick={handleSave} className="bg-[#4F46E5] hover:bg-[#4338CA] btn-responsive w-full sm:w-auto">
+          <Save className="icon-responsive mr-2" />
           {t.admin.saveAllChanges}
         </Button>
       </div>

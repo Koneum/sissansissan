@@ -27,7 +27,9 @@ model User {
   image         String?
   password      String?        // Not used by Better Auth (uses Account.password)
   phone         String?
-  role          UserRole       @default(CUSTOMER) 
+  role          UserRole       @default(CUSTOMER)
+  resetToken    String?        // Token pour réinitialisation mot de passe
+  resetTokenExpiry DateTime?   // Expiration du token
   
   // Relations
   addresses     Address[]
@@ -466,4 +468,26 @@ model Verification {
   updatedAt  DateTime @default(now()) @updatedAt
 
   @@map("verification")
+}
+
+// ============================================
+// PROMO BANNERS
+// ============================================
+
+model PromoBanner {
+  id          String   @id @default(cuid())
+  title       String
+  subtitle    String?
+  description String?
+  discount    String?
+  image       String
+  buttonText  String   @default("Shop Now")
+  buttonLink  String   @default("/shop")
+  enabled     Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([enabled, order])
+  @@map("promo_banner")
 }

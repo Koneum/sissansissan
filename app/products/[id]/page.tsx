@@ -263,7 +263,7 @@ export default function ProductDetailPage() {
               {product.comparePrice && (
                 <span className="text-xl text-muted-foreground line-through">{formatPrice(product.comparePrice)}</span>
               )}
-              <span className="text-3xl font-bold text-primary">{formatPrice(product.price)}</span>
+              <span className="text-2xl sm:text-3xl font-bold text-primary">{formatPrice(product.price)}</span>
             </div>
 
             {product.description && (
@@ -280,17 +280,17 @@ export default function ProductDetailPage() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="h-12 w-12"
+                  className="h-10 w-10 sm:h-12 sm:w-12"
                 >
                   <Minus className="w-4 h-4" />
                 </Button>
                 <span className="w-16 text-center font-medium">{quantity}</span>
-                <Button variant="ghost" size="icon" onClick={() => setQuantity(quantity + 1)} className="h-12 w-12">
+                <Button variant="ghost" size="icon" onClick={() => setQuantity(quantity + 1)} className="h-10 w-10 sm:h-12 sm:w-12">
                   <Plus className="w-4 h-4" />
                 </Button>
               </div>
               <Button
-                className="flex-1 h-12 bg-primary hover:bg-primary/90 text-white font-medium"
+                className="flex-1 h-10 sm:h-12 bg-primary hover:bg-primary/90 text-white font-medium"
                 onClick={handlePurchaseNow}
                 disabled={product.stock === 0}
               >
@@ -298,7 +298,7 @@ export default function ProductDetailPage() {
               </Button>
               <Button
                 variant="outline"
-                className={`h-12 px-6 font-medium ${isAddedToCart ? "bg-green-600 text-white border-green-600" : ""}`}
+                className={`h-10 sm:h-12 px-4 sm:px-6 font-medium ${isAddedToCart ? "bg-green-600 text-white border-green-600" : ""}`}
                 onClick={handleAddToCart}
                 disabled={product.stock === 0}
               >
@@ -307,7 +307,7 @@ export default function ProductDetailPage() {
               <Button 
                 variant="outline" 
                 size="icon" 
-                className={`h-12 w-12 ${isInWishlist(product.id) ? "bg-red-50 border-red-500" : ""}`}
+                className={`h-10 w-10 sm:h-12 sm:w-12 ${isInWishlist(product.id) ? "bg-red-50 border-red-500" : ""}`}
                 onClick={handleWishlist}
               >
                 <Heart className={`w-5 h-5 ${isInWishlist(product.id) ? "fill-red-500 text-red-500" : ""}`} />

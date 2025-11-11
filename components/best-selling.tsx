@@ -95,10 +95,10 @@ export function BestSelling() {
 
   if (loading) {
     return (
-      <section className="container mx-auto px-4 py-12">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold mb-2">{t.products.bestSelling}</h2>
-          <p className="text-gray-600 dark:text-gray-400">{t.common.loading}</p>
+      <section className="container mx-auto px-4 py-8 sm:py-12">
+        <div className="text-center mb-6 sm:mb-8">
+          <h2 className="heading-responsive-h2 mb-2">{t.products.bestSelling}</h2>
+          <p className="text-responsive-sm text-gray-600 dark:text-gray-400">{t.common.loading}</p>
         </div>
       </section>
     )
@@ -109,17 +109,17 @@ export function BestSelling() {
   }
 
   return (
-    <section className="container mx-auto px-4 py-12 overflow-hidden">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold mb-2">{t.products.bestSelling}</h2>
-        <p className="text-gray-600 dark:text-gray-400">
+    <section className="container mx-auto px-4 py-8 sm:py-12 overflow-hidden">
+      <div className="text-center mb-6 sm:mb-8">
+        <h2 className="heading-responsive-h2 mb-2">{t.products.bestSelling}</h2>
+        <p className="text-responsive-sm text-gray-600 dark:text-gray-400">
           Nos articles les plus populaires ! Découvrez ce que tout le monde adore en ce moment.
         </p>
       </div>
 
       <div
         ref={scrollContainerRef}
-        className="flex gap-6 overflow-x-hidden scroll-smooth"
+        className="flex gap-4 sm:gap-6 overflow-x-hidden scroll-smooth"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         {duplicatedProducts.map((product, index) => (

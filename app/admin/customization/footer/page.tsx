@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Save, Plus, Trash2, ExternalLink } from "lucide-react"
 import { useFooter } from "@/lib/footer-context"
 import { useLocale } from "@/lib/locale-context"
+import { toast } from "sonner"
 
 interface ContactInfo {
   phone: string
@@ -90,7 +91,7 @@ export default function FooterCustomizationPage() {
     }
     
     updateFooterData(newFooterData)
-    alert(t.admin.footerSaved)
+    toast.success(t.admin.footerSaved)
   }
 
   const addLink = (section: "help" | "account") => {
@@ -128,20 +129,20 @@ export default function FooterCustomizationPage() {
   }
 
   return (
-    <div className="space-y-6 pb-8">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6 pb-6 sm:pb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold">{t.admin.footerCustomization}</h1>
-          <p className="text-muted-foreground">{t.admin.customizeFooter}</p>
+          <h1 className="heading-responsive-h1">{t.admin.footerCustomization}</h1>
+          <p className="text-responsive-sm text-muted-foreground">{t.admin.customizeFooter}</p>
         </div>
-        <Button onClick={handleSave} className="bg-[#4F46E5] hover:bg-[#4338CA]">
-          <Save className="w-4 h-4 mr-2" />
+        <Button onClick={handleSave} className="bg-[#4F46E5] hover:bg-[#4338CA] btn-responsive w-full sm:w-auto">
+          <Save className="icon-responsive mr-2" />
           {t.admin.saveChanges}
         </Button>
       </div>
 
       <Tabs defaultValue="company" className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
           <TabsTrigger value="company">{t.admin.companyTab}</TabsTrigger>
           <TabsTrigger value="contact">{t.admin.contactTab}</TabsTrigger>
           <TabsTrigger value="social">{t.admin.socialTab}</TabsTrigger>

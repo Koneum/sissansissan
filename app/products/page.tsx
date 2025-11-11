@@ -66,17 +66,17 @@ export default function ProductsPage() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
+      <main className="container mx-auto px-4 py-6 sm:py-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
           <div>
-            <h1 className="text-3xl font-bold mb-2">{t.products.allProducts}</h1>
-            <p className="text-muted-foreground">
+            <h1 className="heading-responsive-h1 mb-2">{t.products.allProducts}</h1>
+            <p className="text-responsive-sm text-muted-foreground">
               {loading ? t.common.loading : `${t.shop.showing} ${products.length} ${t.shop.results}`}
             </p>
           </div>
 
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px] h-10 sm:h-11">
               <SelectValue placeholder={t.shop.sortBy} />
             </SelectTrigger>
             <SelectContent>
@@ -97,7 +97,7 @@ export default function ProductsPage() {
             <p className="text-muted-foreground text-lg">{t.products.noProducts}</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {products.map((product) => (
               <ProductCard 
                 key={product.id} 

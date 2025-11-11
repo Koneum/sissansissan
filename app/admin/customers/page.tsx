@@ -95,14 +95,14 @@ export default function CustomersPage() {
   }
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="space-y-4 sm:space-y-6 pb-6 sm:pb-8">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">{t.admin.allCustomers}</h1>
-        <p className="text-sm text-muted-foreground">{t.common.total}: {customers.length} {t.admin.customers.toLowerCase()}</p>
+        <h1 className="heading-responsive-h2 text-slate-900 dark:text-white">{t.admin.allCustomers}</h1>
+        <p className="text-responsive-sm text-muted-foreground">{t.common.total}: {customers.length} {t.admin.customers.toLowerCase()}</p>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 sm:p-6 space-y-4">
+        <div className="grid-responsive-2">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input
@@ -112,12 +112,12 @@ export default function CustomersPage() {
                 setSearchQuery(e.target.value)
                 setCurrentPage(1)
               }}
-              className="pl-9 h-11"
+              className="pl-9 h-10 sm:h-11"
             />
           </div>
 
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="h-11">
+            <SelectTrigger className="h-10 sm:h-11">
               <SelectValue placeholder={t.admin.sortBy} />
             </SelectTrigger>
             <SelectContent>
@@ -137,13 +137,13 @@ export default function CustomersPage() {
           <table className="w-full">
             <thead className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
               <tr>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-slate-700 dark:text-slate-300">{t.admin.name}</th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-slate-700 dark:text-slate-300">{t.admin.email}</th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-slate-700 dark:text-slate-300">{t.admin.phone}</th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-slate-700 dark:text-slate-300">{t.admin.role}</th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-slate-700 dark:text-slate-300">{t.admin.ordersCount}</th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-slate-700 dark:text-slate-300">{t.admin.joined}</th>
-                <th className="text-right py-4 px-6 text-sm font-semibold text-slate-700 dark:text-slate-300">{t.common.actions}</th>
+                <th className="text-left py-3 px-3 sm:py-4 sm:px-6 text-responsive-sm font-semibold text-slate-700 dark:text-slate-300">{t.admin.name}</th>
+                <th className="text-left py-3 px-3 sm:py-4 sm:px-6 text-responsive-sm font-semibold text-slate-700 dark:text-slate-300">{t.admin.email}</th>
+                <th className="text-left py-3 px-3 sm:py-4 sm:px-6 text-responsive-sm font-semibold text-slate-700 dark:text-slate-300 hidden lg:table-cell">{t.admin.phone}</th>
+                <th className="text-left py-3 px-3 sm:py-4 sm:px-6 text-responsive-sm font-semibold text-slate-700 dark:text-slate-300 hidden md:table-cell">{t.admin.role}</th>
+                <th className="text-left py-3 px-3 sm:py-4 sm:px-6 text-responsive-sm font-semibold text-slate-700 dark:text-slate-300 hidden md:table-cell">{t.admin.ordersCount}</th>
+                <th className="text-left py-3 px-3 sm:py-4 sm:px-6 text-responsive-sm font-semibold text-slate-700 dark:text-slate-300 hidden lg:table-cell">{t.admin.joined}</th>
+                <th className="text-right py-3 px-3 sm:py-4 sm:px-6 text-responsive-sm font-semibold text-slate-700 dark:text-slate-300">{t.common.actions}</th>
               </tr>
             </thead>
             <tbody>
@@ -159,37 +159,38 @@ export default function CustomersPage() {
                     key={customer.id}
                     className={index !== paginatedCustomers.length - 1 ? "border-b border-slate-200 dark:border-slate-800" : ""}
                   >
-                    <td className="py-4 px-6">
-                      <span className="font-medium text-slate-900 dark:text-white">{customer.name}</span>
+                    <td className="py-3 px-3 sm:py-4 sm:px-6">
+                      <span className="text-responsive-sm font-medium text-slate-900 dark:text-white">{customer.name}</span>
                     </td>
-                    <td className="py-4 px-6">
-                      <span className="text-sm text-muted-foreground">{customer.email}</span>
+                    <td className="py-3 px-3 sm:py-4 sm:px-6">
+                      <span className="text-responsive-xs text-muted-foreground">{customer.email}</span>
                     </td>
-                    <td className="py-4 px-6">
-                      <span className="text-sm text-muted-foreground">{customer.phone || "-"}</span>
+                    <td className="py-3 px-3 sm:py-4 sm:px-6 hidden lg:table-cell">
+                      <span className="text-responsive-sm text-muted-foreground">{customer.phone || "-"}</span>
                     </td>
-                    <td className="py-4 px-6">
-                      <Badge variant={customer.role === "ADMIN" ? "default" : "secondary"}>
+                    <td className="py-3 px-3 sm:py-4 sm:px-6 hidden md:table-cell">
+                      <Badge variant={customer.role === "ADMIN" ? "default" : "secondary"} className="text-xs">
                         {customer.role}
                       </Badge>
                     </td>
-                    <td className="py-4 px-6">
-                      <Badge variant="outline">{customer._count.orders} {t.admin.orders.toLowerCase()}</Badge>
+                    <td className="py-3 px-3 sm:py-4 sm:px-6 hidden md:table-cell">
+                      <Badge variant="outline" className="text-xs">{customer._count.orders} {t.admin.orders.toLowerCase()}</Badge>
                     </td>
-                    <td className="py-4 px-6">
-                      <span className="text-sm text-muted-foreground">
+                    <td className="py-3 px-3 sm:py-4 sm:px-6 hidden lg:table-cell">
+                      <span className="text-responsive-sm text-muted-foreground">
                         {new Date(customer.createdAt).toLocaleDateString('fr-FR')}
                       </span>
                     </td>
-                    <td className="py-4 px-6">
+                    <td className="py-3 px-3 sm:py-4 sm:px-6">
                       <div className="flex gap-2 justify-end">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => setSelectedCustomer(customer)}
+                          className="h-8 px-2 sm:px-3"
                         >
-                          <Eye className="w-4 h-4 mr-2" />
-                          {t.admin.view}
+                          <Eye className="icon-responsive mr-0 sm:mr-2" />
+                          <span className="hidden sm:inline">{t.admin.view}</span>
                         </Button>
                       </div>
                     </td>

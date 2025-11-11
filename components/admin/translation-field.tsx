@@ -99,7 +99,7 @@ export function TranslationField({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
         <Label>
           {label} {required && <span className="text-red-500">*</span>}
         </Label>
@@ -113,12 +113,12 @@ export function TranslationField({
         >
           {translating ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="icon-responsive animate-spin" />
               Traduction...
             </>
           ) : (
             <>
-              <Sparkles className="w-4 h-4" />
+              <Sparkles className="icon-responsive" />
               Traduire auto
             </>
           )}
@@ -126,17 +126,17 @@ export function TranslationField({
       </div>
 
       <Tabs defaultValue="fr" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="fr" className="gap-2">
-            <Languages className="w-4 h-4" />
+        <TabsList className="grid w-full grid-cols-3 h-auto">
+          <TabsTrigger value="fr" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2">
+            <Languages className="icon-responsive" />
             Français
           </TabsTrigger>
-          <TabsTrigger value="en" className="gap-2">
-            <Languages className="w-4 h-4" />
+          <TabsTrigger value="en" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2">
+            <Languages className="icon-responsive" />
             English
           </TabsTrigger>
-          <TabsTrigger value="ar" className="gap-2">
-            <Languages className="w-4 h-4" />
+          <TabsTrigger value="ar" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2">
+            <Languages className="icon-responsive" />
             العربية
           </TabsTrigger>
         </TabsList>
@@ -177,7 +177,7 @@ export function TranslationField({
       </Tabs>
 
       {translating && (
-        <p className="text-sm text-muted-foreground animate-pulse">
+        <p className="text-responsive-sm text-muted-foreground animate-pulse">
           ✨ Traduction en cours avec l'IA...
         </p>
       )}

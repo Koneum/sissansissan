@@ -48,27 +48,27 @@ export function Header() {
             </Link>
 
             {/* Navigation - Desktop */}
-            <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
-              <Link href="/" className="text-sm font-medium hover:text-primary transition-colors relative group">
+            <nav className="hidden lg:flex items-center gap-4 lg:gap-6 xl:gap-8">
+              <Link href="/" className="text-responsive-sm font-medium hover:text-primary transition-colors relative group">
                 {t.nav.home}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
               </Link>
-              <Link href="/shop" className="text-sm font-medium hover:text-primary transition-colors relative group">
+              <Link href="/shop" className="text-responsive-sm font-medium hover:text-primary transition-colors relative group">
                 {t.nav.shop}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
               </Link>
               <Link
                 href="/products"
-                className="text-sm font-medium hover:text-primary transition-colors relative group"
+                className="text-responsive-sm font-medium hover:text-primary transition-colors relative group"
               >
                 {t.nav.pages}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
               </Link>
-              <Link href="/blog" className="text-sm font-medium hover:text-primary transition-colors relative group">
+              <Link href="/blog" className="text-responsive-sm font-medium hover:text-primary transition-colors relative group">
                 {t.nav.blog}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
               </Link>
-              <Link href="/contact" className="text-sm font-medium hover:text-primary transition-colors relative group">
+              <Link href="/contact" className="text-responsive-sm font-medium hover:text-primary transition-colors relative group">
                 {t.nav.contact}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
               </Link>
@@ -83,7 +83,7 @@ export function Header() {
                 className="hidden sm:flex hover:scale-110 transition-transform"
                 onClick={() => setSearchOpen(!searchOpen)}
               >
-                <Search className="w-4 h-4 sm:w-5 sm:h-5" />
+                <Search className="icon-responsive" />
               </Button>
 
               {/* User - Desktop */}
@@ -95,7 +95,7 @@ export function Header() {
                     title={user ? "Mon Compte" : t.auth.signIn}
                     className="hover:scale-110 transition-transform"
                   >
-                    <User className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <User className="icon-responsive" />
                   </Button>
                 </Link>
               </div>
@@ -107,9 +107,9 @@ export function Header() {
                   size="icon"
                   className="relative hover:scale-110 transition-transform"
                 >
-                  <Heart className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <Heart className="icon-responsive" />
                   {wishlistCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center animate-in zoom-in duration-300">
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center animate-in zoom-in duration-300">
                       {wishlistCount}
                     </span>
                   )}
@@ -123,9 +123,9 @@ export function Header() {
                 className="relative hover:scale-110 transition-transform"
                 onClick={() => setCartOpen(true)}
               >
-                <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
+                <ShoppingCart className="icon-responsive" />
                 {itemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center animate-in zoom-in duration-300">
+                  <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center animate-in zoom-in duration-300">
                     {itemCount}
                   </span>
                 )}
@@ -167,40 +167,40 @@ export function Header() {
                           onClick={() => setMobileMenuOpen(false)}
                           className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
                         >
-                          <Home className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                          <span className="font-medium">{t.nav.home}</span>
+                          <Home className="icon-responsive text-muted-foreground group-hover:text-primary transition-colors" />
+                          <span className="text-responsive-sm font-medium">{t.nav.home}</span>
                         </Link>
                         <Link
                           href="/shop"
                           onClick={() => setMobileMenuOpen(false)}
                           className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
                         >
-                          <Store className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                          <span className="font-medium">{t.nav.shop}</span>
+                          <Store className="icon-responsive text-muted-foreground group-hover:text-primary transition-colors" />
+                          <span className="text-responsive-sm font-medium">{t.nav.shop}</span>
                         </Link>
                         <Link
                           href="/products"
                           onClick={() => setMobileMenuOpen(false)}
                           className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
                         >
-                          <FileText className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                          <span className="font-medium">{t.nav.pages}</span>
+                          <FileText className="icon-responsive text-muted-foreground group-hover:text-primary transition-colors" />
+                          <span className="text-responsive-sm font-medium">{t.nav.pages}</span>
                         </Link>
                         <Link
                           href="/blog"
                           onClick={() => setMobileMenuOpen(false)}
                           className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
                         >
-                          <BookOpen className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                          <span className="font-medium">{t.nav.blog}</span>
+                          <BookOpen className="icon-responsive text-muted-foreground group-hover:text-primary transition-colors" />
+                          <span className="text-responsive-sm font-medium">{t.nav.blog}</span>
                         </Link>
                         <Link
                           href="/contact"
                           onClick={() => setMobileMenuOpen(false)}
                           className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
                         >
-                          <Mail className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                          <span className="font-medium">{t.nav.contact}</span>
+                          <Mail className="icon-responsive text-muted-foreground group-hover:text-primary transition-colors" />
+                          <span className="text-responsive-sm font-medium">{t.nav.contact}</span>
                         </Link>
                       </div>
 
@@ -214,8 +214,8 @@ export function Header() {
                           className="flex items-center justify-between px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
                         >
                           <div className="flex items-center gap-3">
-                            <Heart className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                            <span className="font-medium">Wishlist</span>
+                            <Heart className="icon-responsive text-muted-foreground group-hover:text-primary transition-colors" />
+                            <span className="text-responsive-sm font-medium">Wishlist</span>
                           </div>
                           {wishlistCount > 0 && (
                             <span className="bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">

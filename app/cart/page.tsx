@@ -19,16 +19,16 @@ export default function CartPage() {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Header />
-        <main className="flex-1 container mx-auto px-4 py-12 flex flex-col items-center justify-center">
+        <main className="flex-1 container mx-auto px-4 py-8 sm:py-12 flex flex-col items-center justify-center">
           <div className="text-center max-w-md">
-            <div className="relative w-32 h-32 mx-auto mb-6">
+            <div className="relative w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-4 sm:mb-6">
               <div className="absolute inset-0 bg-primary/10 rounded-full animate-pulse" />
-              <ShoppingBag className="w-32 h-32 text-primary/40" />
+              <ShoppingBag className="w-24 h-24 sm:w-32 sm:h-32 text-primary/40" />
             </div>
-            <h1 className="text-3xl font-bold mb-4">{t.cart.empty}</h1>
-            <p className="text-muted-foreground mb-8">{t.cart.emptyDesc}</p>
+            <h1 className="heading-responsive-h1 mb-4">{t.cart.empty}</h1>
+            <p className="text-responsive-sm text-muted-foreground mb-6 sm:mb-8">{t.cart.emptyDesc}</p>
             <Link href="/products">
-              <Button size="lg" className="gap-2">
+              <Button className="btn-responsive gap-2">
                 {t.common.continueShopping}
                 <ArrowRight className="w-4 h-4" />
               </Button>
@@ -44,19 +44,19 @@ export default function CartPage() {
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
 
-      <main className="flex-1 container mx-auto px-4 py-8 md:py-12">
+      <main className="flex-1 container mx-auto px-4 py-6 sm:py-8 md:py-12">
         {/* Header Section */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold mb-2">{t.cart.title}</h1>
-            <p className="text-muted-foreground flex items-center gap-2">
-              <Package className="w-4 h-4" />
+            <h1 className="heading-responsive-h1 mb-2">{t.cart.title}</h1>
+            <p className="text-responsive-sm text-muted-foreground flex items-center gap-2">
+              <Package className="icon-responsive" />
               {itemCount} {itemCount === 1 ? 'article' : 'articles'}
             </p>
           </div>
-          <Link href="/products">
-            <Button variant="outline" className="gap-2">
-              <ArrowRight className="w-4 h-4 rotate-180" />
+          <Link href="/products" className="w-full sm:w-auto">
+            <Button variant="outline" className="btn-responsive w-full sm:w-auto gap-2">
+              <ArrowRight className="icon-responsive rotate-180" />
               {t.common.continueShopping}
             </Button>
           </Link>

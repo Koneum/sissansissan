@@ -25,6 +25,18 @@ interface AppDownload {
   googlePlayUrl: string
 }
 
+interface SocialMedia {
+  facebook?: string
+  twitter?: string
+  instagram?: string
+  linkedin?: string
+}
+
+interface PaymentMethod {
+  name: string
+  image: string
+}
+
 export interface FooterData {
   companyDescription: string
   contactInfo: ContactInfo
@@ -35,6 +47,9 @@ export interface FooterData {
   copyrightText: string
   poweredByText: string
   poweredByUrl: string
+  logoUrl?: string
+  socialMedia?: SocialMedia
+  paymentMethods?: (PaymentMethod | string)[]
 }
 
 const defaultFooterData: FooterData = {
@@ -84,26 +99,56 @@ const FooterContext = createContext<FooterContextType | undefined>(undefined)
 
 export function FooterProvider({ children }: { children: ReactNode }) {
   const [footerData, setFooterData] = useState<FooterData>(defaultFooterData)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Load from localStorage on mount (client-side only)
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("footerCustomization")
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored)
-          setFooterData(parsed)
-        } catch (error) {
-          console.error("Error loading footer data:", error)
-        }
-      }
-    }
+    fetchFooterData()
   }, [])
 
-  const updateFooterData = (data: FooterData) => {
+  const fetchFooterData = async () => {
+    try {
+      const response = await fetch("/api/settings/footer")
+      if (response.ok) {
+        const result = await response.json()
+        if (result.data) {
+          setFooterData(result.data)
+        }
+      }
+    } catch (error) {
+      console.error("Error loading footer data:", error)
+      // Fallback to localStorage for backward compatibility
+      if (typeof window !== "undefined") {
+        const stored = localStorage.getItem("footerCustomization")
+        if (stored) {
+          try {
+            setFooterData(JSON.parse(stored))
+          } catch (e) {
+            console.error("Error parsing localStorage:", e)
+          }
+        }
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const updateFooterData = async (data: FooterData) => {
     setFooterData(data)
+    
+    // Save to localStorage as cache
     if (typeof window !== "undefined") {
       localStorage.setItem("footerCustomization", JSON.stringify(data))
+    }
+
+    // Save to database via API
+    try {
+      await fetch("/api/settings/footer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      })
+    } catch (error) {
+      console.error("Error saving footer data to database:", error)
     }
   }
 

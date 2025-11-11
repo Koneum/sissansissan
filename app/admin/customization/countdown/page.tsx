@@ -41,14 +41,14 @@ export default function CountdownSettingsPage() {
   }
 
   return (
-    <div className="space-y-6 pb-8">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6 pb-6 sm:pb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold">{t.admin.countdownSettings}</h1>
-          <p className="text-muted-foreground">{t.admin.manageFlashSale}</p>
+          <h1 className="heading-responsive-h1">{t.admin.countdownSettings}</h1>
+          <p className="text-responsive-sm text-muted-foreground">{t.admin.manageFlashSale}</p>
         </div>
-        <Button onClick={handleSave} className="bg-[#4F46E5] hover:bg-[#4338CA]">
-          <Save className="w-4 h-4 mr-2" />
+        <Button onClick={handleSave} className="bg-[#4F46E5] hover:bg-[#4338CA] btn-responsive w-full sm:w-auto">
+          <Save className="icon-responsive mr-2" />
           {t.admin.saveChanges}
         </Button>
       </div>
@@ -57,7 +57,7 @@ export default function CountdownSettingsPage() {
         <CardHeader className="border-b">
           <CardTitle className="text-xl font-semibold">{t.admin.countdownConfiguration}</CardTitle>
         </CardHeader>
-        <CardContent className="p-6 space-y-6">
+        <CardContent className="card-responsive space-y-4 sm:space-y-6">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label htmlFor="countdown-enabled">{t.admin.enableCountdownTimer}</Label>
@@ -90,7 +90,7 @@ export default function CountdownSettingsPage() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid-responsive-2">
             <div className="space-y-2">
               <Label htmlFor="countdown-bgcolor">{t.admin.backgroundColor}</Label>
               <div className="flex gap-2">
@@ -135,8 +135,8 @@ export default function CountdownSettingsPage() {
       </Card>
 
       <div className="flex justify-end">
-        <Button onClick={handleSave} size="lg" className="bg-[#4F46E5] hover:bg-[#4338CA]">
-          <Save className="w-4 h-4 mr-2" />
+        <Button onClick={handleSave} className="bg-[#4F46E5] hover:bg-[#4338CA] btn-responsive w-full sm:w-auto">
+          <Save className="icon-responsive mr-2" />
           {t.admin.saveCountdownSettings}
         </Button>
       </div>

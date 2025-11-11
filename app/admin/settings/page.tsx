@@ -155,10 +155,10 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">{t.admin.settings}</h1>
-        <p className="text-muted-foreground">{t.admin.manageStoreSettings}</p>
+        <h1 className="heading-responsive-h1">{t.admin.settings}</h1>
+        <p className="text-responsive-sm text-muted-foreground">{t.admin.manageStoreSettings}</p>
       </div>
 
       <div className="grid gap-6">
@@ -166,7 +166,7 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle>{t.admin.storeInformation}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="card-responsive space-y-4">
             <div className="space-y-2">
               <Label htmlFor="storeName">{t.admin.storeName}</Label>
               <Input 
@@ -226,7 +226,7 @@ export default function SettingsPage() {
               Configurez les options de livraison et les tarifs
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="card-responsive space-y-4 sm:space-y-6">
             {/* Livraison gratuite */}
             <div className="space-y-4 p-4 border rounded-lg">
               <div className="flex items-center justify-between">

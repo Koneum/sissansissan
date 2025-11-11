@@ -29,14 +29,14 @@ export default function PrivacyPolicyPage() {
   }
 
   return (
-    <div className="space-y-6 pb-8">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6 pb-6 sm:pb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold">{t.admin.privacyPolicy}</h1>
-          <p className="text-muted-foreground">{t.admin.managePrivacyContent}</p>
+          <h1 className="heading-responsive-h1">{t.admin.privacyPolicy}</h1>
+          <p className="text-responsive-sm text-muted-foreground">{t.admin.managePrivacyContent}</p>
         </div>
-        <Button onClick={handleSave} className="bg-[#4F46E5] hover:bg-[#4338CA]">
-          <Save className="w-4 h-4 mr-2" />
+        <Button onClick={handleSave} className="bg-[#4F46E5] hover:bg-[#4338CA] btn-responsive w-full sm:w-auto">
+          <Save className="icon-responsive mr-2" />
           {t.admin.saveChanges}
         </Button>
       </div>
@@ -45,7 +45,7 @@ export default function PrivacyPolicyPage() {
         <CardHeader className="border-b">
           <CardTitle className="text-xl font-semibold">{t.admin.privacyPolicyContent}</CardTitle>
         </CardHeader>
-        <CardContent className="p-6">
+        <CardContent className="card-responsive">
           <Tabs defaultValue="edit">
             <TabsList>
               <TabsTrigger value="edit">{t.admin.edit}</TabsTrigger>
@@ -76,8 +76,8 @@ export default function PrivacyPolicyPage() {
       </Card>
 
       <div className="flex justify-end">
-        <Button onClick={handleSave} size="lg" className="bg-[#4F46E5] hover:bg-[#4338CA]">
-          <Save className="w-4 h-4 mr-2" />
+        <Button onClick={handleSave} className="bg-[#4F46E5] hover:bg-[#4338CA] btn-responsive w-full sm:w-auto">
+          <Save className="icon-responsive mr-2" />
           {t.admin.savePrivacyPolicy}
         </Button>
       </div>

@@ -61,25 +61,56 @@ const PagesContext = createContext<PagesContextType | undefined>(undefined)
 
 export function PagesProvider({ children }: { children: ReactNode }) {
   const [pagesData, setPagesData] = useState<PagesData>(defaultPagesData)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("pagesCustomization")
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored)
-          setPagesData(parsed)
-        } catch (error) {
-          console.error("Error loading pages data:", error)
-        }
-      }
-    }
+    fetchPagesData()
   }, [])
 
-  const updatePagesData = (data: PagesData) => {
+  const fetchPagesData = async () => {
+    try {
+      const response = await fetch("/api/settings/pages")
+      if (response.ok) {
+        const result = await response.json()
+        if (result.data) {
+          setPagesData(result.data)
+        }
+      }
+    } catch (error) {
+      console.error("Error loading pages data:", error)
+      // Fallback to localStorage for backward compatibility
+      if (typeof window !== "undefined") {
+        const stored = localStorage.getItem("pagesCustomization")
+        if (stored) {
+          try {
+            setPagesData(JSON.parse(stored))
+          } catch (e) {
+            console.error("Error parsing localStorage:", e)
+          }
+        }
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const updatePagesData = async (data: PagesData) => {
     setPagesData(data)
+    
+    // Save to localStorage as cache
     if (typeof window !== "undefined") {
       localStorage.setItem("pagesCustomization", JSON.stringify(data))
+    }
+
+    // Save to database via API
+    try {
+      await fetch("/api/settings/pages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      })
+    } catch (error) {
+      console.error("Error saving pages data to database:", error)
     }
   }
 

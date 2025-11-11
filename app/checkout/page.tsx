@@ -210,8 +210,8 @@ export default function CheckoutPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
       <Header />
 
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+      <main className="flex-1 container mx-auto px-4 py-6 sm:py-8">
+        <div className="flex items-center gap-2 text-responsive-sm text-muted-foreground mb-4 sm:mb-6">
           <Link href="/" className="hover:text-foreground">
             Accueil
           </Link>
@@ -221,14 +221,14 @@ export default function CheckoutPage() {
 
         {/* Guest Checkout Info */}
         {!user && (
-          <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
-            <div className="flex items-start gap-3">
-              <Lock className="w-5 h-5 text-blue-600 mt-0.5" />
+          <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
+            <div className="flex items-start gap-2 sm:gap-3">
+              <Lock className="icon-responsive text-blue-600 mt-0.5" />
               <div>
-                <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                <h3 className="heading-responsive-h4 text-blue-900 dark:text-blue-100 mb-1">
                   Commande sans compte
                 </h3>
-                <p className="text-sm text-blue-700 dark:text-blue-300">
+                <p className="text-responsive-sm text-blue-700 dark:text-blue-300">
                   Vous pouvez commander sans créer de compte. Vos informations seront conservées pendant 48h. 
                   Pour le paiement à la livraison, aucun compte n&apos;est requis.
                 </p>
@@ -238,14 +238,14 @@ export default function CheckoutPage() {
         )}
 
         <form onSubmit={handleSubmit}>
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
           <div className="lg:col-span-2">
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Billing Details */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-                <h2 className="text-xl font-bold mb-6">Détails de facturation</h2>
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-sm">
+                <h2 className="heading-responsive-h2 mb-4 sm:mb-6">Détails de facturation</h2>
                 <div className="space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <div className="grid-responsive-2">
                     <div className="space-y-2">
                       <Label htmlFor="firstName">
                         Prénom <span className="text-red-500">*</span>

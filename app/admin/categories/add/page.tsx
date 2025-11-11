@@ -74,30 +74,30 @@ export default function AddCategoryPage() {
   }
 
   return (
-    <div className="space-y-6 pb-8">
-      <div className="flex items-center gap-4">
+    <div className="space-y-4 sm:space-y-6 pb-6 sm:pb-8">
+      <div className="flex items-center gap-3 sm:gap-4">
         <Link href="/admin/categories">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="w-4 h-4" />
+          <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-10 sm:w-10">
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">{t.admin.addCategory}</h1>
-          <p className="text-sm text-muted-foreground">{t.admin.createNewCategory}</p>
+          <h1 className="heading-responsive-h2 text-slate-900 dark:text-white">{t.admin.addCategory}</h1>
+          <p className="text-responsive-sm text-muted-foreground">{t.admin.createNewCategory}</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit}>
         <Card className="border-0 shadow-sm max-w-3xl">
-          <CardContent className="p-6 space-y-6">
+          <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="title" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              <Label htmlFor="title" className="text-responsive-sm font-medium text-slate-700 dark:text-slate-300">
                 {t.admin.categoryName} <span className="text-red-500">*</span>
               </Label>
               <Input 
                 id="title" 
                 placeholder={t.admin.enterCategoryName}
-                className="h-11"
+                className="h-10 sm:h-11"
                 value={formData.name}
                 onChange={handleNameChange}
                 required
@@ -105,13 +105,13 @@ export default function AddCategoryPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="slug" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              <Label htmlFor="slug" className="text-responsive-sm font-medium text-slate-700 dark:text-slate-300">
                 {t.admin.categorySlug} <span className="text-red-500">*</span>
               </Label>
               <Input 
                 id="slug" 
                 placeholder="category-slug" 
-                className="h-11"
+                className="h-10 sm:h-11"
                 value={formData.slug}
                 onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
                 required
@@ -120,13 +120,13 @@ export default function AddCategoryPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              <Label htmlFor="description" className="text-responsive-sm font-medium text-slate-700 dark:text-slate-300">
                 {t.admin.categoryDescription}
               </Label>
               <Textarea
                 id="description"
                 placeholder={t.admin.writeCategoryDescription}
-                rows={6}
+                rows={4}
                 className="resize-none"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -134,7 +134,7 @@ export default function AddCategoryPage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              <Label className="text-responsive-sm font-medium text-slate-700 dark:text-slate-300">
                 {t.admin.categoryImage}
               </Label>
               <ImageUpload
@@ -144,18 +144,17 @@ export default function AddCategoryPage() {
               />
             </div>
 
-            <div className="pt-4 flex gap-3">
+            <div className="pt-4 flex flex-col sm:flex-row gap-3">
               <Button 
                 type="submit"
-                className="bg-[#4F46E5] hover:bg-[#4338CA] text-white px-8" 
-                size="lg"
+                className="bg-[#4F46E5] hover:bg-[#4338CA] text-white btn-responsive" 
                 disabled={loading}
               >
-                {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                {loading && <Loader2 className="icon-responsive mr-2 animate-spin" />}
                 {t.common.save} {t.common.category}
               </Button>
-              <Link href="/admin/categories">
-                <Button type="button" variant="outline" size="lg">
+              <Link href="/admin/categories" className="w-full sm:w-auto">
+                <Button type="button" variant="outline" className="btn-responsive w-full">
                   {t.common.cancel}
                 </Button>
               </Link>

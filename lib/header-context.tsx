@@ -39,26 +39,56 @@ const HeaderContext = createContext<HeaderContextType | undefined>(undefined)
 
 export function HeaderProvider({ children }: { children: ReactNode }) {
   const [headerData, setHeaderData] = useState<HeaderData>(defaultHeaderData)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Load from localStorage on mount (client-side only)
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("headerCustomization")
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored)
-          setHeaderData(parsed)
-        } catch (error) {
-          console.error("Error loading header data:", error)
-        }
-      }
-    }
+    fetchHeaderData()
   }, [])
 
-  const updateHeaderData = (data: HeaderData) => {
+  const fetchHeaderData = async () => {
+    try {
+      const response = await fetch("/api/settings/header")
+      if (response.ok) {
+        const result = await response.json()
+        if (result.data) {
+          setHeaderData(result.data)
+        }
+      }
+    } catch (error) {
+      console.error("Error loading header data:", error)
+      // Fallback to localStorage for backward compatibility
+      if (typeof window !== "undefined") {
+        const stored = localStorage.getItem("headerCustomization")
+        if (stored) {
+          try {
+            setHeaderData(JSON.parse(stored))
+          } catch (e) {
+            console.error("Error parsing localStorage:", e)
+          }
+        }
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const updateHeaderData = async (data: HeaderData) => {
     setHeaderData(data)
+    
+    // Save to localStorage as cache
     if (typeof window !== "undefined") {
       localStorage.setItem("headerCustomization", JSON.stringify(data))
+    }
+
+    // Save to database via API
+    try {
+      await fetch("/api/settings/header", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      })
+    } catch (error) {
+      console.error("Error saving header data to database:", error)
     }
   }
 

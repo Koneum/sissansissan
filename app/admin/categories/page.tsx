@@ -120,13 +120,15 @@ export default function CategoriesPage() {
         throw new Error(error.error || "Failed to update category")
       }
 
-      const updatedCategory = await response.json()
+      const result = await response.json()
+      const updatedCategory = result.data || result
       toast.success(t.admin.successUpdate)
       
       setCategories(categories.map(c => 
         c.id === categoryToEdit.id ? updatedCategory : c
       ))
       setCategoryToEdit(null)
+      fetchCategories() // Refresh list
     } catch (error: unknown) {
       console.error("Error updating category:", error)
       toast.error(error instanceof Error ? error.message : t.admin.errorUpdate)
@@ -142,14 +144,14 @@ export default function CategoriesPage() {
   }
 
   return (
-    <div className="space-y-6 pb-8">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6 pb-6 sm:pb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">{t.admin.allCategories}</h1>
-          <p className="text-sm text-muted-foreground">{t.common.total}: {categories.length} {t.admin.categories.toLowerCase()}</p>
+          <h1 className="heading-responsive-h2 text-slate-900 dark:text-white">{t.admin.allCategories}</h1>
+          <p className="text-responsive-sm text-muted-foreground">{t.common.total}: {categories.length} {t.admin.categories.toLowerCase()}</p>
         </div>
         <Link href="/admin/categories/add">
-          <Button className="bg-[#1e293b] hover:bg-[#334155]">+ {t.admin.addCategory}</Button>
+          <Button className="bg-[#1e293b] hover:bg-[#334155] btn-responsive w-full sm:w-auto">+ {t.admin.addCategory}</Button>
         </Link>
       </div>
 
@@ -158,10 +160,10 @@ export default function CategoriesPage() {
           <table className="w-full">
             <thead className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
               <tr>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-slate-700 dark:text-slate-300">{t.admin.categoryImage}</th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-slate-700 dark:text-slate-300">{t.admin.categoryName}</th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-slate-700 dark:text-slate-300">{t.admin.categorySlug}</th>
-                <th className="text-right py-4 px-6 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                <th className="text-left py-3 px-3 sm:py-4 sm:px-6 text-responsive-sm font-semibold text-slate-700 dark:text-slate-300">{t.admin.categoryImage}</th>
+                <th className="text-left py-3 px-3 sm:py-4 sm:px-6 text-responsive-sm font-semibold text-slate-700 dark:text-slate-300">{t.admin.categoryName}</th>
+                <th className="text-left py-3 px-3 sm:py-4 sm:px-6 text-responsive-sm font-semibold text-slate-700 dark:text-slate-300 hidden md:table-cell">{t.admin.categorySlug}</th>
+                <th className="text-right py-3 px-3 sm:py-4 sm:px-6 text-responsive-sm font-semibold text-slate-700 dark:text-slate-300">
                   {t.common.actions}
                 </th>
               </tr>
@@ -179,8 +181,8 @@ export default function CategoriesPage() {
                     key={category.id}
                     className={index !== categories.length - 1 ? "border-b border-slate-200 dark:border-slate-800" : ""}
                   >
-                    <td className="py-4 px-6">
-                      <div className="relative w-20 h-16 bg-slate-100 dark:bg-slate-800 rounded overflow-hidden">
+                    <td className="py-3 px-3 sm:py-4 sm:px-6">
+                      <div className="relative w-16 h-12 sm:w-20 sm:h-16 bg-slate-100 dark:bg-slate-800 rounded overflow-hidden">
                         <Image
                           src={category.image || "/placeholder.svg"}
                           alt={category.name}
@@ -189,29 +191,29 @@ export default function CategoriesPage() {
                         />
                       </div>
                     </td>
-                    <td className="py-4 px-6">
-                      <span className="font-medium text-slate-900 dark:text-white">{category.name}</span>
+                    <td className="py-3 px-3 sm:py-4 sm:px-6">
+                      <span className="text-responsive-sm font-medium text-slate-900 dark:text-white">{category.name}</span>
                     </td>
-                    <td className="py-4 px-6">
-                      <span className="text-sm text-muted-foreground">{category.slug || "-"}</span>
+                    <td className="py-3 px-3 sm:py-4 sm:px-6 hidden md:table-cell">
+                      <span className="text-responsive-sm text-muted-foreground">{category.slug || "-"}</span>
                     </td>
-                    <td className="py-4 px-6">
-                      <div className="flex gap-2 justify-end">
+                    <td className="py-3 px-3 sm:py-4 sm:px-6">
+                      <div className="flex gap-1 sm:gap-2 justify-end">
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-9 w-9 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950"
+                          className="h-8 w-8 sm:h-9 sm:w-9 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950"
                           onClick={() => setCategoryToDelete(category)}
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="icon-responsive" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-9 w-9 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-950"
+                          className="h-8 w-8 sm:h-9 sm:w-9 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-950"
                           onClick={() => handleEditCategory(category)}
                         >
-                          <Edit className="w-4 h-4" />
+                          <Edit className="icon-responsive" />
                         </Button>
                       </div>
                     </td>

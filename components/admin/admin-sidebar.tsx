@@ -135,10 +135,10 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
                   onClick={() => toggleExpand(item.label)}
                 >
                   <div className="flex items-center">
-                    <Icon className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
-                    <span className="text-sm">{item.label}</span>
+                    <Icon className="icon-responsive mr-2 sm:mr-3" />
+                    <span className="text-responsive-sm">{item.label}</span>
                   </div>
-                  <ChevronDown className={cn("w-4 h-4 transition-transform", isExpanded && "rotate-180")} />
+                  <ChevronDown className={cn("icon-responsive transition-transform", isExpanded && "rotate-180")} />
                 </Button>
               ) : (
                 <Link href={item.href} onClick={onClose}>
@@ -149,8 +149,8 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
                       isActive && "bg-blue-50 dark:bg-blue-950 text-[#2E5BA8] dark:text-[#4F7FD5]",
                     )}
                   >
-                    <Icon className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
-                    <span className="text-sm">{item.label}</span>
+                    <Icon className="icon-responsive mr-2 sm:mr-3" />
+                    <span className="text-responsive-sm">{item.label}</span>
                   </Button>
                 </Link>
               )}
@@ -163,7 +163,7 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
                         variant="ghost"
                         size="sm"
                         className={cn(
-                          "w-full justify-start text-xs sm:text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 h-9",
+                          "w-full justify-start text-responsive-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 h-9",
                           pathname === subitem.href && "bg-blue-50 dark:bg-blue-950 text-[#2E5BA8] dark:text-[#4F7FD5]",
                         )}
                       >
@@ -195,7 +195,7 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
         >
           {/* Header with close button */}
           <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Menu Admin</h2>
+            <h2 className="heading-responsive-h3 text-slate-900 dark:text-white">Menu Admin</h2>
           </div>
           
           {/* Scrollable content */}

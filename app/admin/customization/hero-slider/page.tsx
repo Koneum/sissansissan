@@ -83,14 +83,14 @@ export default function HeroSliderPage() {
   }
 
   return (
-    <div className="space-y-6 pb-8">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6 pb-6 sm:pb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold">{t.admin.heroSlider}</h1>
-          <p className="text-muted-foreground">{t.admin.manageHeroSlides}</p>
+          <h1 className="heading-responsive-h1">{t.admin.heroSlider}</h1>
+          <p className="text-responsive-sm text-muted-foreground">{t.admin.manageHeroSlides}</p>
         </div>
-        <Button onClick={openAddDialog} className="bg-[#4F46E5] hover:bg-[#4338CA]">
-          <Plus className="w-4 h-4 mr-2" />
+        <Button onClick={openAddDialog} className="bg-[#4F46E5] hover:bg-[#4338CA] btn-responsive w-full sm:w-auto">
+          <Plus className="icon-responsive mr-2" />
           {t.admin.addNewSlide}
         </Button>
       </div>
@@ -99,44 +99,45 @@ export default function HeroSliderPage() {
         <CardHeader className="border-b">
           <CardTitle className="text-xl font-semibold">{t.admin.allHeroSlides} ({slides.length})</CardTitle>
         </CardHeader>
-        <CardContent className="p-6">
+        <CardContent className="card-responsive">
           <div className="grid gap-4">
             {slides.map((slide) => (
               <div
                 key={slide.id}
-                className="flex items-center gap-4 p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 border rounded-lg hover:bg-accent/50 transition-colors"
               >
                 <img
                   src={slide.image}
                   alt={slide.title}
-                  className="w-24 h-24 object-cover rounded-md"
+                  className="w-full sm:w-24 h-32 sm:h-24 object-cover rounded-md"
                 />
-                <div className="flex-1">
+                <div className="flex-1 w-full">
                   <div className="flex items-center gap-2">
-                    <span className="text-blue-500 font-bold text-2xl">{slide.badge}</span>
-                    <span className="text-xs text-muted-foreground">{t.admin.saleOff}</span>
+                    <span className="text-blue-500 font-bold heading-responsive-h3">{slide.badge}</span>
+                    <span className="text-responsive-xs text-muted-foreground">{t.admin.saleOff}</span>
                   </div>
-                  <h3 className="font-semibold text-lg">{slide.title}</h3>
-                  <p className="text-sm text-muted-foreground line-clamp-1">{slide.description}</p>
+                  <h3 className="heading-responsive-h4">{slide.title}</h3>
+                  <p className="text-responsive-sm text-muted-foreground line-clamp-1">{slide.description}</p>
                   {slide.productId && (
                     <span className="text-xs text-muted-foreground">{t.admin.productId}: {slide.productId}</span>
                   )}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 w-full sm:w-auto justify-end">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => openEditDialog(slide)}
+                    className="h-8 px-2 sm:px-3"
                   >
-                    <Edit className="w-4 h-4" />
+                    <Edit className="icon-responsive" />
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleDelete(slide.id)}
-                    className="text-red-500 hover:text-red-700"
+                    className="text-red-500 hover:text-red-700 h-8 px-2 sm:px-3"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="icon-responsive" />
                   </Button>
                 </div>
               </div>

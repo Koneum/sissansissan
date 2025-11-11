@@ -16,23 +16,23 @@ export default function ContactPage() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="container mx-auto px-4 py-12">
+      <main className="container mx-auto px-4 py-8 sm:py-12">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold mb-4">{t.nav.contact}</h1>
-            <p className="text-muted-foreground text-lg">
+          <div className="text-center mb-8 sm:mb-12">
+            <h1 className="heading-responsive-h1 mb-4">{t.nav.contact}</h1>
+            <p className="text-responsive-base text-muted-foreground">
               We'd love to hear from you. Send us a message and we'll respond as soon as possible.
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-12">
+          <div className="grid lg:grid-cols-2 gap-8 sm:gap-12">
             {/* Contact Form */}
-            <Card className="p-8">
-              <h2 className="text-2xl font-semibold mb-6">Send us a message</h2>
-              <form className="space-y-6">
-                <div className="grid sm:grid-cols-2 gap-4">
+            <Card className="p-6 sm:p-8">
+              <h2 className="heading-responsive-h2 mb-4 sm:mb-6">Send us a message</h2>
+              <form className="space-y-4 sm:space-y-6">
+                <div className="grid-responsive-2">
                   <div>
-                    <label className="text-sm font-medium mb-2 block">First Name</label>
+                    <label className="text-responsive-sm font-medium mb-2 block">First Name</label>
                     <Input placeholder="John" />
                   </div>
                   <div>
@@ -56,7 +56,7 @@ export default function ContactPage() {
                   <Textarea placeholder="How can we help you?" rows={6} />
                 </div>
 
-                <Button className="w-full" size="lg">
+                <Button className="btn-responsive w-full">
                   Send Message
                 </Button>
               </form>

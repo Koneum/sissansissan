@@ -7,67 +7,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, X } from "lucide-react"
+import { Plus, X, Loader2 } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useParams, useRouter } from "next/navigation"
-
-// Données mockées des produits
-const mockProducts: Record<string, any> = {
-  "1": {
-    id: "1",
-    title: "iPhone 16 Pro - 8/128GB",
-    slug: "iphone-16-pro-8-128gb",
-    description: "The latest iPhone with advanced features and stunning design.",
-    shortDescription: "Latest iPhone model with 8GB RAM and 128GB storage",
-    category: "electronics",
-    price: "999",
-    discountedPrice: "899",
-    salePercentage: "10",
-    isNew: true,
-    isFeatured: true,
-    sku: "IPH16-128",
-    quantity: "15",
-    variants: ["128GB", "256GB", "512GB"],
-    attributes: ["Color: Natural Titanium", "Screen: 6.3 inch"],
-    additionalInfo: ["5G Compatible", "A18 Pro chip"],
-  },
-  "2": {
-    id: "2",
-    title: "MacBook Air M4 chip, 16/256GB",
-    slug: "macbook-air-m4-16-256gb",
-    description: "Powerful and lightweight MacBook Air with M4 chip.",
-    shortDescription: "MacBook Air with 16GB RAM and 256GB SSD",
-    category: "electronics",
-    price: "1299",
-    discountedPrice: "1199",
-    salePercentage: "8",
-    isNew: false,
-    isFeatured: true,
-    sku: "MBA-M4-256",
-    quantity: "8",
-    variants: ["256GB", "512GB", "1TB"],
-    attributes: ["Processor: M4", "RAM: 16GB"],
-    additionalInfo: ["Battery: Up to 18 hours", "Weight: 1.24kg"],
-  },
-  "3": {
-    id: "3",
-    title: "Havit HV-G69 USB Gamepad",
-    slug: "havit-hv-g69-usb-gamepad",
-    description: "Ergonomic gamepad for comfortable gaming experience.",
-    shortDescription: "USB gamepad with ergonomic design",
-    category: "accessories",
-    price: "49",
-    discountedPrice: "",
-    salePercentage: "",
-    isNew: false,
-    isFeatured: false,
-    sku: "GAM-HV69",
-    quantity: "30",
-    variants: ["Black", "Red"],
-    attributes: ["Connectivity: USB", "Compatible: PC/PS3"],
-    additionalInfo: ["Vibration feedback", "6 feet cable"],
-  },
-}
+import { MultiImageUpload } from "@/components/ui/multi-image-upload"
+import { toast } from "sonner"
 
 export default function EditProductPage() {
   const params = useParams()
@@ -90,53 +34,116 @@ export default function EditProductPage() {
   const [attributes, setAttributes] = useState<string[]>([])
   const [additionalInfo, setAdditionalInfo] = useState<string[]>([])
   const [body, setBody] = useState("")
+  const [images, setImages] = useState<string[]>([])
+  const [categories, setCategories] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    // Charger les données du produit
-    const product = mockProducts[productId]
-    if (product) {
-      setTitle(product.title || "")
+    fetchProduct()
+    fetchCategories()
+  }, [productId])
+
+  const fetchProduct = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch(`/api/products/${productId}`)
+      if (!response.ok) {
+        throw new Error("Product not found")
+      }
+      const product = await response.json()
+      
+      setTitle(product.name || "")
       setSlug(product.slug || "")
       setDescription(product.description || "")
-      setShortDescription(product.shortDescription || "")
-      setCategory(product.category || "")
-      setPrice(product.price || "")
-      setDiscountedPrice(product.discountedPrice || "")
-      setSalePercentage(product.salePercentage || "")
+      setShortDescription(product.shortDesc || "")
+      setCategory(product.categoryId || "")
+      setPrice(product.price?.toString() || "")
+      setDiscountedPrice(product.discountPrice?.toString() || "")
+      setSalePercentage(product.salePercentage?.toString() || "")
       setIsNew(product.isNew || false)
       setIsFeatured(product.isFeatured || false)
       setSku(product.sku || "")
-      setQuantity(product.quantity || "")
-      setVariants(product.variants || [])
-      setAttributes(product.attributes || [])
-      setAdditionalInfo(product.additionalInfo || [])
-      setBody(product.body || "")
+      setQuantity(product.stock?.toString() || "")
+      setImages(product.images || [])
+      setVariants(product.tags || [])
+      setAttributes(product.attributes ? Object.entries(product.attributes).map(([k, v]) => `${k}: ${v}`) : [])
+      setAdditionalInfo([])
+    } catch (error) {
+      console.error("Error fetching product:", error)
+      toast.error("Failed to load product")
+      router.push("/admin/products")
+    } finally {
+      setLoading(false)
     }
-  }, [productId])
+  }
 
-  const handleSaveProduct = () => {
-    // Logique de sauvegarde ici
-    console.log("Product updated:", {
-      id: productId,
-      title,
-      slug,
-      description,
-      shortDescription,
-      category,
-      price,
-      discountedPrice,
-      salePercentage,
-      isNew,
-      isFeatured,
-      sku,
-      quantity,
-      variants,
-      attributes,
-      additionalInfo,
-      body,
-    })
-    // Rediriger vers la liste des produits
-    router.push("/admin/products")
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch("/api/categories")
+      if (response.ok) {
+        const data = await response.json()
+        setCategories(data.data || [])
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error)
+    }
+  }
+
+  const handleSaveProduct = async () => {
+    if (!title || !price || !category) {
+      toast.error("Please fill in all required fields")
+      return
+    }
+
+    try {
+      setSaving(true)
+      const response = await fetch(`/api/products/${productId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: title,
+          slug: slug || title.toLowerCase().replace(/\s+/g, "-"),
+          description,
+          shortDesc: shortDescription,
+          categoryId: category,
+          price: parseFloat(price),
+          discountPrice: discountedPrice ? parseFloat(discountedPrice) : null,
+          salePercentage: salePercentage ? parseInt(salePercentage) : null,
+          isNew,
+          isFeatured,
+          sku,
+          stock: parseInt(quantity) || 0,
+          images,
+          tags: variants,
+          attributes: attributes.reduce((acc, attr) => {
+            const [key, value] = attr.split(":")
+            if (key && value) acc[key.trim()] = value.trim()
+            return acc
+          }, {} as Record<string, string>),
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update product")
+      }
+
+      toast.success("Product updated successfully!")
+      router.push("/admin/products")
+    } catch (error) {
+      console.error("Error updating product:", error)
+      toast.error("Failed to update product")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    )
   }
 
   return (
@@ -147,6 +154,19 @@ export default function EditProductPage() {
 
       <Card className="border-0 shadow-sm">
         <CardContent className="p-6 space-y-6">
+          {/* Product Images */}
+          <div className="space-y-2">
+            <Label>
+              Product Images <span className="text-red-500">*</span>
+            </Label>
+            <MultiImageUpload
+              values={images}
+              onChange={setImages}
+              maxImages={5}
+              disabled={saving}
+            />
+          </div>
+
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="title" className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -257,9 +277,11 @@ export default function EditProductPage() {
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="electronics">Electronics</SelectItem>
-                    <SelectItem value="clothing">Clothing</SelectItem>
-                    <SelectItem value="accessories">Accessories</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -530,10 +552,23 @@ export default function EditProductPage() {
               className="bg-[#4F46E5] hover:bg-[#4338CA] text-white px-8"
               size="lg"
               onClick={handleSaveProduct}
+              disabled={saving}
             >
-              Update Product
+              {saving ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                "Update Product"
+              )}
             </Button>
-            <Button variant="outline" size="lg" onClick={() => router.push("/admin/products")}>
+            <Button 
+              variant="outline" 
+              size="lg" 
+              onClick={() => router.push("/admin/products")}
+              disabled={saving}
+            >
               Cancel
             </Button>
           </div>

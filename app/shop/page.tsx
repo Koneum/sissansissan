@@ -260,22 +260,22 @@ function ShopContent() {
   return (
     <>
       <Header />
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-6 sm:py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">{t.shop.title}</h1>
-          <p className="text-muted-foreground">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="heading-responsive-h1 mb-2">{t.shop.title}</h1>
+          <p className="text-responsive-sm text-muted-foreground">
             {loading ? t.common.loading : `${products.length} ${t.shop.results}`}
           </p>
         </div>
 
-        <div className="flex gap-8">
+        <div className="flex gap-6 lg:gap-8">
           {/* Desktop Filters Sidebar */}
           <aside className="hidden lg:block w-64 flex-shrink-0">
-            <div className="sticky top-20 space-y-6 border rounded-lg p-6">
+            <div className="sticky top-20 space-y-4 sm:space-y-6 border rounded-lg p-4 sm:p-6">
               <div className="flex items-center justify-between">
-                <h2 className="font-semibold text-lg">{t.common.filter}</h2>
-                <SlidersHorizontal className="w-5 h-5" />
+                <h2 className="heading-responsive-h3">{t.common.filter}</h2>
+                <SlidersHorizontal className="icon-responsive" />
               </div>
               {filtersContent}
             </div>
@@ -284,12 +284,12 @@ function ShopContent() {
           {/* Products Grid */}
           <div className="flex-1">
             {/* Toolbar */}
-            <div className="flex items-center justify-between mb-6 gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-3 sm:gap-4">
               {/* Mobile Filters */}
               <Sheet>
                 <SheetTrigger asChild>
-                  <Button variant="outline" className="lg:hidden">
-                    <SlidersHorizontal className="w-4 h-4 mr-2" />
+                  <Button variant="outline" className="lg:hidden btn-responsive w-full sm:w-auto">
+                    <SlidersHorizontal className="icon-responsive mr-2" />
                     {t.common.filter}
                   </Button>
                 </SheetTrigger>
@@ -304,10 +304,10 @@ function ShopContent() {
               </Sheet>
 
               {/* Sort By */}
-              <div className="flex items-center gap-2 ml-auto">
-                <Label className="text-sm">{t.shop.sortBy} :</Label>
+              <div className="flex items-center gap-2 w-full sm:w-auto sm:ml-auto">
+                <Label className="text-responsive-sm whitespace-nowrap">{t.shop.sortBy} :</Label>
                 <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-full sm:w-[180px] h-10 sm:h-11">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -332,7 +332,7 @@ function ShopContent() {
                 <Button onClick={clearFilters}>{t.shop.clearFilters}</Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 {products.map((product) => (
                   <ProductCard
                     key={product.id}

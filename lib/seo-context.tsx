@@ -33,25 +33,56 @@ const SEOContext = createContext<SEOContextType | undefined>(undefined)
 
 export function SEOProvider({ children }: { children: ReactNode }) {
   const [seoData, setSEOData] = useState<SEOData>(defaultSEOData)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("seoCustomization")
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored)
-          setSEOData(parsed)
-        } catch (error) {
-          console.error("Error loading SEO data:", error)
-        }
-      }
-    }
+    fetchSEOData()
   }, [])
 
-  const updateSEOData = (data: SEOData) => {
+  const fetchSEOData = async () => {
+    try {
+      const response = await fetch("/api/settings/seo")
+      if (response.ok) {
+        const result = await response.json()
+        if (result.data) {
+          setSEOData(result.data)
+        }
+      }
+    } catch (error) {
+      console.error("Error loading SEO data:", error)
+      // Fallback to localStorage for backward compatibility
+      if (typeof window !== "undefined") {
+        const stored = localStorage.getItem("seoCustomization")
+        if (stored) {
+          try {
+            setSEOData(JSON.parse(stored))
+          } catch (e) {
+            console.error("Error parsing localStorage:", e)
+          }
+        }
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const updateSEOData = async (data: SEOData) => {
     setSEOData(data)
+    
+    // Save to localStorage as cache
     if (typeof window !== "undefined") {
       localStorage.setItem("seoCustomization", JSON.stringify(data))
+    }
+
+    // Save to database via API
+    try {
+      await fetch("/api/settings/seo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      })
+    } catch (error) {
+      console.error("Error saving SEO data to database:", error)
     }
   }
 

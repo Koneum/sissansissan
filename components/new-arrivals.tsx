@@ -42,9 +42,9 @@ export function NewArrivals() {
 
   if (loading) {
     return (
-      <section className="container mx-auto px-4 py-12">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold">{t.products.newArrivals}</h2>
+      <section className="container mx-auto px-4 py-8 sm:py-12">
+        <div className="flex items-center justify-between mb-6 sm:mb-8">
+          <h2 className="heading-responsive-h2">{t.products.newArrivals}</h2>
         </div>
         <p className="text-center text-gray-600 dark:text-gray-400">{t.common.loading}</p>
       </section>
@@ -56,15 +56,15 @@ export function NewArrivals() {
   }
 
   return (
-    <section className="container mx-auto px-4 py-12">
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-bold">{t.products.newArrivals}</h2>
-        <Link href="/products" className="text-sm font-medium text-blue-600 hover:underline">
+    <section className="container mx-auto px-4 py-8 sm:py-12">
+      <div className="flex items-center justify-between mb-6 sm:mb-8">
+        <h2 className="heading-responsive-h2">{t.products.newArrivals}</h2>
+        <Link href="/products" className="text-responsive-sm font-medium text-blue-600 hover:underline">
           {t.products.viewAll}
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {products.map((product) => (
           <ProductCard 
             key={product.id} 

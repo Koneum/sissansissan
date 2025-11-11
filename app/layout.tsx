@@ -13,6 +13,7 @@ import { HeroSliderProvider } from "@/lib/hero-slider-context"
 import { SEOProvider } from "@/lib/seo-context"
 import { PagesProvider } from "@/lib/pages-context"
 import { CountdownProvider } from "@/lib/countdown-context"
+import { PromoProvider } from "@/lib/promo-context"
 import { Chatbot } from "@/components/chatbot"
 import { Toaster } from "sonner"
 import { Toaster as ShadcnToaster } from "@/components/ui/toaster"
@@ -53,20 +54,22 @@ export default function RootLayout({
               <SEOProvider>
                 <PagesProvider>
                   <CountdownProvider>
-                    <HeaderProvider>
-                      <FooterProvider>
-                        <HeroSliderProvider>
-                          <WishlistProvider>
-                            <CartProvider>
+                    <PromoProvider>
+                      <HeaderProvider>
+                        <FooterProvider>
+                          <HeroSliderProvider>
+                            <WishlistProvider>
+                              <CartProvider>
                               <Toaster position="bottom-right" richColors />
                               <ShadcnToaster />
                               {children}
                               {/* <Chatbot /> */}
-                            </CartProvider>
-                          </WishlistProvider>
-                        </HeroSliderProvider>
-                      </FooterProvider>
-                    </HeaderProvider>
+                              </CartProvider>
+                            </WishlistProvider>
+                          </HeroSliderProvider>
+                        </FooterProvider>
+                      </HeaderProvider>
+                    </PromoProvider>
                   </CountdownProvider>
                 </PagesProvider>
               </SEOProvider>

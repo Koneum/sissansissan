@@ -43,7 +43,7 @@ export function CountdownSection() {
   }
 
   return (
-    <section className="container mx-auto px-4 py-12">
+    <section className="container mx-auto px-4 py-8 sm:py-12">
       <div 
         className="rounded-2xl p-8 md:p-12 flex flex-col md:flex-row items-center gap-8"
         style={{ backgroundColor: countdownData.backgroundColor, color: countdownData.textColor }}

@@ -27,25 +27,56 @@ const CountdownContext = createContext<CountdownContextType | undefined>(undefin
 
 export function CountdownProvider({ children }: { children: ReactNode }) {
   const [countdownData, setCountdownData] = useState<CountdownData>(defaultCountdownData)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("countdownCustomization")
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored)
-          setCountdownData(parsed)
-        } catch (error) {
-          console.error("Error loading countdown data:", error)
-        }
-      }
-    }
+    fetchCountdownData()
   }, [])
 
-  const updateCountdownData = (data: CountdownData) => {
+  const fetchCountdownData = async () => {
+    try {
+      const response = await fetch("/api/settings/countdown")
+      if (response.ok) {
+        const result = await response.json()
+        if (result.data) {
+          setCountdownData(result.data)
+        }
+      }
+    } catch (error) {
+      console.error("Error loading countdown data:", error)
+      // Fallback to localStorage for backward compatibility
+      if (typeof window !== "undefined") {
+        const stored = localStorage.getItem("countdownCustomization")
+        if (stored) {
+          try {
+            setCountdownData(JSON.parse(stored))
+          } catch (e) {
+            console.error("Error parsing localStorage:", e)
+          }
+        }
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const updateCountdownData = async (data: CountdownData) => {
     setCountdownData(data)
+    
+    // Save to localStorage as cache
     if (typeof window !== "undefined") {
       localStorage.setItem("countdownCustomization", JSON.stringify(data))
+    }
+
+    // Save to database via API
+    try {
+      await fetch("/api/settings/countdown", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      })
+    } catch (error) {
+      console.error("Error saving countdown data to database:", error)
     }
   }
 

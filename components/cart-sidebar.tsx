@@ -24,15 +24,15 @@ export function CartSidebar({ open, onClose }: CartSidebarProps) {
     <Sheet open={open} onOpenChange={onClose}>
       <SheetContent side="right" className="w-full sm:max-w-lg p-0 flex flex-col">
         {/* Header */}
-        <SheetHeader className="px-6 py-4 border-b">
+        <SheetHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <ShoppingBag className="w-5 h-5 text-primary" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <ShoppingBag className="icon-responsive text-primary" />
               </div>
               <div>
-                <SheetTitle className="text-xl">{t.cart.title}</SheetTitle>
-                <p className="text-sm text-muted-foreground">
+                <SheetTitle className="heading-responsive-h3">{t.cart.title}</SheetTitle>
+                <p className="text-responsive-sm text-muted-foreground">
                   {itemCount} {itemCount === 1 ? 'article' : 'articles'}
                 </p>
               </div>
@@ -46,8 +46,8 @@ export function CartSidebar({ open, onClose }: CartSidebarProps) {
               <div className="absolute inset-0 bg-primary/10 rounded-full animate-pulse" />
               <ShoppingBag className="w-24 h-24 text-primary/40" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">{t.cart.empty}</h3>
-            <p className="text-sm text-muted-foreground mb-6">
+            <h3 className="heading-responsive-h3 mb-2">{t.cart.empty}</h3>
+            <p className="text-responsive-sm text-muted-foreground mb-6">
               Ajoutez des articles pour commencer vos achats
             </p>
             <Link href="/products" onClick={onClose}>
@@ -60,7 +60,7 @@ export function CartSidebar({ open, onClose }: CartSidebarProps) {
         ) : (
           <>
             {/* Cart Items */}
-            <ScrollArea className="flex-1 px-6">
+            <ScrollArea className="flex-1 px-4 sm:px-6">
               <div className="py-4 space-y-4">
                 {items.map((item, index) => (
                   <div 
@@ -82,7 +82,7 @@ export function CartSidebar({ open, onClose }: CartSidebarProps) {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <Link href={`/products/${item.productId || item.id}`} className="flex-1" onClick={onClose}>
-                          <h3 className="font-medium text-sm line-clamp-2 hover:text-primary transition-colors cursor-pointer">
+                          <h3 className="font-medium text-responsive-sm line-clamp-2 hover:text-primary transition-colors cursor-pointer">
                             {item.name}
                           </h3>
                         </Link>
@@ -97,7 +97,7 @@ export function CartSidebar({ open, onClose }: CartSidebarProps) {
                       </div>
 
                       <div className="flex items-center gap-2 mb-2">
-                        <p className="text-sm font-bold text-primary">
+                        <p className="text-responsive-sm font-bold text-primary">
                           {formatPrice(item.price)}
                         </p>
                         {item.quantity > 1 && (
@@ -142,7 +142,7 @@ export function CartSidebar({ open, onClose }: CartSidebarProps) {
             </ScrollArea>
 
             {/* Footer / Checkout Section */}
-            <div className="border-t bg-card/50 backdrop-blur-sm px-6 py-4 space-y-4">
+            <div className="border-t bg-card/50 backdrop-blur-sm px-4 sm:px-6 py-3 sm:py-4 space-y-3 sm:space-y-4">
               {/* Subtotal */}
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">

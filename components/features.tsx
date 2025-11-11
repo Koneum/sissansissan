@@ -25,8 +25,8 @@ const features = [
 
 export function Features() {
   return (
-    <section className="container mx-auto px-4 py-12">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <section className="container mx-auto px-4 py-8 sm:py-12">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {features.map((feature, index) => (
           <div key={index} className="flex items-start gap-4">
             <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-full">

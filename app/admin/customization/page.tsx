@@ -9,34 +9,34 @@ export default function CustomizationPage() {
   const { t } = useLocale()
   
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8 pb-6 sm:pb-8">
       <div>
-        <h1 className="text-3xl font-bold">{t.admin.customization}</h1>
-        <p className="text-muted-foreground">{t.admin.customizeStore}</p>
+        <h1 className="heading-responsive-h1">{t.admin.customization}</h1>
+        <p className="text-responsive-sm text-muted-foreground">{t.admin.customizeStore}</p>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>{t.admin.themeColors}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <CardContent className="card-responsive space-y-4">
+          <div className="grid-responsive-2">
             <div className="space-y-2">
               <Label>{t.admin.primaryColor}</Label>
               <div className="flex gap-2">
-                <input type="color" defaultValue="#1e293b" className="w-12 h-12 rounded cursor-pointer" />
-                <div className="flex-1 flex items-center px-3 border rounded">#1e293b</div>
+                <input type="color" defaultValue="#1e293b" className="w-10 h-10 sm:w-12 sm:h-12 rounded cursor-pointer" />
+                <div className="flex-1 flex items-center px-2 sm:px-3 border rounded text-responsive-sm">#1e293b</div>
               </div>
             </div>
             <div className="space-y-2">
               <Label>{t.admin.accentColor}</Label>
               <div className="flex gap-2">
-                <input type="color" defaultValue="#3b82f6" className="w-12 h-12 rounded cursor-pointer" />
-                <div className="flex-1 flex items-center px-3 border rounded">#3b82f6</div>
+                <input type="color" defaultValue="#3b82f6" className="w-10 h-10 sm:w-12 sm:h-12 rounded cursor-pointer" />
+                <div className="flex-1 flex items-center px-2 sm:px-3 border rounded text-responsive-sm">#3b82f6</div>
               </div>
             </div>
           </div>
-          <Button>{t.admin.saveTheme}</Button>
+          <Button className="btn-responsive">{t.admin.saveTheme}</Button>
         </CardContent>
       </Card>
 
@@ -44,9 +44,9 @@ export default function CustomizationPage() {
         <CardHeader>
           <CardTitle>{t.admin.homepageBanners}</CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground mb-4">{t.admin.managePromotionalContent}</p>
-          <Button>{t.admin.manageBanners}</Button>
+        <CardContent className="card-responsive">
+          <p className="text-responsive-sm text-muted-foreground mb-4">{t.admin.managePromotionalContent}</p>
+          <Button className="btn-responsive">{t.admin.manageBanners}</Button>
         </CardContent>
       </Card>
     </div>

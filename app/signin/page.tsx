@@ -119,7 +119,7 @@ export default function SignInPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {mode === "signup" && (
                 <div className="space-y-2">
-                  <label htmlFor="name" className="text-white text-sm font-medium">
+                  <label htmlFor="name" className="text-white text-responsive-sm font-medium">
                     Nom complet
                   </label>
                   <Input
@@ -129,12 +129,12 @@ export default function SignInPage() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
-                    className="bg-transparent border-2 border-slate-400 text-white placeholder:text-slate-400 rounded-xl h-12 focus:border-teal-400 focus:ring-teal-400"
+                    className="bg-transparent border-2 border-slate-400 text-white placeholder:text-slate-400 rounded-xl h-10 sm:h-12 focus:border-teal-400 focus:ring-teal-400"
                   />
                 </div>
               )}
               <div className="space-y-2">
-                <label htmlFor="email" className="text-white text-sm font-medium">
+                <label htmlFor="email" className="text-white text-responsive-sm font-medium">
                   Email
                 </label>
                 <Input
@@ -144,12 +144,12 @@ export default function SignInPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="bg-transparent border-2 border-slate-400 text-white placeholder:text-slate-400 rounded-xl h-12 focus:border-teal-400 focus:ring-teal-400"
+                  className="bg-transparent border-2 border-slate-400 text-white placeholder:text-slate-400 rounded-xl h-10 sm:h-12 focus:border-teal-400 focus:ring-teal-400"
                 />
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="password" className="text-white text-sm font-medium">
+                <label htmlFor="password" className="text-white text-responsive-sm font-medium">
                   Password
                 </label>
                 <Input
@@ -159,7 +159,7 @@ export default function SignInPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="bg-transparent border-2 border-slate-400 text-white placeholder:text-slate-400 rounded-xl h-12 focus:border-teal-400 focus:ring-teal-400"
+                  className="bg-transparent border-2 border-slate-400 text-white placeholder:text-slate-400 rounded-xl h-10 sm:h-12 focus:border-teal-400 focus:ring-teal-400"
                 />
               </div>
 
@@ -167,7 +167,7 @@ export default function SignInPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-teal-400 hover:bg-teal-500 text-slate-900 font-semibold rounded-xl h-12 text-base"
+                className="w-full bg-teal-400 hover:bg-teal-500 text-slate-900 font-semibold rounded-xl btn-responsive"
               >
                 {isLoading ? (mode === "signin" ? "Connexion..." : "Inscription...") : (mode === "signin" ? t.auth.signIn : "S'inscrire")}
               </Button>

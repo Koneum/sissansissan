@@ -21,19 +21,35 @@ export default function ForgotPasswordPage() {
     setIsLoading(true)
 
     try {
-      // TODO: Implémenter l'envoi d'email de réinitialisation avec Better Auth
-      // Pour l'instant, on simule l'envoi
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Erreur lors de l'envoi")
+      }
+
       setEmailSent(true)
       toast({
         title: "Email envoyé",
         description: "Vérifiez votre boîte de réception pour réinitialiser votre mot de passe",
       })
+
+      // En développement, afficher le token dans la console
+      if (data.devToken) {
+        console.log("🔑 Token de réinitialisation (DEV):", data.devToken)
+        console.log("🔗 Lien:", `${window.location.origin}/reset-password?token=${data.devToken}`)
+      }
     } catch (error) {
       toast({
         title: "Erreur",
-        description: "Impossible d'envoyer l'email de réinitialisation",
+        description: error instanceof Error ? error.message : "Impossible d'envoyer l'email de réinitialisation",
         variant: "destructive",
       })
     } finally {
@@ -44,30 +60,30 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="bg-gradient-to-br from-slate-700 via-slate-600 to-slate-700 rounded-3xl shadow-[0_30px_80px_rgba(0,0,0,0.4)] p-8 md:p-12">
+        <div className="bg-gradient-to-br from-slate-700 via-slate-600 to-slate-700 rounded-3xl shadow-[0_30px_80px_rgba(0,0,0,0.4)] p-6 sm:p-8 md:p-12">
           {/* Back Button */}
           <Link 
             href="/signin" 
-            className="inline-flex items-center gap-2 text-slate-300 hover:text-white transition-colors mb-6"
+            className="inline-flex items-center gap-2 text-slate-300 hover:text-white transition-colors mb-4 sm:mb-6"
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm">Retour à la connexion</span>
+            <ArrowLeft className="icon-responsive" />
+            <span className="text-responsive-sm">Retour à la connexion</span>
           </Link>
 
           {!emailSent ? (
             <>
-              <div className="mb-8">
-                <h1 className="text-3xl md:text-4xl font-light text-white mb-2">
+              <div className="mb-6 sm:mb-8">
+                <h1 className="heading-responsive-h1 font-light text-white mb-2">
                   Mot de passe <span className="font-bold">oublié?</span>
                 </h1>
-                <p className="text-slate-300 text-sm">
+                <p className="text-responsive-sm text-slate-300">
                   Entrez votre email et nous vous enverrons un lien pour réinitialiser votre mot de passe.
                 </p>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                 <div className="space-y-2">
-                  <label htmlFor="email" className="text-white text-sm font-medium">
+                  <label htmlFor="email" className="text-white text-responsive-sm font-medium">
                     Email
                   </label>
                   <Input
@@ -77,48 +93,48 @@ export default function ForgotPasswordPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="bg-transparent border-2 border-slate-400 text-white placeholder:text-slate-400 rounded-xl h-12 focus:border-teal-400 focus:ring-teal-400"
+                    className="bg-transparent border-2 border-slate-400 text-white placeholder:text-slate-400 rounded-xl h-10 sm:h-12 focus:border-teal-400 focus:ring-teal-400"
                   />
                 </div>
 
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-teal-400 hover:bg-teal-500 text-slate-900 font-semibold rounded-xl h-12 text-base"
+                  className="w-full bg-teal-400 hover:bg-teal-500 text-slate-900 font-semibold rounded-xl btn-responsive"
                 >
                   {isLoading ? "Envoi en cours..." : "Envoyer le lien"}
                 </Button>
               </form>
             </>
           ) : (
-            <div className="text-center py-8">
-              <div className="w-16 h-16 bg-teal-400 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Mail className="w-8 h-8 text-slate-900" />
+            <div className="text-center py-6 sm:py-8">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-teal-400 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                <Mail className="w-7 h-7 sm:w-8 sm:h-8 text-slate-900" />
               </div>
               
-              <h2 className="text-2xl font-bold text-white mb-3">
+              <h2 className="heading-responsive-h2 font-bold text-white mb-3">
                 Email envoyé!
               </h2>
               
-              <p className="text-slate-300 mb-6">
+              <p className="text-responsive-sm text-slate-300 mb-4 sm:mb-6">
                 Nous avons envoyé un lien de réinitialisation à <strong className="text-white">{email}</strong>
               </p>
               
-              <p className="text-slate-400 text-sm mb-8">
+              <p className="text-responsive-sm text-slate-400 mb-6 sm:mb-8">
                 Vérifiez votre boîte de réception et vos spams. Le lien expirera dans 1 heure.
               </p>
 
               <div className="space-y-3">
                 <Button
                   onClick={() => router.push("/signin")}
-                  className="w-full bg-teal-400 hover:bg-teal-500 text-slate-900 font-semibold rounded-xl h-12"
+                  className="w-full bg-teal-400 hover:bg-teal-500 text-slate-900 font-semibold rounded-xl btn-responsive"
                 >
                   Retour à la connexion
                 </Button>
                 
                 <button
                   onClick={() => setEmailSent(false)}
-                  className="w-full text-slate-300 hover:text-white text-sm transition-colors"
+                  className="w-full text-slate-300 hover:text-white text-responsive-sm transition-colors"
                 >
                   Renvoyer l'email
                 </button>

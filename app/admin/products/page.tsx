@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
@@ -19,9 +18,10 @@ import { Edit, Trash2, Search, Loader2 } from "lucide-react"
 import { formatPrice } from "@/lib/currency"
 import { useLocale } from "@/lib/locale-context"
 import Image from "next/image"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { PagePermissionGuard } from "@/components/page-permission-guard"
+import { PermissionButton } from "@/components/permission-button"
 
 interface Product {
   id: string
@@ -129,15 +129,22 @@ export default function ProductsPage() {
   }
 
   return (
+    <PagePermissionGuard category="products" action="view">
     <div className="space-y-4 sm:space-y-6 pb-4 sm:pb-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 dark:text-white">{t.admin.allProducts}</h1>
           <p className="text-xs sm:text-sm text-muted-foreground">{t.common.total} : {products.length} {t.admin.products.toLowerCase()}</p>
         </div>
-        <Link href="/admin/products/add">
-          <Button size="sm" className="bg-[#1e293b] hover:bg-[#334155] w-full sm:w-auto text-sm">+ {t.admin.addProduct}</Button>
-        </Link>
+        <PermissionButton 
+          category="products" 
+          action="create"
+          size="sm" 
+          className="bg-[#1e293b] hover:bg-[#334155] w-full sm:w-auto text-sm"
+          onClick={() => router.push('/admin/products/add')}
+        >
+          + {t.admin.addProduct}
+        </PermissionButton>
       </div>
 
       <div className="bg-white dark:bg-slate-900 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-800 p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4">
@@ -246,22 +253,26 @@ export default function ProductsPage() {
                     </td>
                     <td className="py-3 px-3 sm:py-4 sm:px-6">
                       <div className="flex gap-1 sm:gap-2 justify-end">
-                        <Button
+                        <PermissionButton
+                          category="products"
+                          action="delete"
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 sm:h-9 sm:w-9 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950"
                           onClick={() => setProductToDelete(product)}
                         >
                           <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                        </Button>
-                        <Button
+                        </PermissionButton>
+                        <PermissionButton
+                          category="products"
+                          action="edit"
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 sm:h-9 sm:w-9 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-950"
                           onClick={() => router.push(`/admin/products/edit/${product.id}`)}
                         >
                           <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
-                        </Button>
+                        </PermissionButton>
                       </div>
                     </td>
                   </tr>
@@ -292,5 +303,6 @@ export default function ProductsPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+    </PagePermissionGuard>
   )
 }

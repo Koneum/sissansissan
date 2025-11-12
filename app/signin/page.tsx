@@ -38,9 +38,9 @@ export default function SignInPage() {
 
         {/* Footer Links */}
         <div className="mt-6 text-center space-y-3">
-          <p className="text-muted-foreground text-sm">
+          <p className="text-foreground text-responsive-sm">
             Vous n&apos;avez pas de compte?{" "}
-            <Link href="/signin/register" className="text-primary font-semibold hover:underline transition">
+            <Link href="/signin/register" className="text-black font-semibold hover:underline transition">
               S&apos;inscrire
             </Link>
           </p>

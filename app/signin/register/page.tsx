@@ -37,13 +37,13 @@ export default function RegisterPage() {
 
         {/* Footer Links */}
         <div className="mt-6 text-center">
-          <p className="text-muted-foreground text-sm">
+          <p className="text-foreground text-responsive-sm">
             Vous avez déjà un compte?{" "}
-            <Link href="/signin" className="text-accent font-semibold hover:underline transition">
+            <Link href="/signin" className="text-black font-semibold hover:underline transition">
               Se connecter
             </Link>
           </p>
-          <p className="text-xs text-muted-foreground mt-4">
+          <p className="text-foreground text-responsive-sm mt-4">
             En vous inscrivant, vous acceptez nos{" "}
             <Link href="#" className="text-primary hover:underline">
               conditions d&apos;utilisation

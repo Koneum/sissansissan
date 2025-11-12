@@ -402,76 +402,71 @@ export default function UserManagementPage() {
   )
 
   const renderPermissionsTab = () => (
-    <div className="space-y-6 max-h-[400px] overflow-y-auto">
-      {permissions.map((group) => (
-        <Card key={group.category}>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <span>{getCategoryIcon(group.category)}</span>
-              <span className="capitalize">{group.category}</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {group.permissions.map((perm) => (
-                <div key={perm.id} className="border rounded-lg p-3">
-                  <div className="font-medium text-sm mb-2">{perm.description}</div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`${perm.id}-view`}
-                        checked={selectedPermissions[perm.id]?.canView || false}
-                        onCheckedChange={(checked) =>
-                          handlePermissionChange(perm.id, 'canView', checked as boolean)
-                        }
-                      />
-                      <label htmlFor={`${perm.id}-view`} className="text-sm cursor-pointer">
-                        Voir
-                      </label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`${perm.id}-create`}
-                        checked={selectedPermissions[perm.id]?.canCreate || false}
-                        onCheckedChange={(checked) =>
-                          handlePermissionChange(perm.id, 'canCreate', checked as boolean)
-                        }
-                      />
-                      <label htmlFor={`${perm.id}-create`} className="text-sm cursor-pointer">
-                        Créer
-                      </label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`${perm.id}-edit`}
-                        checked={selectedPermissions[perm.id]?.canEdit || false}
-                        onCheckedChange={(checked) =>
-                          handlePermissionChange(perm.id, 'canEdit', checked as boolean)
-                        }
-                      />
-                      <label htmlFor={`${perm.id}-edit`} className="text-sm cursor-pointer">
-                        Modifier
-                      </label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`${perm.id}-delete`}
-                        checked={selectedPermissions[perm.id]?.canDelete || false}
-                        onCheckedChange={(checked) =>
-                          handlePermissionChange(perm.id, 'canDelete', checked as boolean)
-                        }
-                      />
-                      <label htmlFor={`${perm.id}-delete`} className="text-sm cursor-pointer">
-                        Supprimer
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              ))}
+    <div className="space-y-4 max-h-[400px] overflow-y-auto">
+      {permissions.map((group) => {
+        // Prendre la première permission du groupe pour obtenir l'ID
+        const perm = group.permissions[0]
+        if (!perm) return null
+        
+        return (
+          <div key={group.category} className="border rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-lg">{getCategoryIcon(group.category)}</span>
+              <span className="font-semibold capitalize">{group.category}</span>
             </div>
-          </CardContent>
-        </Card>
-      ))}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id={`${perm.id}-view`}
+                  checked={selectedPermissions[perm.id]?.canView || false}
+                  onCheckedChange={(checked) =>
+                    handlePermissionChange(perm.id, 'canView', checked as boolean)
+                  }
+                />
+                <label htmlFor={`${perm.id}-view`} className="text-sm cursor-pointer font-medium">
+                  Voir
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id={`${perm.id}-create`}
+                  checked={selectedPermissions[perm.id]?.canCreate || false}
+                  onCheckedChange={(checked) =>
+                    handlePermissionChange(perm.id, 'canCreate', checked as boolean)
+                  }
+                />
+                <label htmlFor={`${perm.id}-create`} className="text-sm cursor-pointer font-medium">
+                  Créer
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id={`${perm.id}-edit`}
+                  checked={selectedPermissions[perm.id]?.canEdit || false}
+                  onCheckedChange={(checked) =>
+                    handlePermissionChange(perm.id, 'canEdit', checked as boolean)
+                  }
+                />
+                <label htmlFor={`${perm.id}-edit`} className="text-sm cursor-pointer font-medium">
+                  Modifier
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id={`${perm.id}-delete`}
+                  checked={selectedPermissions[perm.id]?.canDelete || false}
+                  onCheckedChange={(checked) =>
+                    handlePermissionChange(perm.id, 'canDelete', checked as boolean)
+                  }
+                />
+                <label htmlFor={`${perm.id}-delete`} className="text-sm cursor-pointer font-medium">
+                  Supprimer
+                </label>
+              </div>
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 

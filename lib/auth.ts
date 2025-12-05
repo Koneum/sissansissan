@@ -1,5 +1,6 @@
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
+import { sendWelcomeEmail } from './email'
 import prisma from './prisma'
 
 
@@ -41,12 +42,49 @@ export const auth = betterAuth({
     },
   },
   session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // 1 day
+    expiresIn: 60 * 60 * 24 * 30, // 30 jours pour les customers (pas de délai)
+    updateAge: 60 * 60 * 24, // Rafraîchir le token tous les jours
   },
   advanced: {
     useSecureCookies: process.env.NODE_ENV === 'production',
     cookiePrefix: 'sissan',
+    crossSubDomainCookies: {
+      enabled: false,
+    },
   },
-   trustedOrigins: ['http://localhost:3000', 'https://sissan-sissan.net'],
+  trustedOrigins: [
+    'http://localhost:3000',
+    'https://sissan-sissan.net',
+  ],
+  baseURL: process.env.NEXT_PUBLIC_BASE_URL || 'https://sissan-sissan.net',
+  
+  // Hooks pour envoyer les emails de bienvenue
+  databaseHooks: {
+    account: {
+      create: {
+        after: async (account) => {
+          // Envoyer l'email de bienvenue pour tous les nouveaux comptes
+          try {
+            const user = await prisma.user.findUnique({
+              where: { id: account.userId }
+            })
+            
+            if (user) {
+              // Déterminer le provider pour personnaliser le message
+              const isCredential = account.providerId === 'credential'
+              const providerName = isCredential 
+                ? undefined 
+                : account.providerId.charAt(0).toUpperCase() + account.providerId.slice(1)
+              
+              await sendWelcomeEmail(user.email, user.name || 'Cher client', providerName)
+              console.log(`📧 Email de bienvenue${providerName ? ` (${providerName})` : ''} envoyé à ${user.email}`)
+            }
+          } catch (error) {
+            console.error('Erreur envoi email de bienvenue:', error)
+            // Ne pas bloquer l'inscription/connexion si l'email échoue
+          }
+        },
+      },
+    },
+  },
 })

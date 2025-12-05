@@ -2,7 +2,9 @@
 
 import Link from "next/link"
 import Image from "next/image"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { ArrowLeft } from "lucide-react"
 import LoginForm from "@/components/login-form"
 
 export default function SignInPage() {
@@ -37,16 +39,30 @@ export default function SignInPage() {
         </Card>
 
         {/* Footer Links */}
-        <div className="mt-6 text-center space-y-3">
-          <p className="text-foreground text-responsive-sm">
-            Vous n&apos;avez pas de compte?{" "}
-            <Link href="/signin/register" className="text-black font-semibold hover:underline transition">
-              S&apos;inscrire
-            </Link>
-          </p>
-          <Link href="/forgot-password" className="text-primary text-sm hover:underline transition block">
-            Mot de passe oublié?
+        <div className="mt-6 space-y-4">
+          {/* Retour vers l'accueil */}
+          <Link href="/" className="block">
+            <Button 
+              variant="outline" 
+              className="w-full border-border text-foreground hover:bg-secondary bg-transparent"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Retour à l&apos;accueil
+            </Button>
           </Link>
+          
+          {/* Liens d'inscription et mot de passe */}
+          <div className="text-center space-y-3">
+            <p className="text-foreground text-responsive-sm">
+              Vous n&apos;avez pas de compte?{" "}
+              <Link href="/signin/register" className="text-black font-semibold hover:underline transition">
+                S&apos;inscrire
+              </Link>
+            </p>
+            <Link href="/forgot-password" className="text-primary text-sm hover:underline transition block">
+              Mot de passe oublié?
+            </Link>
+          </div>
         </div>
       </div>
     </div>

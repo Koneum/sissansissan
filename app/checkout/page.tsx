@@ -125,17 +125,43 @@ export default function CheckoutPage() {
         userId: user?.id || null,
       }
 
-      // For cash on delivery, no payment processing needed
+      // For cash on delivery, create order in database
       if (paymentMethod === 'cash') {
-        // Save order to localStorage for now (in production, send to API)
-        const orders = JSON.parse(localStorage.getItem('guest_orders') || '[]')
-        orders.push({
-          ...orderData,
-          id: `ORDER-${Date.now()}`,
-          status: 'pending',
-          createdAt: new Date().toISOString(),
+        // Créer la commande en base de données
+        const createOrderResponse = await fetch('/api/orders/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customer: orderData.customer,
+            billingAddress: orderData.billingAddress,
+            shippingAddress: orderData.shippingAddress,
+            items: orderData.items,
+            subtotal: orderData.subtotal,
+            shippingCost: orderData.shippingCost,
+            total: orderData.total,
+            shippingMethod: orderData.shippingMethod,
+            paymentMethod: orderData.paymentMethod,
+            userId: orderData.userId,
+          }),
         })
-        localStorage.setItem('guest_orders', JSON.stringify(orders))
+        
+        const createOrderData = await createOrderResponse.json()
+        console.log('Réponse création commande (cash):', createOrderData)
+        
+        if (!createOrderResponse.ok) {
+          throw new Error(createOrderData.error || 'Erreur lors de la création de la commande')
+        }
+        
+        // Sauvegarder aussi dans localStorage pour suivi
+      const orders = JSON.parse(localStorage.getItem('guest_orders') || '[]')
+      orders.push({
+        ...orderData,
+        id: createOrderData.orderId || `ORDER-${Date.now()}`,  // <-- Corriger ici
+        status: 'pending',
+        paymentStatus: 'pending',
+        createdAt: new Date().toISOString(),
+      })
+      localStorage.setItem('guest_orders', JSON.stringify(orders))
         
         clearCart()
         router.push("/order-success")
@@ -151,7 +177,18 @@ export default function CheckoutPage() {
         const createOrderResponse = await fetch('/api/orders/create', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(orderData),
+          body: JSON.stringify({
+            customer: orderData.customer,
+            billingAddress: orderData.billingAddress,
+            shippingAddress: orderData.shippingAddress,
+            items: orderData.items,
+            subtotal: orderData.subtotal,
+            shippingCost: orderData.shippingCost,
+            total: orderData.total,
+            shippingMethod: orderData.shippingMethod,
+            paymentMethod: orderData.paymentMethod,
+            userId: orderData.userId,
+          }),
         })
         
         const createOrderData = await createOrderResponse.json()
@@ -161,7 +198,7 @@ export default function CheckoutPage() {
           throw new Error(createOrderData.error || 'Erreur lors de la création de la commande')
         }
         
-        const { orderId } = createOrderData
+        const orderId = createOrderData.orderId
         
         // Initier le paiement VitePay
         const paymentResponse = await fetch('/api/payments/initiate', {
@@ -458,14 +495,14 @@ export default function CheckoutPage() {
                     setShowCardDetails(value === "stripe" || value === "card")
                   }}
                 >
-                  <div className="flex items-center space-x-3 p-3 border rounded-lg mb-3">
+                  {/* <div className="flex items-center space-x-3 p-3 border rounded-lg mb-3">
                     <RadioGroupItem value="stripe" id="stripe" />
                     <Image src="/Visa_Inc._logo.svg.png" alt="Visa" width={40} height={25} />
                     <Image src="/MasterCard_Logo.svg.png" alt="MasterCard" width={40} height={25} />
                     <Label htmlFor="stripe" className="flex-1 cursor-pointer">
                       Carte bancaire
                     </Label>
-                  </div>
+                  </div> */}
                   <div className="flex items-center space-x-3 p-3 border rounded-lg mb-3 bg-green-50 dark:bg-green-950/20">
                     <RadioGroupItem value="cash" id="cash" />
                     <DollarSign className="h-5 w-5 text-green-600" />
@@ -486,13 +523,13 @@ export default function CheckoutPage() {
                       </div>
                     </Label>
                   </div>
-                  <div className="flex items-center space-x-3 p-3 border rounded-lg">
+                  {/* <div className="flex items-center space-x-3 p-3 border rounded-lg">
                     <RadioGroupItem value="moovmoney" id="moovmoney" />
                     <Image src="/moov-money.png" alt="Moov Money" width={40} height={25} />
                     <Label htmlFor="moovmoney" className="flex-1 cursor-pointer">
                       Moov Money
                     </Label>
-                  </div>
+                  </div> */}
                 </RadioGroup>
 
                 {/* Orange Money Details - Affichage conditionnel */}

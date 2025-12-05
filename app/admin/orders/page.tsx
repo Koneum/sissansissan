@@ -77,9 +77,16 @@ export default function OrdersPage() {
 
   const filteredAndSortedOrders = useMemo(() => {
     const filtered = orders.filter(order => {
-      const matchesSearch = order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.status.toLowerCase().includes(searchQuery.toLowerCase())
+      const searchLower = searchQuery.toLowerCase()
+      const orderNumber = order.orderNumber?.toLowerCase() || ""
+      const userName = order.user?.name?.toLowerCase() || ""
+      const userEmail = order.user?.email?.toLowerCase() || ""
+      const status = order.status?.toLowerCase() || ""
+      
+      const matchesSearch = orderNumber.includes(searchLower) ||
+        userName.includes(searchLower) ||
+        userEmail.includes(searchLower) ||
+        status.includes(searchLower)
       
       const matchesStatus = filterStatus === "all" || order.status === filterStatus
       
@@ -244,8 +251,8 @@ export default function OrdersPage() {
                     </td>
                     <td className="py-4 px-6">
                       <div>
-                        <p className="font-medium text-slate-900 dark:text-white">{order.user.name}</p>
-                        <p className="text-sm text-muted-foreground">{order.user.email}</p>
+                        <p className="font-medium text-slate-900 dark:text-white">{order.user?.name || "Client invité"}</p>
+                        <p className="text-sm text-muted-foreground">{order.user?.email || "-"}</p>
                       </div>
                     </td>
                     <td className="py-4 px-6">
@@ -295,8 +302,8 @@ export default function OrdersPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium">{t.admin.customer}</Label>
-                  <p className="text-lg">{selectedOrder.user.name}</p>
-                  <p className="text-sm text-muted-foreground">{selectedOrder.user.email}</p>
+                  <p className="text-lg">{selectedOrder.user?.name || "Client invité"}</p>
+                  <p className="text-sm text-muted-foreground">{selectedOrder.user?.email || "-"}</p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium">{t.admin.orderDate}</Label>

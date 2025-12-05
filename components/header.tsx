@@ -64,10 +64,10 @@ export function Header() {
                 {t.nav.pages}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
               </Link>
-              <Link href="/blog" className="text-responsive-sm font-medium hover:text-primary transition-colors relative group">
+              {/* <Link href="/blog" className="text-responsive-sm font-medium hover:text-primary transition-colors relative group">
                 {t.nav.blog}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
-              </Link>
+              </Link> */}
               <Link href="/contact" className="text-responsive-sm font-medium hover:text-primary transition-colors relative group">
                 {t.nav.contact}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />

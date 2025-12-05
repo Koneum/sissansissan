@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -106,9 +107,11 @@ export default function HeroSliderPage() {
                 key={slide.id}
                 className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 border rounded-lg hover:bg-accent/50 transition-colors"
               >
-                <img
+                <Image
                   src={slide.image}
                   alt={slide.title}
+                  width={96}
+                  height={96}
                   className="w-full sm:w-24 h-32 sm:h-24 object-cover rounded-md"
                 />
                 <div className="flex-1 w-full">
@@ -148,55 +151,59 @@ export default function HeroSliderPage() {
 
       {/* Dialog for Add/Edit */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="w-[95vw] max-w-lg md:max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 gap-3 sm:gap-4">
           <DialogHeader>
-            <DialogTitle>{editingSlide ? t.admin.editSlide : t.admin.addNewSlide}</DialogTitle>
+            <DialogTitle className="heading-responsive-h4">{editingSlide ? t.admin.editSlide : t.admin.addNewSlide}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-4 sm:space-y-6">
+            <div className="grid-responsive-2">
               <div className="space-y-2">
-                <Label htmlFor="badge">{t.admin.badge}</Label>
+                <Label htmlFor="badge" className="text-responsive-sm font-medium">{t.admin.badge}</Label>
                 <Input
                   id="badge"
                   value={formData.badge}
                   onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
                   placeholder="33%"
+                  className="text-responsive-base"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="buttonText">{t.admin.buttonText}</Label>
+                <Label htmlFor="buttonText" className="text-responsive-sm font-medium">{t.admin.buttonText}</Label>
                 <Input
                   id="buttonText"
                   value={formData.buttonText}
                   onChange={(e) => setFormData({ ...formData, buttonText: e.target.value })}
                   placeholder="Shop Now"
+                  className="text-responsive-base"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="title">{t.admin.title} *</Label>
+              <Label htmlFor="title" className="text-responsive-sm font-medium">{t.admin.title} *</Label>
               <Input
                 id="title"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 placeholder="iPhone 16 Pro - Premium Tech"
+                className="text-responsive-base"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">{t.admin.description} *</Label>
+              <Label htmlFor="description" className="text-responsive-sm font-medium">{t.admin.description} *</Label>
               <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Experience the future with A18 Pro chip..."
                 rows={3}
+                className="text-responsive-base resize-none"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="image">{t.admin.slideImage} *</Label>
+              <Label htmlFor="image" className="text-responsive-sm font-medium">{t.admin.slideImage} *</Label>
               <ImageUpload
                 value={formData.image}
                 onChange={(url) => setFormData({ ...formData, image: url })}
@@ -204,22 +211,30 @@ export default function HeroSliderPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="productId">{t.admin.productIdOptional}</Label>
+              <Label htmlFor="productId" className="text-responsive-sm font-medium">{t.admin.productIdOptional}</Label>
               <Input
                 id="productId"
                 value={formData.productId}
                 onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
                 placeholder="1"
+                className="text-responsive-base"
               />
-              <p className="text-xs text-muted-foreground">{t.admin.linkSlideToProduct}</p>
+              <p className="text-responsive-xs text-muted-foreground">{t.admin.linkSlideToProduct}</p>
             </div>
 
-            <div className="flex justify-end gap-2 pt-4">
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+            <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-4 sm:pt-6">
+              <Button 
+                variant="outline" 
+                onClick={() => setIsDialogOpen(false)}
+                className="btn-responsive w-full sm:w-auto"
+              >
                 {t.admin.cancel}
               </Button>
-              <Button onClick={handleSave} className="bg-[#4F46E5] hover:bg-[#4338CA]">
-                <Save className="w-4 h-4 mr-2" />
+              <Button 
+                onClick={handleSave} 
+                className="bg-[#4F46E5] hover:bg-[#4338CA] btn-responsive w-full sm:w-auto"
+              >
+                <Save className="icon-responsive mr-2" />
                 {editingSlide ? t.admin.update : t.admin.create} {t.admin.slide}
               </Button>
             </div>

@@ -79,9 +79,9 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/admin/settings/users" className="cursor-pointer">
+                <Link href="/admin/profile" className="cursor-pointer">
                   <User className="icon-responsive mr-2" />
-                  {t.admin.customers}
+                  Mon Profil
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>

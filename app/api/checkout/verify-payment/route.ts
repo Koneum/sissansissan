@@ -14,7 +14,8 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const order = await prisma.order.findUnique({
+    // Try to find by UUID first, then by orderNumber
+    let order = await prisma.order.findUnique({
       where: { id: orderId },
       select: {
         id: true,
@@ -25,6 +26,21 @@ export async function GET(request: NextRequest) {
         createdAt: true
       }
     })
+
+    // If not found by UUID, try by orderNumber (e.g., ORD-12345678-ABCD)
+    if (!order) {
+      order = await prisma.order.findFirst({
+        where: { orderNumber: orderId },
+        select: {
+          id: true,
+          orderNumber: true,
+          status: true,
+          paymentStatus: true,
+          total: true,
+          createdAt: true
+        }
+      })
+    }
 
     if (!order) {
       return NextResponse.json(

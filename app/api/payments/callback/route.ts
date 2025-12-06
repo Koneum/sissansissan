@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server"
-import crypto from "crypto"
 import prisma from "@/lib/prisma"
+import crypto from "crypto"
+import { NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
   try {
@@ -76,8 +76,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Vérifier que la commande existe
-    const order = await prisma.order.findUnique({
-      where: { id: orderId },
+    // L'orderId de VitePay correspond au orderNumber (ex: ORD-12345678-ABCD)
+    const order = await prisma.order.findFirst({
+      where: { orderNumber: orderId },
     })
 
     if (!order) {
@@ -107,7 +108,7 @@ export async function POST(request: NextRequest) {
     const newPaymentStatus = isSuccess ? "PAID" : "FAILED"
 
     await prisma.order.update({
-      where: { id: orderId },
+      where: { id: order.id },
       data: {
         status: newOrderStatus,
         paymentStatus: newPaymentStatus,
@@ -115,7 +116,7 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    console.log(`Commande ${orderId} mise à jour: ${newOrderStatus} / ${newPaymentStatus}`)
+    console.log(`Commande ${orderId} (${order.id}) mise à jour: ${newOrderStatus} / ${newPaymentStatus}`)
 
     // Retourner une confirmation à VitePay
     return NextResponse.json({

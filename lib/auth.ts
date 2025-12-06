@@ -54,7 +54,11 @@ export const auth = betterAuth({
   },
   trustedOrigins: [
     'http://localhost:3000',
+    'http://localhost:8081',
+    'http://192.168.100.8:8081',
+    'exp://192.168.100.8:8081',
     'https://sissan-sissan.net',
+    'http://sissan-sissan.net',
   ],
   baseURL: process.env.NEXT_PUBLIC_BASE_URL || 'https://sissan-sissan.net',
   

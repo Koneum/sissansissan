@@ -1,3 +1,4 @@
+import { expo } from '@better-auth/expo'
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { sendWelcomeEmail } from './email'
@@ -5,6 +6,7 @@ import prisma from './prisma'
 
 
 export const auth = betterAuth({
+  plugins: [expo()],
   database: prismaAdapter(prisma, {
     provider: 'postgresql',
   }),
@@ -59,6 +61,8 @@ export const auth = betterAuth({
     'exp://192.168.100.8:8081',
     'https://sissan-sissan.net',
     'http://sissan-sissan.net',
+    'sissanmobile://',
+    'sissanmobile://*',
   ],
   baseURL: process.env.NEXT_PUBLIC_BASE_URL || 'https://sissan-sissan.net',
   

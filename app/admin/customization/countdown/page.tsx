@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { Save } from "lucide-react"
+import { Save, ImageIcon } from "lucide-react"
 import { useCountdown } from "@/lib/countdown-context"
+import { ImageUpload } from "@/components/ui/image-upload"
 import { toast } from "sonner"
 import { useLocale } from "@/lib/locale-context"
 
@@ -20,6 +21,7 @@ export default function CountdownSettingsPage() {
   const [endDate, setEndDate] = useState("")
   const [backgroundColor, setBackgroundColor] = useState("#F97316")
   const [textColor, setTextColor] = useState("#FFFFFF")
+  const [image, setImage] = useState("")
 
   useEffect(() => {
     setEnabled(countdownData.enabled)
@@ -27,6 +29,7 @@ export default function CountdownSettingsPage() {
     setEndDate(countdownData.endDate.split('T')[0]) // Format for input[type=date]
     setBackgroundColor(countdownData.backgroundColor)
     setTextColor(countdownData.textColor)
+    setImage(countdownData.image || "")
   }, [countdownData])
 
   const handleSave = () => {
@@ -35,7 +38,8 @@ export default function CountdownSettingsPage() {
       title,
       endDate: new Date(endDate).toISOString(),
       backgroundColor,
-      textColor
+      textColor,
+      image
     })
     toast.success(t.admin.countdownSaved)
   }
@@ -128,8 +132,36 @@ export default function CountdownSettingsPage() {
             </div>
           </div>
 
-          <div className="p-4 border rounded-lg" style={{ backgroundColor, color: textColor }}>
-            <p className="text-center font-bold text-lg">{title || t.admin.preview}</p>
+          {/* Image Upload */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 mb-2">
+              <ImageIcon className="icon-responsive text-muted-foreground" />
+              <Label>Image du produit</Label>
+            </div>
+            <p className="text-responsive-sm text-muted-foreground mb-3">
+              Uploadez une image de produit à afficher dans la section countdown
+            </p>
+            <ImageUpload
+              value={image}
+              onChange={setImage}
+              onRemove={() => setImage("")}
+            />
+          </div>
+
+          {/* Preview */}
+          <div className="space-y-2">
+            <Label>{t.admin.preview}</Label>
+            <div className="p-6 rounded-xl flex flex-col md:flex-row items-center gap-6" style={{ backgroundColor, color: textColor }}>
+              <div className="flex-1 text-center md:text-left">
+                <p className="font-bold text-xl sm:text-2xl mb-2">{title || "Titre du countdown"}</p>
+                <p className="opacity-80 text-sm">Offre limitée - Ne manquez pas cette opportunité !</p>
+              </div>
+              {image && (
+                <div className="w-32 h-32 rounded-lg overflow-hidden bg-white/10">
+                  <img src={image} alt="Preview" className="w-full h-full object-contain" />
+                </div>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>

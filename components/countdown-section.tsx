@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { useCountdown } from "@/lib/countdown-context"
+import { Zap, ArrowRight, Sparkles } from "lucide-react"
+import Link from "next/link"
 
 export function CountdownSection() {
   const { countdownData } = useCountdown()
@@ -42,51 +44,92 @@ export function CountdownSection() {
     return null
   }
 
-  return (
-    <section className="container mx-auto px-4 py-8 sm:py-12">
-      <div 
-        className="rounded-2xl p-8 md:p-12 flex flex-col md:flex-row items-center gap-8"
-        style={{ backgroundColor: countdownData.backgroundColor, color: countdownData.textColor }}
-      >
-        <div className="flex-1">
-          <div className="font-semibold mb-2 opacity-90">Don&apos;t Miss!!</div>
-          <h2 className="text-4xl font-bold mb-4">{countdownData.title}</h2>
-          <p className="mb-8 opacity-80">Limited time offer - Shop now before it&apos;s too late!</p>
+  const TimeBlock = ({ value, label }: { value: number; label: string }) => (
+    <div className="relative group">
+      {/* Glow effect */}
+      <div className="absolute -inset-1 bg-gradient-to-r from-orange-500 to-pink-500 rounded-2xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity" />
+      <div className="relative bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-4 sm:p-6 text-center min-w-[70px] sm:min-w-[90px]">
+        <div className="text-3xl sm:text-5xl font-black text-white tracking-tight">
+          {String(value).padStart(2, "0")}
+        </div>
+        <div className="text-xs sm:text-sm font-medium text-white/70 uppercase tracking-widest mt-1">{label}</div>
+      </div>
+    </div>
+  )
 
-          <div className="flex gap-4 mb-8">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 text-center min-w-[80px]">
-              <div className="text-3xl font-bold text-[#1e293b] dark:text-white">
-                {String(timeLeft.days).padStart(2, "0")}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Days</div>
+  return (
+    <section className="container mx-auto px-4 py-8 sm:py-16">
+      <div 
+        className="relative overflow-hidden rounded-3xl"
+        style={{ backgroundColor: countdownData.backgroundColor }}
+      >
+        {/* Animated background elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-orange-500/20 rounded-full blur-3xl animate-pulse delay-1000" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-to-br from-white/5 to-transparent" />
+        </div>
+
+        <div className="relative z-10 p-8 md:p-16 flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+          {/* Content */}
+          <div className="flex-1 text-center lg:text-left" style={{ color: countdownData.textColor }}>
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 mb-6">
+              <Zap className="w-4 h-4 text-yellow-400" />
+              <span className="text-sm font-semibold uppercase tracking-wider">Flash Sale</span>
+              <Sparkles className="w-4 h-4 text-yellow-400" />
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 text-center min-w-[80px]">
-              <div className="text-3xl font-bold text-[#1e293b] dark:text-white">
-                {String(timeLeft.hours).padStart(2, "0")}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Hours</div>
+
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black mb-4 leading-tight">
+              {countdownData.title}
+            </h2>
+            <p className="text-lg sm:text-xl opacity-80 mb-8 max-w-lg">
+              Offre limitée - Ne manquez pas cette opportunité exceptionnelle !
+            </p>
+
+            {/* Countdown */}
+            <div className="flex flex-wrap justify-center lg:justify-start gap-3 sm:gap-4 mb-10">
+              <TimeBlock value={timeLeft.days} label="Jours" />
+              <TimeBlock value={timeLeft.hours} label="Heures" />
+              <TimeBlock value={timeLeft.minutes} label="Min" />
+              <TimeBlock value={timeLeft.seconds} label="Sec" />
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 text-center min-w-[80px]">
-              <div className="text-3xl font-bold text-[#1e293b] dark:text-white">
-                {String(timeLeft.minutes).padStart(2, "0")}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Minutes</div>
-            </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 text-center min-w-[80px]">
-              <div className="text-3xl font-bold text-[#1e293b] dark:text-white">
-                {String(timeLeft.seconds).padStart(2, "0")}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Seconds</div>
-            </div>
+
+            {/* CTA Button */}
+            <Link href="/products?sale=true">
+              <Button 
+                size="lg"
+                className="group bg-white text-gray-900 hover:bg-white/90 font-bold px-8 py-6 text-lg rounded-full shadow-2xl shadow-black/20 transition-all hover:scale-105"
+              >
+                Découvrir les offres
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
           </div>
 
-          <Button className="bg-orange-600 hover:bg-orange-700 text-white px-8">Check it Out!</Button>
-        </div>
-
-        <div className="flex-1 flex justify-center">
-          <img src="/black-bluetooth-speaker-with-blue-accent.jpg" alt="Speaker" className="w-full max-w-md h-auto" />
+          {/* Image with floating effect */}
+          <div className="flex-1 flex justify-center relative">
+            <div className="relative">
+              {/* Glow behind image */}
+              <div className="absolute inset-0 bg-gradient-to-t from-orange-500/30 to-transparent rounded-full blur-3xl scale-110" />
+              <img 
+                src={countdownData.image || "/black-bluetooth-speaker-with-blue-accent.jpg"} 
+                alt="Product" 
+                className="relative w-full max-w-sm lg:max-w-md h-auto drop-shadow-2xl animate-float"
+                style={{ animation: 'float 6s ease-in-out infinite' }}
+              />
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* CSS Animation */}
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-20px); }
+        }
+      `}</style>
     </section>
   )
 }

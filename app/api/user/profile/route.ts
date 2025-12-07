@@ -1,17 +1,26 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
+import { auth } from "@/lib/auth"
+import { updateProfileSchema, validateData } from "@/lib/validations"
 
-// GET /api/user/profile - Récupérer le profil utilisateur
+// GET /api/user/profile - Récupérer le profil utilisateur (PROTECTED)
+// CORRECTION SÉCURITÉ: Utilise la session au lieu du header x-user-id (falsifiable)
 export async function GET(request: NextRequest) {
   try {
-    const userId = request.headers.get("x-user-id")
+    // ========================================
+    // 1. AUTHENTIFICATION VIA SESSION
+    // ========================================
+    const session = await auth.api.getSession({ headers: request.headers })
     
-    if (!userId) {
+    if (!session?.user) {
       return NextResponse.json(
-        { success: false, error: "Non autorisé" },
+        { success: false, error: "Non authentifié" },
         { status: 401 }
       )
     }
+
+    // Utiliser l'ID de la session, pas un header falsifiable
+    const userId = session.user.id
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -43,30 +52,43 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// PUT /api/user/profile - Mettre à jour le profil utilisateur
+// PUT /api/user/profile - Mettre à jour le profil utilisateur (PROTECTED)
+// CORRECTION SÉCURITÉ: Utilise la session au lieu du header x-user-id (falsifiable)
 export async function PUT(request: NextRequest) {
   try {
-    const userId = request.headers.get("x-user-id")
+    // ========================================
+    // 1. AUTHENTIFICATION VIA SESSION
+    // ========================================
+    const session = await auth.api.getSession({ headers: request.headers })
     
-    if (!userId) {
+    if (!session?.user) {
       return NextResponse.json(
-        { success: false, error: "Non autorisé" },
+        { success: false, error: "Non authentifié" },
         { status: 401 }
       )
     }
 
-    const body = await request.json()
-    const { name, phone } = body
+    // Utiliser l'ID de la session, pas un header falsifiable
+    const userId = session.user.id
 
-    // Validation
-    if (!name || name.trim().length < 2) {
+    // ========================================
+    // 2. VALIDATION DES DONNÉES
+    // ========================================
+    const body = await request.json()
+    const validation = validateData(updateProfileSchema, body)
+    
+    if (!validation.success) {
       return NextResponse.json(
-        { success: false, error: "Le nom doit contenir au moins 2 caractères" },
+        { success: false, error: validation.error, issues: validation.issues },
         { status: 400 }
       )
     }
 
-    // Mettre à jour l'utilisateur
+    const { name, phone } = validation.data!
+
+    // ========================================
+    // 3. MISE À JOUR DU PROFIL
+    // ========================================
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {

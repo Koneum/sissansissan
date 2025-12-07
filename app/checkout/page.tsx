@@ -246,28 +246,94 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900 flex flex-col">
       <Header />
 
-      <main className="flex-1 container mx-auto px-4 py-6 sm:py-8">
-        <div className="flex items-center gap-2 text-responsive-sm text-muted-foreground mb-4 sm:mb-6">
-          <Link href="/" className="hover:text-foreground">
-            Accueil
-          </Link>
-          <span>›</span>
-          <span className="text-foreground">Paiement</span>
+      {/* Hero Section */}
+      <div className="relative overflow-hidden bg-gradient-to-b from-slate-100 via-slate-50 to-transparent dark:from-slate-950 dark:via-slate-900 dark:to-transparent pt-6 pb-20">
+        {/* Animated Background */}
+        <div className="absolute inset-0">
+          <div className="absolute top-0 left-1/4 w-[400px] h-[400px] rounded-full bg-orange-500/10 blur-[120px]" />
+          <div className="absolute bottom-0 right-1/4 w-[300px] h-[300px] rounded-full bg-purple-500/10 blur-[100px]" />
+          <div 
+            className="absolute inset-0 opacity-[0.02]"
+            style={{
+              backgroundImage: `linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px), 
+                                linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px)`,
+              backgroundSize: '50px 50px',
+            }}
+          />
         </div>
 
+        <div className="relative container mx-auto px-4">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-6">
+            <Link href="/" className="hover:text-orange-500 transition-colors">Accueil</Link>
+            <span className="text-slate-300 dark:text-slate-600">/</span>
+            <Link href="/cart" className="hover:text-orange-500 transition-colors">Panier</Link>
+            <span className="text-slate-300 dark:text-slate-600">/</span>
+            <span className="text-slate-800 dark:text-white font-medium">Paiement</span>
+          </div>
+
+          {/* Title */}
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-2">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-500">
+                  Finaliser
+                </span>{" "}
+                votre commande
+              </h1>
+              <p className="text-slate-600 dark:text-slate-400">Paiement sécurisé et livraison rapide</p>
+            </div>
+
+            {/* Trust Badges */}
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300 text-sm">
+                <Lock className="w-4 h-4 text-green-500" />
+                <span>SSL Sécurisé</span>
+              </div>
+              <div className="hidden sm:flex items-center gap-2 text-slate-600 dark:text-slate-300 text-sm">
+                <CreditCard className="w-4 h-4 text-orange-500" />
+                <span>Paiement Protégé</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Progress Steps */}
+          <div className="mt-8 flex items-center justify-center gap-4 md:gap-8">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center text-sm font-bold">✓</div>
+              <span className="text-slate-800 dark:text-white font-medium hidden sm:block">Panier</span>
+            </div>
+            <div className="w-12 md:w-24 h-0.5 bg-green-500" />
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-orange-500 to-pink-500 text-white flex items-center justify-center text-sm font-bold">2</div>
+              <span className="text-slate-800 dark:text-white font-medium hidden sm:block">Paiement</span>
+            </div>
+            <div className="w-12 md:w-24 h-0.5 bg-slate-300 dark:bg-slate-600" />
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 flex items-center justify-center text-sm font-bold">3</div>
+              <span className="text-slate-500 dark:text-slate-400 hidden sm:block">Confirmation</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <main className="flex-1 container mx-auto px-4 -mt-10 pb-12">
         {/* Guest Checkout Info */}
         {!user && (
-          <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
-            <div className="flex items-start gap-2 sm:gap-3">
-              <Lock className="icon-responsive text-orange-600 mt-0.5" />
+          <div className="relative overflow-hidden bg-gradient-to-r from-orange-500/10 to-pink-500/10 border border-orange-500/20 rounded-2xl p-4 sm:p-5 mb-6 backdrop-blur-sm">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-3xl" />
+            <div className="relative flex items-start gap-4">
+              <div className="p-3 bg-gradient-to-br from-orange-500 to-pink-500 rounded-xl shadow-lg">
+                <Lock className="w-5 h-5 text-white" />
+              </div>
               <div>
-                <h3 className="heading-responsive-h4 text-orange-900 dark:text-orange-100 mb-1">
+                <h3 className="text-lg font-bold text-foreground mb-1">
                   Commande sans compte
                 </h3>
-                <p className="text-responsive-sm text-orange-700 dark:text-orange-300">
+                <p className="text-sm text-muted-foreground">
                   Vous pouvez commander sans créer de compte. Vos informations seront conservées pendant 48h. 
                   Pour le paiement à la livraison, aucun compte n&apos;est requis.
                 </p>
@@ -279,10 +345,15 @@ export default function CheckoutPage() {
         <form onSubmit={handleSubmit}>
         <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
           <div className="lg:col-span-2">
-            <div className="space-y-4 sm:space-y-6">
+            <div className="space-y-6">
               {/* Billing Details */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-sm">
-                <h2 className="heading-responsive-h2 mb-4 sm:mb-6">Détails de facturation</h2>
+              <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 sm:p-8 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-200 dark:border-slate-800">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 bg-gradient-to-br from-orange-500 to-pink-500 rounded-xl">
+                    <CreditCard className="w-5 h-5 text-white" />
+                  </div>
+                  <h2 className="text-xl font-bold">Détails de facturation</h2>
+                </div>
                 <div className="space-y-4">
                   <div className="grid-responsive-2">
                     <div className="space-y-2">
@@ -366,7 +437,7 @@ export default function CheckoutPage() {
               </div>
 
               {/* Ship to different address */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-200 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setShowShippingAddress(!showShippingAddress)}
@@ -383,7 +454,7 @@ export default function CheckoutPage() {
               </div>
 
               {/* Other Notes */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-200 dark:border-slate-800">
                 <Label htmlFor="notes">Notes supplémentaires (optionnel)</Label>
                 <Textarea
                   id="notes"
@@ -395,55 +466,69 @@ export default function CheckoutPage() {
           </div>
 
           <div className="lg:col-span-1">
-            <div className="space-y-6">
+            <div className="space-y-6 lg:sticky lg:top-24">
               {/* Your Order */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-                <h2 className="text-xl font-bold mb-6">Votre commande</h2>
+              <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 shadow-2xl border border-slate-700">
+                {/* Decorative Elements */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-3xl" />
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl" />
+                
+                <div className="relative">
+                  <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                    <span className="w-8 h-8 bg-gradient-to-r from-orange-500 to-pink-500 rounded-lg flex items-center justify-center text-sm">🛒</span>
+                    Votre commande
+                  </h2>
 
-                <div className="space-y-4 pb-4 border-b">
-                  <div className="flex justify-between text-sm font-medium">
-                    <span>Produit</span>
-                    <span>Sous-total</span>
-                  </div>
-                  {items.map((item) => (
-                    <div key={item.id} className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">{item.name}</span>
-                      <span className="font-medium">{formatPrice(item.price * item.quantity)}</span>
+                  <div className="space-y-4 pb-4 border-b border-slate-700">
+                    <div className="flex justify-between text-sm font-medium text-slate-400">
+                      <span>Produit</span>
+                      <span>Sous-total</span>
                     </div>
-                  ))}
-                </div>
-
-                <div className="space-y-3 py-4 border-b">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Frais de livraison</span>
-                    <span className="font-medium">{shippingCost === 0 ? "Gratuit" : formatPrice(shippingCost)}</span>
+                    {items.map((item) => (
+                      <div key={item.id} className="flex justify-between text-sm">
+                        <span className="text-slate-300">{item.name} <span className="text-slate-500">×{item.quantity}</span></span>
+                        <span className="font-medium text-white">{formatPrice(item.price * item.quantity)}</span>
+                      </div>
+                    ))}
                   </div>
-                </div>
 
-                <div className="flex justify-between text-lg font-bold pt-4">
-                  <span>Total</span>
-                  <span>{formatPrice(finalTotal)}</span>
+                  <div className="space-y-3 py-4 border-b border-slate-700">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-400">Frais de livraison</span>
+                      <span className="font-medium text-green-400">{shippingCost === 0 ? "Gratuit" : formatPrice(shippingCost)}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between pt-4">
+                    <span className="text-lg text-slate-300">Total</span>
+                    <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-400">{formatPrice(finalTotal)}</span>
+                  </div>
                 </div>
               </div>
 
               {/* Coupon Code */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-                <h3 className="font-bold mb-4">Avez-vous un code promo ?</h3>
+              <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-200 dark:border-slate-800">
+                <h3 className="font-bold mb-4 flex items-center gap-2">
+                  <span>🎁</span> Code promo ?
+                </h3>
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Entrez votre code promo"
+                    placeholder="Entrez votre code"
                     value={couponCode}
                     onChange={(e) => setCouponCode(e.target.value)}
+                    className="rounded-xl"
                   />
-                  <Button type="button" className="bg-primary hover:bg-primary/90">
+                  <Button type="button" className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 rounded-xl px-6">
                     Appliquer
                   </Button>
                 </div>
               </div>
 
               {/* Shipping Method */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-                <h3 className="font-bold mb-4">Mode de livraison</h3>
+              <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-200 dark:border-slate-800">
+                <h3 className="font-bold mb-4 flex items-center gap-2">
+                  <span>🚚</span> Mode de livraison
+                </h3>
                 
                 {/* Message de livraison gratuite */}
                 {isFreeShippingApplied && (
@@ -486,8 +571,10 @@ export default function CheckoutPage() {
               </div>
 
               {/* Payment Method */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-                <h3 className="font-bold mb-4">Mode de paiement</h3>
+              <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-200 dark:border-slate-800">
+                <h3 className="font-bold mb-4 flex items-center gap-2">
+                  <span>💳</span> Mode de paiement
+                </h3>
                 <RadioGroup 
                   value={paymentMethod} 
                   onValueChange={(value) => {
@@ -669,11 +756,30 @@ export default function CheckoutPage() {
               {/* Pay Button */}
               <Button
                 type="submit"
-                className="w-full h-12 text-lg font-semibold bg-primary hover:bg-primary/90"
+                className="group relative w-full h-14 text-lg font-bold bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 rounded-2xl shadow-xl shadow-orange-500/25 hover:shadow-orange-500/40 transition-all duration-300 hover:scale-[1.02] overflow-hidden"
                 disabled={isProcessing}
               >
-                {isProcessing ? "Traitement..." : `Payer ${formatPrice(finalTotal)}`}
+                <span className="relative z-10 flex items-center justify-center gap-2">
+                  {isProcessing ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Traitement en cours...
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="w-5 h-5" />
+                      Payer {formatPrice(finalTotal)}
+                    </>
+                  )}
+                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity" />
               </Button>
+
+              {/* Security Note */}
+              <p className="text-center text-xs text-muted-foreground mt-4">
+                <Lock className="w-3 h-3 inline mr-1" />
+                Vos données sont sécurisées et cryptées
+              </p>
             </div>
           </div>
         </div>

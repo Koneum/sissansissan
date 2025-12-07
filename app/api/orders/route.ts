@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
+import { auth } from "@/lib/auth"
+import { checkPermission } from "@/lib/check-permission"
+import { createOrderSchema, validateData } from "@/lib/validations"
 
 // Helper function to generate order number
 function generateOrderNumber() {
@@ -8,13 +11,42 @@ function generateOrderNumber() {
   return `ORD-${timestamp}-${random}`
 }
 
-// GET /api/orders - Get all orders (with filters for admin or user)
+// GET /api/orders - Get orders (PROTECTED)
+// - Admins avec permission orders.canView peuvent voir toutes les commandes
+// - Les utilisateurs normaux ne voient que leurs propres commandes
 export async function GET(request: NextRequest) {
   try {
+    // ========================================
+    // 1. AUTHENTIFICATION
+    // ========================================
+    const session = await auth.api.getSession({ headers: request.headers })
+    
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, error: "Non authentifié" },
+        { status: 401 }
+      )
+    }
+
+    // ========================================
+    // 2. RÉCUPÉRER L'UTILISATEUR ET SON RÔLE
+    // ========================================
+    const currentUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, role: true }
+    })
+
+    if (!currentUser) {
+      return NextResponse.json(
+        { success: false, error: "Utilisateur non trouvé" },
+        { status: 404 }
+      )
+    }
+
     const searchParams = request.nextUrl.searchParams
     
     // Filters
-    const userId = searchParams.get("userId")
+    const requestedUserId = searchParams.get("userId")
     const status = searchParams.get("status")
     const paymentStatus = searchParams.get("paymentStatus")
     
@@ -26,8 +58,20 @@ export async function GET(request: NextRequest) {
     // Build where clause
     const where: any = {}
     
-    if (userId) {
-      where.userId = userId
+    // ========================================
+    // 3. AUTORISATION - Vérifier l'accès aux commandes
+    // ========================================
+    const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(currentUser.role)
+    const hasOrderPermission = isAdmin || (await checkPermission(request, 'orders', 'canView')).authorized
+
+    if (hasOrderPermission) {
+      // Admin/Staff avec permission: peut filtrer par userId ou voir toutes les commandes
+      if (requestedUserId) {
+        where.userId = requestedUserId
+      }
+    } else {
+      // Utilisateur normal: ne peut voir que ses propres commandes
+      where.userId = currentUser.id
     }
     
     if (status) {
@@ -92,34 +136,76 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/orders - Create a new order (checkout)
+// POST /api/orders - Create a new order (PROTECTED)
+// L'utilisateur doit être authentifié et ne peut créer que pour lui-même
 export async function POST(request: NextRequest) {
   try {
+    // ========================================
+    // 1. AUTHENTIFICATION
+    // ========================================
+    const session = await auth.api.getSession({ headers: request.headers })
+    
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, error: "Non authentifié" },
+        { status: 401 }
+      )
+    }
+
+    // ========================================
+    // 2. VALIDATION DES DONNÉES
+    // ========================================
     const body = await request.json()
+    const validation = validateData(createOrderSchema, body)
+    
+    if (!validation.success) {
+      return NextResponse.json(
+        { success: false, error: validation.error, issues: validation.issues },
+        { status: 400 }
+      )
+    }
+
     const {
       userId,
-      items, // [{ productId, quantity, variantId? }]
+      items,
       shippingAddress,
       billingAddress,
       paymentMethod,
       couponCode,
       customerNotes
-    } = body
+    } = validation.data!
 
-    // Validate required fields
-    if (!userId || !items || items.length === 0 || !shippingAddress) {
+    // ========================================
+    // 3. AUTORISATION - Vérifier que l'utilisateur crée pour lui-même
+    // ========================================
+    const currentUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, role: true }
+    })
+
+    if (!currentUser) {
       return NextResponse.json(
-        { success: false, error: "Missing required fields" },
-        { status: 400 }
+        { success: false, error: "Utilisateur non trouvé" },
+        { status: 404 }
       )
     }
 
-    // Verify user exists
-    const user = await prisma.user.findUnique({
+    const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(currentUser.role)
+    
+    // Un utilisateur normal ne peut créer que pour lui-même
+    if (!isAdmin && userId !== currentUser.id) {
+      return NextResponse.json(
+        { success: false, error: "Vous ne pouvez pas créer de commande pour un autre utilisateur" },
+        { status: 403 }
+      )
+    }
+
+    // Verify target user exists
+    const targetUser = await prisma.user.findUnique({
       where: { id: userId }
     })
 
-    if (!user) {
+    if (!targetUser) {
       return NextResponse.json(
         { success: false, error: "User not found" },
         { status: 404 }

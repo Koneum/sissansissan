@@ -1,18 +1,38 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
+import { auth } from "@/lib/auth"
+import { checkPermission } from "@/lib/check-permission"
+import { updateOrderSchema, validateData } from "@/lib/validations"
 
 type RouteContext = {
   params: Promise<{ id: string }>
 }
 
-// GET /api/orders/[id] - Get order details
+// GET /api/orders/[id] - Get order details (PROTECTED)
+// - L'utilisateur peut voir sa propre commande
+// - Admin/Staff avec permission orders.canView peut voir toutes les commandes
 export async function GET(
   request: NextRequest,
   context: RouteContext
 ) {
   try {
+    // ========================================
+    // 1. AUTHENTIFICATION
+    // ========================================
+    const session = await auth.api.getSession({ headers: request.headers })
+    
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, error: "Non authentifié" },
+        { status: 401 }
+      )
+    }
+
     const { id } = await context.params
 
+    // ========================================
+    // 2. RÉCUPÉRER LA COMMANDE
+    // ========================================
     const order = await prisma.order.findUnique({
       where: { id },
       include: {
@@ -49,6 +69,33 @@ export async function GET(
       )
     }
 
+    // ========================================
+    // 3. AUTORISATION - Vérifier l'accès
+    // ========================================
+    const currentUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, role: true }
+    })
+
+    if (!currentUser) {
+      return NextResponse.json(
+        { success: false, error: "Utilisateur non trouvé" },
+        { status: 404 }
+      )
+    }
+
+    const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(currentUser.role)
+    const hasOrderPermission = isAdmin || (await checkPermission(request, 'orders', 'canView')).authorized
+    const isOwner = order.userId === currentUser.id
+
+    // L'utilisateur doit être propriétaire OU avoir la permission
+    if (!isOwner && !hasOrderPermission) {
+      return NextResponse.json(
+        { success: false, error: "Accès refusé à cette commande" },
+        { status: 403 }
+      )
+    }
+
     return NextResponse.json({
       success: true,
       data: order
@@ -62,14 +109,50 @@ export async function GET(
   }
 }
 
-// PATCH /api/orders/[id] - Update order (status, tracking, etc.)
+// PATCH /api/orders/[id] - Update order (PROTECTED - Admin/Staff only)
+// Requiert la permission orders.canEdit
 export async function PATCH(
   request: NextRequest,
   context: RouteContext
 ) {
   try {
+    // ========================================
+    // 1. AUTHENTIFICATION
+    // ========================================
+    const session = await auth.api.getSession({ headers: request.headers })
+    
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, error: "Non authentifié" },
+        { status: 401 }
+      )
+    }
+
+    // ========================================
+    // 2. AUTORISATION (permission orders.canEdit)
+    // ========================================
+    const { authorized, error: permError } = await checkPermission(request, 'orders', 'canEdit')
+    
+    if (!authorized) {
+      return NextResponse.json(
+        { success: false, error: permError || "Permission refusée" },
+        { status: 403 }
+      )
+    }
+
+    // ========================================
+    // 3. VALIDATION DES DONNÉES
+    // ========================================
     const { id } = await context.params
     const body = await request.json()
+    const validation = validateData(updateOrderSchema, body)
+    
+    if (!validation.success) {
+      return NextResponse.json(
+        { success: false, error: validation.error, issues: validation.issues },
+        { status: 400 }
+      )
+    }
 
     const order = await prisma.order.findUnique({
       where: { id }
@@ -84,32 +167,33 @@ export async function PATCH(
 
     // Prepare update data
     const updateData: any = {}
+    const validatedData = validation.data!
 
-    if (body.status) {
-      updateData.status = body.status
+    if (validatedData.status) {
+      updateData.status = validatedData.status
       
       // Update timestamps based on status
-      if (body.status === "SHIPPED" && !order.shippedAt) {
+      if (validatedData.status === "SHIPPED" && !order.shippedAt) {
         updateData.shippedAt = new Date()
-      } else if (body.status === "DELIVERED" && !order.deliveredAt) {
+      } else if (validatedData.status === "DELIVERED" && !order.deliveredAt) {
         updateData.deliveredAt = new Date()
       }
     }
 
-    if (body.paymentStatus) {
-      updateData.paymentStatus = body.paymentStatus
+    if (validatedData.paymentStatus) {
+      updateData.paymentStatus = validatedData.paymentStatus
     }
 
-    if (body.trackingNumber !== undefined) {
-      updateData.trackingNumber = body.trackingNumber
+    if (validatedData.trackingNumber !== undefined) {
+      updateData.trackingNumber = validatedData.trackingNumber
     }
 
-    if (body.adminNotes !== undefined) {
-      updateData.adminNotes = body.adminNotes
+    if (validatedData.adminNotes !== undefined) {
+      updateData.adminNotes = validatedData.adminNotes
     }
 
-    if (body.paymentId !== undefined) {
-      updateData.paymentId = body.paymentId
+    if (validatedData.paymentId !== undefined) {
+      updateData.paymentId = validatedData.paymentId
     }
 
     const updatedOrder = await prisma.order.update({
@@ -146,12 +230,26 @@ export async function PATCH(
   }
 }
 
-// DELETE /api/orders/[id] - Cancel order
+// DELETE /api/orders/[id] - Cancel order (PROTECTED)
+// - L'utilisateur peut annuler sa propre commande (si PENDING)
+// - Admin/Staff avec permission orders.canDelete peut annuler toute commande
 export async function DELETE(
   request: NextRequest,
   context: RouteContext
 ) {
   try {
+    // ========================================
+    // 1. AUTHENTIFICATION
+    // ========================================
+    const session = await auth.api.getSession({ headers: request.headers })
+    
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, error: "Non authentifié" },
+        { status: 401 }
+      )
+    }
+
     const { id } = await context.params
 
     const order = await prisma.order.findUnique({
@@ -168,12 +266,49 @@ export async function DELETE(
       )
     }
 
-    // Only allow cancellation of pending/processing orders
-    if (!["PENDING", "PROCESSING"].includes(order.status)) {
+    // ========================================
+    // 2. AUTORISATION
+    // ========================================
+    const currentUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, role: true }
+    })
+
+    if (!currentUser) {
       return NextResponse.json(
-        { success: false, error: "Cannot cancel order in current status" },
-        { status: 400 }
+        { success: false, error: "Utilisateur non trouvé" },
+        { status: 404 }
       )
+    }
+
+    const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(currentUser.role)
+    const hasDeletePermission = isAdmin || (await checkPermission(request, 'orders', 'canDelete')).authorized
+    const isOwner = order.userId === currentUser.id
+
+    // L'utilisateur normal ne peut annuler que ses propres commandes en PENDING
+    if (!hasDeletePermission) {
+      if (!isOwner) {
+        return NextResponse.json(
+          { success: false, error: "Accès refusé à cette commande" },
+          { status: 403 }
+        )
+      }
+      
+      // L'utilisateur normal ne peut annuler que les commandes PENDING
+      if (order.status !== "PENDING") {
+        return NextResponse.json(
+          { success: false, error: "Vous ne pouvez annuler que les commandes en attente" },
+          { status: 400 }
+        )
+      }
+    } else {
+      // Admin peut annuler PENDING ou PROCESSING
+      if (!["PENDING", "PROCESSING"].includes(order.status)) {
+        return NextResponse.json(
+          { success: false, error: "Cannot cancel order in current status" },
+          { status: 400 }
+        )
+      }
     }
 
     // Cancel order and restore stock in a transaction

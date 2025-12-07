@@ -72,83 +72,107 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <>
-      <Card className="group relative cursor-pointer overflow-hidden hover:shadow-lg transition-all duration-300 animate-in fade-in slide-in-from-bottom-4">
-        <div className="relative bg-muted flex items-center justify-center h-64 overflow-hidden">
-          <Link href={`/products/${product.id}`} className="absolute inset-0 z-0">
-            <Image
-              src={product.image || "/placeholder.svg"}
-              alt={product.name}
-              fill
-              className="object-contain group-hover:scale-105 transition-transform duration-300 p-4"
-            />
-          </Link>
+      <div className="group relative">
+        {/* Glow Effect */}
+        <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-500 to-pink-500 rounded-2xl opacity-0 group-hover:opacity-75 blur transition-all duration-500 group-hover:duration-200" />
+        
+        <Card className="relative bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border-0 shadow-lg shadow-slate-200/50 dark:shadow-slate-900/50 transition-all duration-500 group-hover:-translate-y-1">
+          {/* Image Section */}
+          <div className="relative aspect-square bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 overflow-hidden">
+            <Link href={`/products/${product.id}`} className="absolute inset-0 z-0">
+              <Image
+                src={product.image || "/placeholder.svg"}
+                alt={product.name}
+                fill
+                className="object-contain p-6 group-hover:scale-110 transition-transform duration-700"
+              />
+            </Link>
 
-          {product.salePercentage && (
-            <span className="absolute top-3 right-3 bg-[#4F46E5] text-white text-xs font-bold px-2.5 py-1 rounded animate-in fade-in slide-in-from-right-2 z-10">
-              {product.salePercentage}% OFF
-            </span>
-          )}
+            {/* Badges */}
+            <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
+              {product.salePercentage && (
+                <span className="inline-flex items-center gap-1 bg-gradient-to-r from-orange-500 to-pink-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg shadow-orange-500/25">
+                  -{product.salePercentage}%
+                </span>
+              )}
+              {product.isNew && (
+                <span className="inline-flex items-center gap-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg shadow-emerald-500/25">
+                  NOUVEAU
+                </span>
+              )}
+            </div>
 
-          {product.isNew && (
-            <span className="absolute top-3 left-3 bg-[#F97316] text-white text-xs font-bold px-2.5 py-1 rounded animate-in fade-in slide-in-from-left-2 z-10">
-              NEW
-            </span>
-          )}
-
-          <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 p-4 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-full group-hover:translate-y-0 z-20">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="bg-white hover:bg-white hover:scale-110 transition-transform shadow-md"
-              onClick={handleQuickView}
-            >
-              <Eye className="w-4 h-4 text-slate-700" />
-            </Button>
-
-            <Button
-              className="bg-[#4F46E5] hover:bg-[#4338CA] text-white px-6 shadow-md"
-              onClick={handleAddToCart}
-              disabled={isAdding}
-            >
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              {isAdding ? "Ajouté!" : t.products.addToCart}
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="icon"
-              className={`bg-white hover:bg-white hover:scale-110 transition-transform shadow-md ${
-                isInWishlist(product.id) ? "bg-red-50" : ""
+            {/* Wishlist Button - Always visible */}
+            <button
+              className={`absolute top-3 right-3 w-10 h-10 rounded-full backdrop-blur-md flex items-center justify-center transition-all duration-300 z-10 ${
+                isInWishlist(product.id) 
+                  ? "bg-red-500 text-white shadow-lg shadow-red-500/25" 
+                  : "bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 hover:scale-110"
               }`}
               onClick={handleWishlist}
             >
-              <Heart
-                className={`w-4 h-4 ${
-                  isInWishlist(product.id) ? "fill-red-500 text-red-500" : "text-slate-700"
-                }`}
-              />
-            </Button>
-          </div>
-        </div>
+              <Heart className={`w-5 h-5 ${isInWishlist(product.id) ? "fill-current" : ""}`} />
+            </button>
 
-        <div className="p-4">
-          <Link href={`/products/${product.id}`}>
-            <h3 className="font-medium mb-2 line-clamp-2 text-sm hover:text-[#4F46E5] transition-colors">
-              {product.name}
-            </h3>
-          </Link>
-          <div className="flex items-baseline gap-2">
-            {product.originalPrice ? (
-              <>
-                <span className="text-sm text-muted-foreground line-through">{formatPrice(product.originalPrice)}</span>
-                <span className="text-lg font-bold text-slate-900 dark:text-white">{formatPrice(product.price)}</span>
-              </>
-            ) : (
-              <span className="text-lg font-bold text-slate-900 dark:text-white">{formatPrice(product.price)}</span>
-            )}
+            {/* Quick Actions - On Hover */}
+            <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0 z-20">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-10 w-10 bg-white/90 hover:bg-white text-slate-700 rounded-xl shadow-lg hover:scale-110 transition-all"
+                  onClick={handleQuickView}
+                >
+                  <Eye className="w-5 h-5" />
+                </Button>
+
+                <Button
+                  className="flex-1 h-10 bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transition-all"
+                  onClick={handleAddToCart}
+                  disabled={isAdding}
+                >
+                  <ShoppingCart className="w-4 h-4 mr-2" />
+                  {isAdding ? "Ajouté!" : t.products.addToCart}
+                </Button>
+              </div>
+            </div>
           </div>
-        </div>
-      </Card>
+
+          {/* Content Section */}
+          <div className="p-4">
+            <Link href={`/products/${product.id}`}>
+              <h3 className="font-semibold mb-2 line-clamp-2 text-sm text-slate-800 dark:text-slate-200 group-hover:text-orange-500 transition-colors">
+                {product.name}
+              </h3>
+            </Link>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-baseline gap-2">
+                {product.originalPrice ? (
+                  <>
+                    <span className="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-500">
+                      {formatPrice(product.price)}
+                    </span>
+                    <span className="text-sm text-slate-400 line-through">
+                      {formatPrice(product.originalPrice)}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-lg font-bold text-slate-900 dark:text-white">
+                    {formatPrice(product.price)}
+                  </span>
+                )}
+              </div>
+              
+              {/* Rating placeholder */}
+              <div className="flex items-center gap-1">
+                <span className="text-yellow-500">★</span>
+                <span className="text-xs text-slate-500">4.9</span>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
 
       <QuickViewModal product={product} isOpen={showQuickView} onClose={() => setShowQuickView(false)} />
     </>

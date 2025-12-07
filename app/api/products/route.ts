@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
+import { auth } from "@/lib/auth"
+import { checkPermission } from "@/lib/check-permission"
+import { createProductSchema, validateData } from "@/lib/validations"
 
-// GET /api/products - Get all products with filters and pagination
+// GET /api/products - Get all products with filters and pagination (PUBLIC)
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
@@ -119,10 +122,46 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/products - Create a new product
+// POST /api/products - Create a new product (PROTECTED)
 export async function POST(request: NextRequest) {
   try {
+    // ========================================
+    // 1. AUTHENTIFICATION
+    // ========================================
+    const session = await auth.api.getSession({ headers: request.headers })
+    
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, error: "Non authentifié" },
+        { status: 401 }
+      )
+    }
+
+    // ========================================
+    // 2. AUTORISATION (permission products.canCreate)
+    // ========================================
+    const { authorized, error: permError } = await checkPermission(request, 'products', 'canCreate')
+    
+    if (!authorized) {
+      return NextResponse.json(
+        { success: false, error: permError || "Permission refusée" },
+        { status: 403 }
+      )
+    }
+
+    // ========================================
+    // 3. VALIDATION DES DONNÉES
+    // ========================================
     const body = await request.json()
+    const validation = validateData(createProductSchema, body)
+    
+    if (!validation.success) {
+      return NextResponse.json(
+        { success: false, error: validation.error, issues: validation.issues },
+        { status: 400 }
+      )
+    }
+
     const {
       name,
       slug,
@@ -140,15 +179,7 @@ export async function POST(request: NextRequest) {
       isFeatured,
       tags,
       attributes
-    } = body
-
-    // Validate required fields
-    if (!name || !slug || !price || !categoryId) {
-      return NextResponse.json(
-        { success: false, error: "Name, slug, price, and category are required" },
-        { status: 400 }
-      )
-    }
+    } = validation.data!
 
     // Check if slug already exists
     const existingProduct = await prisma.product.findUnique({
@@ -188,25 +219,25 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create product
+    // Create product (les valeurs sont déjà transformées par Zod)
     const product = await prisma.product.create({
       data: {
         name,
         slug,
         description,
         shortDesc,
-        price: parseFloat(price),
-        discountPrice: discountPrice ? parseFloat(discountPrice) : null,
-        salePercentage: salePercentage ? parseInt(salePercentage) : null,
+        price,
+        discountPrice,
+        salePercentage,
         sku: sku || null,
-        stock: stock ? parseInt(stock) : 0,
+        stock: stock || 0,
         categoryId,
         images: images || [],
         thumbnail,
         isNew: isNew || false,
         isFeatured: isFeatured || false,
         tags: tags || [],
-        attributes
+        attributes: attributes || undefined
       },
       include: {
         category: true,

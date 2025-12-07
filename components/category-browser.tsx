@@ -93,70 +93,103 @@ export function CategoryBrowser() {
   }
 
   return (
-    <section className="container mx-auto px-4 py-8 sm:py-12">
-      <div className="flex items-center justify-between mb-6 sm:mb-8">
-        <h2 className="text-xl sm:text-2xl font-bold">{t.categories.title}</h2>
-        <div className="flex gap-2">
-          <button 
-            onClick={() => scroll("left")}
-            disabled={!canScrollLeft}
-            className={`p-2 rounded-full border transition-all duration-200 ${
-              canScrollLeft 
-                ? "hover:bg-orange-50 hover:border-orange-300 dark:hover:bg-orange-950 text-slate-700 dark:text-slate-300" 
-                : "opacity-40 cursor-not-allowed text-slate-400"
-            }`}
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <button 
-            onClick={() => scroll("right")}
-            disabled={!canScrollRight}
-            className={`p-2 rounded-full border transition-all duration-200 ${
-              canScrollRight 
-                ? "hover:bg-orange-50 hover:border-orange-300 dark:hover:bg-orange-950 text-slate-700 dark:text-slate-300" 
-                : "opacity-40 cursor-not-allowed text-slate-400"
-            }`}
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        </div>
+    <section className="relative py-12 sm:py-16 overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-orange-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-purple-500/5 rounded-full blur-3xl" />
       </div>
 
-      <div className="relative">
-        {/* Gradient overlays for scroll indication */}
-        {canScrollLeft && (
-          <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
-        )}
-        {canScrollRight && (
-          <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
-        )}
-
-        {/* Scrollable container */}
-        <div 
-          ref={scrollContainerRef}
-          onScroll={checkScrollButtons}
-          className="flex gap-4 sm:gap-6 overflow-x-auto scrollbar-hide pb-2 scroll-smooth"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-        >
-          {categories.map((category, index) => (
-            <Link
-              key={category.id}
-              href={`/shop?category=${category.slug}`}
-              className="flex-shrink-0 flex flex-col items-center gap-3 p-4 sm:p-6 bg-white dark:bg-slate-900 rounded-xl hover:shadow-lg transition-all duration-300 cursor-pointer hover:scale-105 group border border-transparent hover:border-orange-200 dark:hover:border-orange-800"
-              style={{ animationDelay: `${index * 50}ms` }}
+      <div className="container mx-auto px-4 relative">
+        {/* Header */}
+        <div className="flex items-end justify-between mb-8 sm:mb-10">
+          <div>
+            <span className="inline-block px-3 py-1 bg-gradient-to-r from-orange-500/10 to-pink-500/10 border border-orange-500/20 rounded-full text-sm font-medium text-orange-600 dark:text-orange-400 mb-3">
+              Explorer
+            </span>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black">
+              {t.categories.title}
+            </h2>
+          </div>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => scroll("left")}
+              disabled={!canScrollLeft}
+              className={`p-3 rounded-xl border transition-all duration-300 ${
+                canScrollLeft 
+                  ? "bg-white dark:bg-slate-900 hover:bg-gradient-to-r hover:from-orange-500 hover:to-pink-500 hover:text-white hover:border-transparent shadow-sm" 
+                  : "opacity-40 cursor-not-allowed bg-slate-100 dark:bg-slate-800"
+              }`}
             >
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-orange-50 to-orange-100 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300 shadow-sm">
-                <img 
-                  src={category.image || "/placeholder.svg"} 
-                  alt={category.name} 
-                  className="w-12 h-12 sm:w-16 sm:h-16 object-cover"
-                />
-              </div>
-              <span className="text-xs sm:text-sm font-medium text-center text-slate-700 dark:text-slate-300 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors whitespace-nowrap">
-                {category.name}
-              </span>
-            </Link>
-          ))}
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button 
+              onClick={() => scroll("right")}
+              disabled={!canScrollRight}
+              className={`p-3 rounded-xl border transition-all duration-300 ${
+                canScrollRight 
+                  ? "bg-white dark:bg-slate-900 hover:bg-gradient-to-r hover:from-orange-500 hover:to-pink-500 hover:text-white hover:border-transparent shadow-sm" 
+                  : "opacity-40 cursor-not-allowed bg-slate-100 dark:bg-slate-800"
+              }`}
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        <div className="relative">
+          {/* Gradient overlays */}
+          {canScrollLeft && (
+            <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-background via-background/80 to-transparent z-10 pointer-events-none" />
+          )}
+          {canScrollRight && (
+            <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-background via-background/80 to-transparent z-10 pointer-events-none" />
+          )}
+
+          {/* Scrollable container */}
+          <div 
+            ref={scrollContainerRef}
+            onScroll={checkScrollButtons}
+            className="flex gap-4 sm:gap-6 overflow-x-auto scrollbar-hide pb-4 scroll-smooth"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            {categories.map((category, index) => (
+              <Link
+                key={category.id}
+                href={`/shop?category=${category.slug}`}
+                className="group flex-shrink-0 relative"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                {/* Card */}
+                <div className="relative w-32 sm:w-40 p-4 sm:p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-orange-300 dark:hover:border-orange-700 transition-all duration-500 hover:shadow-xl hover:shadow-orange-500/10 hover:-translate-y-2">
+                  {/* Glow effect on hover */}
+                  <div className="absolute -inset-px bg-gradient-to-r from-orange-500 to-pink-500 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl -z-10" />
+                  
+                  {/* Image Container */}
+                  <div className="relative w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4">
+                    <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 to-pink-500/20 rounded-2xl group-hover:scale-110 transition-transform duration-500" />
+                    <div className="relative w-full h-full rounded-2xl overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center">
+                      <img 
+                        src={category.image || "/placeholder.svg"} 
+                        alt={category.name} 
+                        className="w-12 h-12 sm:w-14 sm:h-14 object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Title */}
+                  <p className="text-xs sm:text-sm font-semibold text-center text-slate-700 dark:text-slate-300 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors line-clamp-2">
+                    {category.name}
+                  </p>
+
+                  {/* Arrow indicator */}
+                  <div className="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:bg-gradient-to-r group-hover:from-orange-500 group-hover:to-pink-500">
+                    <ChevronRight className="w-3 h-3 text-white" />
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </section>

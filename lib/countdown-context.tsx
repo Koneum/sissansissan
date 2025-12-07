@@ -8,6 +8,7 @@ export interface CountdownData {
   endDate: string
   backgroundColor: string
   textColor: string
+  image: string
 }
 
 const defaultCountdownData: CountdownData = {
@@ -15,7 +16,8 @@ const defaultCountdownData: CountdownData = {
   title: "FLASH SALE ENDS IN",
   endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
   backgroundColor: "#4F46E5",
-  textColor: "#FFFFFF"
+  textColor: "#FFFFFF",
+  image: "/black-bluetooth-speaker-with-blue-accent.jpg"
 }
 
 interface CountdownContextType {

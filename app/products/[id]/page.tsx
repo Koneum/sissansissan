@@ -23,6 +23,7 @@ interface Product {
   description: string
   price: number
   comparePrice?: number
+  discountPrice?: number
   stock: number
   image: string
   images?: string[]
@@ -32,6 +33,8 @@ interface Product {
     name: string
   }
   isFeatured: boolean
+  isNew?: boolean
+  salePercentage?: number
   createdAt: string
 }
 
@@ -175,167 +178,234 @@ export default function ProductDetailPage() {
     : 0
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-background">
+    <div className="min-h-screen bg-slate-50 dark:bg-background">
       <Header />
 
-      <main className="container mx-auto px-4 py-6">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
-          <button onClick={() => router.push("/")} className="hover:text-primary transition-colors">
-            Home
+      <main className="container mx-auto px-4 py-8">
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-8">
+          <button onClick={() => router.push("/")} className="hover:text-orange-500 transition-colors">
+            Accueil
           </button>
-          <span>›</span>
-          <button onClick={() => router.push("/shop")} className="hover:text-primary transition-colors">
-            Shop
+          <span className="text-slate-300 dark:text-slate-600">/</span>
+          <button onClick={() => router.push("/shop")} className="hover:text-orange-500 transition-colors">
+            Boutique
           </button>
-          <span>›</span>
-          <span className="text-foreground">{product.name}</span>
+          <span className="text-slate-300 dark:text-slate-600">/</span>
+          <span className="text-slate-800 dark:text-white font-medium truncate max-w-[200px]">{product.name}</span>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8 mb-12 bg-white dark:bg-card rounded-lg p-6">
+        {/* Main Product Section */}
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 mb-16">
+          {/* Image Gallery */}
           <div className="space-y-4">
-            <div className="aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-muted relative group">
-              <img
-                src={images[selectedImage] || "/placeholder.svg"}
-                alt={product.name}
-                className="w-full h-full object-contain p-8"
-              />
-              <button className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white dark:bg-card shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
-                  />
-                </svg>
-              </button>
+            {/* Main Image */}
+            <div className="relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-orange-500/20 to-pink-500/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="relative aspect-square rounded-2xl overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-900/5 dark:shadow-slate-900/50">
+                <img
+                  src={images[selectedImage] || "/placeholder.svg"}
+                  alt={product.name}
+                  className="w-full h-full object-contain p-8 group-hover:scale-105 transition-transform duration-500"
+                />
+                
+                {/* Badges */}
+                <div className="absolute top-4 left-4 flex flex-col gap-2">
+                  {discount > 0 && (
+                    <span className="inline-flex items-center gap-1 bg-gradient-to-r from-orange-500 to-pink-500 text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg shadow-orange-500/25">
+                      -{discount}%
+                    </span>
+                  )}
+                </div>
+
+                {/* Wishlist Button */}
+                <button
+                  onClick={handleWishlist}
+                  className={`absolute top-4 right-4 w-12 h-12 rounded-full backdrop-blur-md flex items-center justify-center transition-all duration-300 ${
+                    isInWishlist(product.id) 
+                      ? "bg-red-500 text-white shadow-lg shadow-red-500/25" 
+                      : "bg-white/90 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 hover:scale-110"
+                  }`}
+                >
+                  <Heart className={`w-6 h-6 ${isInWishlist(product.id) ? "fill-current" : ""}`} />
+                </button>
+              </div>
             </div>
-            <div className="flex gap-3">
+            
+            {/* Thumbnails */}
+            <div className="flex gap-3 overflow-x-auto pb-2">
               {images.map((img, idx) => (
                 <button
                   key={idx}
                   onClick={() => setSelectedImage(idx)}
-                  className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                  className={`flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all duration-300 ${
                     selectedImage === idx
-                      ? "border-primary ring-2 ring-primary/20"
-                      : "border-gray-200 dark:border-border"
+                      ? "border-orange-500 ring-4 ring-orange-500/20 scale-105"
+                      : "border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700"
                   }`}
                 >
                   <img
                     src={img || "/placeholder.svg"}
                     alt={`${product.name} ${idx + 1}`}
-                    className="w-full h-full object-contain p-2 bg-gray-50 dark:bg-muted"
+                    className="w-full h-full object-contain p-2 bg-white dark:bg-slate-900"
                   />
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="space-y-5">
-            <div>
-              <div className="flex items-start justify-between mb-2">
-                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-foreground">{product.name}</h1>
-                {discount > 0 && (
-                  <Badge className="bg-primary text-white px-3 py-1 text-sm font-semibold">{discount}% OFF</Badge>
-                )}
-              </div>
-              <div className="flex items-center gap-3 mb-3">
-                {product.stock > 0 ? (
-                  <div className="flex items-center gap-1 text-green-600 text-sm font-medium">
-                    <Check className="w-4 h-4" />
-                    <span>{t.common.inStock} ({product.stock} {t.common.items})</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-1 text-red-600 text-sm font-medium">
-                    <span>{t.common.outOfStock}</span>
-                  </div>
-                )}
-                {product.category && (
-                  <Badge variant="secondary" className="text-xs">
-                    {product.category.name}
-                  </Badge>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-baseline gap-3 pb-4 border-b">
-              <span className="text-sm text-muted-foreground">{t.common.price}:</span>
-              {product.comparePrice && (
-                <span className="text-xl text-muted-foreground line-through">{formatPrice(product.comparePrice)}</span>
-              )}
-              <span className="text-2xl sm:text-3xl font-bold text-primary">{formatPrice(product.price)}</span>
-            </div>
-
-            {product.description && (
-              <div className="pb-4 border-b">
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {product.description}
-                </p>
-              </div>
+          {/* Product Info */}
+          <div className="space-y-6">
+            {/* Category Badge */}
+            {product.category && (
+              <span className="inline-block px-3 py-1 bg-gradient-to-r from-orange-500/10 to-pink-500/10 border border-orange-500/20 rounded-full text-sm font-medium text-orange-600 dark:text-orange-400">
+                {product.category.name}
+              </span>
             )}
 
+            {/* Title */}
+            <h1 className="text-3xl lg:text-4xl font-black text-slate-900 dark:text-white leading-tight">
+              {product.name}
+            </h1>
+
+            {/* Stock Status */}
             <div className="flex items-center gap-3">
-              <div className="flex items-center border rounded-lg bg-white dark:bg-background">
+              {product.stock > 0 ? (
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-full">
+                  <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                    {t.common.inStock} ({product.stock} {t.common.items})
+                  </span>
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-full">
+                  <span className="text-sm font-medium text-red-700 dark:text-red-400">{t.common.outOfStock}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Price */}
+            <div className="flex items-baseline gap-4 py-6 border-y border-slate-200 dark:border-slate-800">
+              <span className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-500">
+                {formatPrice(product.price)}
+              </span>
+              {product.comparePrice && (
+                <span className="text-xl text-slate-400 line-through">
+                  {formatPrice(product.comparePrice)}
+                </span>
+              )}
+            </div>
+
+            {/* Description */}
+            {product.description && (
+              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                {product.description}
+              </p>
+            )}
+
+            {/* Quantity & Actions */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                {/* Quantity Selector */}
+                <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl p-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    className="h-10 w-10 rounded-lg hover:bg-white dark:hover:bg-slate-700"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </Button>
+                  <span className="w-14 text-center font-bold text-lg">{quantity}</span>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => setQuantity(quantity + 1)} 
+                    className="h-10 w-10 rounded-lg hover:bg-white dark:hover:bg-slate-700"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+
+                {/* Add to Cart */}
                 <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="h-10 w-10 sm:h-12 sm:w-12"
+                  variant="outline"
+                  className={`h-12 px-6 font-semibold rounded-xl border-2 transition-all duration-300 ${
+                    isAddedToCart 
+                      ? "bg-emerald-500 text-white border-emerald-500" 
+                      : "border-slate-300 dark:border-slate-700 hover:border-orange-500 hover:text-orange-500"
+                  }`}
+                  onClick={handleAddToCart}
+                  disabled={product.stock === 0}
                 >
-                  <Minus className="w-4 h-4" />
-                </Button>
-                <span className="w-16 text-center font-medium">{quantity}</span>
-                <Button variant="ghost" size="icon" onClick={() => setQuantity(quantity + 1)} className="h-10 w-10 sm:h-12 sm:w-12">
-                  <Plus className="w-4 h-4" />
+                  {isAddedToCart ? (
+                    <><Check className="w-5 h-5 mr-2" /> Ajouté!</>
+                  ) : (
+                    t.products.addToCart
+                  )}
                 </Button>
               </div>
+
+              {/* Buy Now */}
               <Button
-                className="flex-1 h-10 sm:h-12 bg-primary hover:bg-primary/90 text-white font-medium"
+                className="w-full h-14 bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-bold text-lg rounded-xl shadow-xl shadow-orange-500/25 hover:shadow-orange-500/40 transition-all duration-300 hover:scale-[1.02]"
                 onClick={handlePurchaseNow}
                 disabled={product.stock === 0}
               >
                 {t.products.purchaseNow}
               </Button>
-              <Button
-                variant="outline"
-                className={`h-10 sm:h-12 px-4 sm:px-6 font-medium ${isAddedToCart ? "bg-green-600 text-white border-green-600" : ""}`}
-                onClick={handleAddToCart}
-                disabled={product.stock === 0}
-              >
-                {isAddedToCart ? t.common.added : t.products.addToCart}
-              </Button>
-              <Button 
-                variant="outline" 
-                size="icon" 
-                className={`h-10 w-10 sm:h-12 sm:w-12 ${isInWishlist(product.id) ? "bg-red-50 border-red-500" : ""}`}
-                onClick={handleWishlist}
-              >
-                <Heart className={`w-5 h-5 ${isInWishlist(product.id) ? "fill-red-500 text-red-500" : ""}`} />
-              </Button>
+            </div>
+
+            {/* Trust Badges */}
+            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-slate-200 dark:border-slate-800">
+              <div className="text-center">
+                <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Qualité garantie</p>
+              </div>
+              <div className="text-center">
+                <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Livraison rapide</p>
+              </div>
+              <div className="text-center">
+                <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Paiement sécurisé</p>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-card rounded-lg p-6 mb-12">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 sm:p-8 mb-12 shadow-xl shadow-slate-900/5 dark:shadow-slate-900/50 border border-slate-200 dark:border-slate-800">
           <Tabs defaultValue="description" className="w-full">
-            <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
+            <TabsList className="w-full justify-start border-b border-slate-200 dark:border-slate-700 rounded-none h-auto p-0 bg-transparent gap-2">
               <TabsTrigger
                 value="description"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3"
+                className="rounded-t-lg border-b-2 border-transparent data-[state=active]:border-orange-500 data-[state=active]:bg-orange-50 dark:data-[state=active]:bg-orange-500/10 data-[state=active]:text-orange-600 dark:data-[state=active]:text-orange-400 px-6 py-3 font-medium transition-all"
               >
                 Description
               </TabsTrigger>
               <TabsTrigger
                 value="additional"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3"
+                className="rounded-t-lg border-b-2 border-transparent data-[state=active]:border-orange-500 data-[state=active]:bg-orange-50 dark:data-[state=active]:bg-orange-500/10 data-[state=active]:text-orange-600 dark:data-[state=active]:text-orange-400 px-6 py-3 font-medium transition-all"
               >
-                Additional Information
+                Informations
               </TabsTrigger>
               <TabsTrigger
                 value="reviews"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3"
+                className="rounded-t-lg border-b-2 border-transparent data-[state=active]:border-orange-500 data-[state=active]:bg-orange-50 dark:data-[state=active]:bg-orange-500/10 data-[state=active]:text-orange-600 dark:data-[state=active]:text-orange-400 px-6 py-3 font-medium transition-all"
               >
-                Reviews
+                Avis
               </TabsTrigger>
             </TabsList>
 
@@ -441,14 +511,59 @@ export default function ProductDetailPage() {
         </div>
 
         {/* Related Products */}
-        <div>
-          <h2 className="text-2xl font-bold mb-6">Related Products</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {relatedProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+        {relatedProducts.length > 0 && (
+          <div className="relative py-8">
+            {/* Background Elements */}
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute top-0 left-1/4 w-80 h-80 bg-orange-500/5 rounded-full blur-3xl" />
+              <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-pink-500/5 rounded-full blur-3xl" />
+            </div>
+
+            <div className="relative">
+              {/* Header */}
+              <div className="flex items-end justify-between mb-8">
+                <div>
+                  <span className="inline-block px-3 py-1 bg-gradient-to-r from-orange-500/10 to-pink-500/10 border border-orange-500/20 rounded-full text-sm font-medium text-orange-600 dark:text-orange-400 mb-3">
+                    Vous aimerez aussi
+                  </span>
+                  <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+                    Produits Similaires
+                  </h2>
+                </div>
+                <button 
+                  onClick={() => router.push('/shop')}
+                  className="group inline-flex items-center gap-2 text-sm font-semibold text-orange-500 hover:text-orange-600 transition-colors"
+                >
+                  Voir tout
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </button>
+              </div>
+
+              {/* Products Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {relatedProducts.map((relProduct, index) => (
+                  <div 
+                    key={relProduct.id}
+                    className="animate-in fade-in slide-in-from-bottom-4 duration-500"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    <ProductCard 
+                      product={{
+                        id: relProduct.id,
+                        name: relProduct.name,
+                        price: relProduct.discountPrice || relProduct.price,
+                        originalPrice: relProduct.discountPrice ? relProduct.price : undefined,
+                        image: relProduct.images?.[0] || relProduct.image || "/placeholder.svg",
+                        salePercentage: relProduct.salePercentage,
+                        isNew: relProduct.isNew
+                      }} 
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </main>
 
       <Footer />

@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
+import { auth } from "@/lib/auth"
+import { checkPermission } from "@/lib/check-permission"
+import { createCategorySchema, validateData } from "@/lib/validations"
 
-// GET /api/categories - Get all categories
+// GET /api/categories - Get all categories (PUBLIC)
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
@@ -36,19 +39,48 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/categories - Create a new category
+// POST /api/categories - Create a new category (PROTECTED)
+// Requiert la permission categories.canCreate
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { name, slug, description, image, parentId } = body
-
-    // Validate required fields
-    if (!name || !slug) {
+    // ========================================
+    // 1. AUTHENTIFICATION
+    // ========================================
+    const session = await auth.api.getSession({ headers: request.headers })
+    
+    if (!session?.user) {
       return NextResponse.json(
-        { success: false, error: "Name and slug are required" },
+        { success: false, error: "Non authentifié" },
+        { status: 401 }
+      )
+    }
+
+    // ========================================
+    // 2. AUTORISATION (permission categories.canCreate)
+    // ========================================
+    const { authorized, error: permError } = await checkPermission(request, 'categories', 'canCreate')
+    
+    if (!authorized) {
+      return NextResponse.json(
+        { success: false, error: permError || "Permission refusée" },
+        { status: 403 }
+      )
+    }
+
+    // ========================================
+    // 3. VALIDATION DES DONNÉES
+    // ========================================
+    const body = await request.json()
+    const validation = validateData(createCategorySchema, body)
+    
+    if (!validation.success) {
+      return NextResponse.json(
+        { success: false, error: validation.error, issues: validation.issues },
         { status: 400 }
       )
     }
+
+    const { name, slug, description, image, parentId } = validation.data!
 
     // Check if slug already exists
     const existingCategory = await prisma.category.findUnique({

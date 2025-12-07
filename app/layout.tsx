@@ -14,6 +14,8 @@ import { SEOProvider } from "@/lib/seo-context"
 import { PagesProvider } from "@/lib/pages-context"
 import { CountdownProvider } from "@/lib/countdown-context"
 import { PromoProvider } from "@/lib/promo-context"
+import { NewsletterProvider } from "@/lib/newsletter-context"
+import { FeaturesProvider } from "@/lib/features-context"
 import { Chatbot } from "@/components/chatbot"
 import { Toaster } from "sonner"
 import { Toaster as ShadcnToaster } from "@/components/ui/toaster"
@@ -55,20 +57,24 @@ export default function RootLayout({
                 <PagesProvider>
                   <CountdownProvider>
                     <PromoProvider>
-                      <HeaderProvider>
-                        <FooterProvider>
-                          <HeroSliderProvider>
-                            <WishlistProvider>
-                              <CartProvider>
-                              <Toaster position="bottom-right" richColors />
-                              <ShadcnToaster />
-                              {children}
-                              {/* <Chatbot /> */}
-                              </CartProvider>
-                            </WishlistProvider>
-                          </HeroSliderProvider>
-                        </FooterProvider>
-                      </HeaderProvider>
+                      <NewsletterProvider>
+                        <FeaturesProvider>
+                          <HeaderProvider>
+                            <FooterProvider>
+                              <HeroSliderProvider>
+                                <WishlistProvider>
+                                  <CartProvider>
+                                    <Toaster position="bottom-right" richColors />
+                                    <ShadcnToaster />
+                                    {children}
+                                    {/* <Chatbot /> */}
+                                  </CartProvider>
+                                </WishlistProvider>
+                              </HeroSliderProvider>
+                            </FooterProvider>
+                          </HeaderProvider>
+                        </FeaturesProvider>
+                      </NewsletterProvider>
                     </PromoProvider>
                   </CountdownProvider>
                 </PagesProvider>

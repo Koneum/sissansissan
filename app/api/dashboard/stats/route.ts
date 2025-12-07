@@ -1,8 +1,39 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
+import { auth } from "@/lib/auth"
+import { checkPermission } from "@/lib/check-permission"
 
-export async function GET() {
+// GET /api/dashboard/stats - Dashboard statistics (PROTECTED)
+// Requiert la permission dashboard.canView
+export async function GET(request: NextRequest) {
   try {
+    // ========================================
+    // 1. AUTHENTIFICATION
+    // ========================================
+    const session = await auth.api.getSession({ headers: request.headers })
+    
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: "Non authentifié" },
+        { status: 401 }
+      )
+    }
+
+    // ========================================
+    // 2. AUTORISATION (permission dashboard.canView)
+    // ========================================
+    const { authorized, error: permError } = await checkPermission(request, 'dashboard', 'canView')
+    
+    if (!authorized) {
+      return NextResponse.json(
+        { error: permError || "Permission refusée" },
+        { status: 403 }
+      )
+    }
+
+    // ========================================
+    // 3. RÉCUPÉRER LES STATISTIQUES
+    // ========================================
     // Get current date ranges
     const now = new Date()
     const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)

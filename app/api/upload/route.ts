@@ -1,8 +1,26 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
+import { auth } from "@/lib/auth"
 
+// POST /api/upload - Upload an image (PROTECTED)
+// Requiert une authentification (tout utilisateur connecté peut uploader)
 export async function POST(request: NextRequest) {
   try {
+    // ========================================
+    // 1. AUTHENTIFICATION
+    // ========================================
+    const session = await auth.api.getSession({ headers: request.headers })
+    
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: "Non authentifié" },
+        { status: 401 }
+      )
+    }
+
+    // ========================================
+    // 2. TRAITEMENT DU FICHIER
+    // ========================================
     const formData = await request.formData()
     const file = formData.get("file") as File
     

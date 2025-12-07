@@ -1,24 +1,25 @@
 "use client"
 
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Sheet, SheetContent } from "@/components/ui/sheet"
+import { useLocale } from "@/lib/locale-context"
+import { usePermissions } from "@/lib/use-permissions"
+import { cn } from "@/lib/utils"
+import {
+    ChevronDown,
+    FolderTree,
+    LayoutDashboard,
+    MessageSquare,
+    Package,
+    Palette,
+    Settings,
+    ShoppingBag,
+    Users,
+} from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import {
-  LayoutDashboard,
-  ShoppingBag,
-  Users,
-  Package,
-  FolderTree,
-  Settings,
-  ChevronDown,
-  Palette,
-  MessageSquare,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
-import { useState } from "react"
-import { useLocale } from "@/lib/locale-context"
-import { Sheet, SheetContent } from "@/components/ui/sheet"
-import { usePermissions } from "@/lib/use-permissions"
+import { useEffect, useState } from "react"
 
 interface AdminSidebarProps {
   open: boolean
@@ -29,7 +30,30 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
   const { t } = useLocale()
   const pathname = usePathname()
   const [expandedItems, setExpandedItems] = useState<string[]>([])
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)
   const { hasAnyPermission } = usePermissions()
+
+  // Fetch unread messages count
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const response = await fetch("/api/contact?status=NEW")
+        if (response.ok) {
+          const data = await response.json()
+          if (data.success && Array.isArray(data.data)) {
+            setUnreadMessagesCount(data.data.length)
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching unread messages:", error)
+      }
+    }
+
+    fetchUnreadCount()
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchUnreadCount, 30000)
+    return () => clearInterval(interval)
+  }, [])
 
   const toggleExpand = (label: string) => {
     setExpandedItems((prev) => (prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label]))
@@ -147,12 +171,19 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
                   <Button
                     variant="ghost"
                     className={cn(
-                      "w-full justify-start text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 h-10 sm:h-auto",
+                      "w-full justify-between text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 h-10 sm:h-auto",
                       isActive && "bg-orange-50 dark:bg-orange-950 text-[#F97316] dark:text-[#FB923C]",
                     )}
                   >
-                    <Icon className="icon-responsive mr-2 sm:mr-3" />
-                    <span className="text-responsive-sm">{item.label}</span>
+                    <div className="flex items-center">
+                      <Icon className="icon-responsive mr-2 sm:mr-3" />
+                      <span className="text-responsive-sm">{item.label}</span>
+                    </div>
+                    {item.label === "Messages" && unreadMessagesCount > 0 && (
+                      <Badge className="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-0.5 min-w-[20px] flex items-center justify-center">
+                        {unreadMessagesCount > 99 ? "99+" : unreadMessagesCount}
+                      </Badge>
+                    )}
                   </Button>
                 </Link>
               )}

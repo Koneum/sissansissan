@@ -11,6 +11,7 @@ import {
   Settings,
   ChevronDown,
   Palette,
+  MessageSquare,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -38,6 +39,7 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
     { icon: LayoutDashboard, label: t.admin.dashboard, href: "/admin/dashboard", permission: "dashboard" },
     { icon: ShoppingBag, label: t.admin.orders, href: "/admin/orders", permission: "orders" },
     { icon: Users, label: t.admin.customers, href: "/admin/customers", permission: "customers" },
+    { icon: MessageSquare, label: "Messages", href: "/admin/messages", permission: "settings" },
     {
       icon: Package,
       label: t.admin.products,

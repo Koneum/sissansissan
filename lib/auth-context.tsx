@@ -14,7 +14,7 @@ interface User {
 interface AuthContextType {
   user: User | null
   isLoading: boolean
-  signIn: (email: string, password: string) => Promise<{ error?: any; data?: any }>
+  signIn: (email: string, password: string, rememberMe?: boolean) => Promise<{ error?: any; data?: any }>
   signUp: (email: string, password: string, name: string) => Promise<{ error?: any; data?: any }>
   signOut: () => Promise<void>
   isAdmin: boolean
@@ -32,11 +32,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     role: (session.user as any).role as "CUSTOMER" | "PERSONNEL" | "MANAGER" | "ADMIN" | "SUPER_ADMIN"
   } : null
 
-  const handleSignIn = async (email: string, password: string) => {
+  const handleSignIn = async (email: string, password: string, rememberMe?: boolean) => {
     try {
       const result = await betterAuthSignIn.email({
         email,
         password,
+        rememberMe: rememberMe ?? false, // Session prolongée si coché
       })
       return result
     } catch (error) {

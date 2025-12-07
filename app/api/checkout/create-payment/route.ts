@@ -330,7 +330,8 @@ export async function POST(request: NextRequest) {
     console.log("📤 Calling VitePay API...")
 
     // Call VitePay API
-    const vitepayResponse = await fetch("https://api.vitepay.com/v1/prod/payments", {
+    const vitepayApiUrl = process.env.VITEPAY_API_URL || "https://api.vitepay.com/v1/prod"
+    const vitepayResponse = await fetch(`${vitepayApiUrl}/payments`, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",

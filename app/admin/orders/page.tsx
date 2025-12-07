@@ -1,19 +1,19 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { Eye, Search, Loader2 } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { formatPrice } from "@/lib/currency"
 import { useLocale } from "@/lib/locale-context"
+import { Eye, Loader2, Search } from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
 
 type OrderStatus = "PENDING" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED"
-type PaymentStatus = "PENDING" | "PAID" | "FAILED"
+type PaymentStatus = "PENDING" | "PAID" | "FAILED" | "REFUNDED"
 
 interface Order {
   id: string
@@ -54,6 +54,7 @@ export default function OrdersPage() {
   const [filterStatus, setFilterStatus] = useState<string>("all")
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [editedStatus, setEditedStatus] = useState<OrderStatus>("PENDING")
+  const [editedPaymentStatus, setEditedPaymentStatus] = useState<PaymentStatus>("PENDING")
   const [updatingStatus, setUpdatingStatus] = useState(false)
 
   useEffect(() => {
@@ -121,6 +122,7 @@ export default function OrdersPage() {
         },
         body: JSON.stringify({
           status: editedStatus,
+          paymentStatus: editedPaymentStatus,
         }),
       })
 
@@ -129,10 +131,13 @@ export default function OrdersPage() {
         throw new Error(error.error || t.admin.errorUpdate)
       }
 
-      const updatedOrder = await response.json()
+      const result = await response.json()
       toast.success(t.admin.successUpdate)
       
-      setOrders(orders.map(o => o.id === selectedOrder.id ? updatedOrder : o))
+      // Use result.data instead of result directly
+      if (result.data) {
+        setOrders(orders.map(o => o.id === selectedOrder.id ? result.data : o))
+      }
       setSelectedOrder(null)
     } catch (error: unknown) {
       console.error("Error updating order:", error)
@@ -155,10 +160,11 @@ export default function OrdersPage() {
   }
 
   const getPaymentBadge = (status: PaymentStatus) => {
-    const variants: Record<PaymentStatus, { variant: "default" | "secondary" | "destructive"; label: string }> = {
+    const variants: Record<PaymentStatus, { variant: "default" | "secondary" | "destructive" | "outline"; label: string }> = {
       PENDING: { variant: "secondary", label: t.admin.pending },
       PAID: { variant: "default", label: t.admin.paid },
       FAILED: { variant: "destructive", label: t.admin.failed },
+      REFUNDED: { variant: "outline", label: "Remboursé" },
     }
     const config = variants[status] || variants.PENDING
     return <Badge variant={config.variant}>{config.label}</Badge>
@@ -277,6 +283,7 @@ export default function OrdersPage() {
                           onClick={() => {
                             setSelectedOrder(order)
                             setEditedStatus(order.status)
+                            setEditedPaymentStatus(order.paymentStatus)
                           }}
                         >
                           <Eye className="w-4 h-4 mr-2" />
@@ -342,20 +349,36 @@ export default function OrdersPage() {
                 <span className="text-2xl font-bold">{formatPrice(selectedOrder.total)}</span>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="order-status">{t.admin.updateStatus}</Label>
-                <Select value={editedStatus} onValueChange={(value) => setEditedStatus(value as OrderStatus)}>
-                  <SelectTrigger id="order-status">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="PENDING">{t.admin.pending}</SelectItem>
-                    <SelectItem value="PROCESSING">{t.admin.processing}</SelectItem>
-                    <SelectItem value="SHIPPED">{t.admin.shipped}</SelectItem>
-                    <SelectItem value="DELIVERED">{t.admin.delivered}</SelectItem>
-                    <SelectItem value="CANCELLED">{t.admin.cancelled}</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="order-status">{t.common.status}</Label>
+                  <Select value={editedStatus} onValueChange={(value) => setEditedStatus(value as OrderStatus)}>
+                    <SelectTrigger id="order-status">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="PENDING">{t.admin.pending}</SelectItem>
+                      <SelectItem value="PROCESSING">{t.admin.processing}</SelectItem>
+                      <SelectItem value="SHIPPED">{t.admin.shipped}</SelectItem>
+                      <SelectItem value="DELIVERED">{t.admin.delivered}</SelectItem>
+                      <SelectItem value="CANCELLED">{t.admin.cancelled}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="payment-status">{t.admin.paymentStatus}</Label>
+                  <Select value={editedPaymentStatus} onValueChange={(value) => setEditedPaymentStatus(value as PaymentStatus)}>
+                    <SelectTrigger id="payment-status">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="PENDING">{t.admin.pending}</SelectItem>
+                      <SelectItem value="PAID">{t.admin.paid}</SelectItem>
+                      <SelectItem value="FAILED">{t.admin.failed}</SelectItem>
+                      <SelectItem value="REFUNDED">Remboursé</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
             <DialogFooter>

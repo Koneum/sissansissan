@@ -147,7 +147,7 @@ export default function AddCategoryPage() {
             <div className="pt-4 flex flex-col sm:flex-row gap-3">
               <Button 
                 type="submit"
-                className="bg-[#4F46E5] hover:bg-[#4338CA] text-white btn-responsive" 
+                className="bg-[#F97316] hover:bg-[#EA580C] text-white btn-responsive" 
                 disabled={loading}
               >
                 {loading && <Loader2 className="icon-responsive mr-2 animate-spin" />}
@@ -165,3 +165,5 @@ export default function AddCategoryPage() {
     </div>
   )
 }
+
+

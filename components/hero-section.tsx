@@ -63,7 +63,7 @@ export function HeroSection() {
           <div>
             {mainProduct.salePercentage && (
               <div className="inline-block mb-4 animate-in fade-in slide-in-from-top-4 duration-500 delay-200">
-                <span className="text-blue-600 text-3xl sm:text-4xl md:text-5xl font-bold">{mainProduct.salePercentage}%</span>
+                <span className="text-orange-600 text-3xl sm:text-4xl md:text-5xl font-bold">{mainProduct.salePercentage}%</span>
                 <div className="text-xs text-gray-600 dark:text-gray-400 uppercase">
                   <div>SALE</div>
                   <div>OFF</div>
@@ -129,3 +129,7 @@ export function HeroSection() {
     </section>
   )
 }
+
+
+
+

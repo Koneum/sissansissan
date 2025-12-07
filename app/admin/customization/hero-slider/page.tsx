@@ -90,7 +90,7 @@ export default function HeroSliderPage() {
           <h1 className="heading-responsive-h1">{t.admin.heroSlider}</h1>
           <p className="text-responsive-sm text-muted-foreground">{t.admin.manageHeroSlides}</p>
         </div>
-        <Button onClick={openAddDialog} className="bg-[#4F46E5] hover:bg-[#4338CA] btn-responsive w-full sm:w-auto">
+        <Button onClick={openAddDialog} className="bg-[#F97316] hover:bg-[#EA580C] btn-responsive w-full sm:w-auto">
           <Plus className="icon-responsive mr-2" />
           {t.admin.addNewSlide}
         </Button>
@@ -116,7 +116,7 @@ export default function HeroSliderPage() {
                 />
                 <div className="flex-1 w-full">
                   <div className="flex items-center gap-2">
-                    <span className="text-blue-500 font-bold heading-responsive-h3">{slide.badge}</span>
+                    <span className="text-orange-500 font-bold heading-responsive-h3">{slide.badge}</span>
                     <span className="text-responsive-xs text-muted-foreground">{t.admin.saleOff}</span>
                   </div>
                   <h3 className="heading-responsive-h4">{slide.title}</h3>
@@ -232,7 +232,7 @@ export default function HeroSliderPage() {
               </Button>
               <Button 
                 onClick={handleSave} 
-                className="bg-[#4F46E5] hover:bg-[#4338CA] btn-responsive w-full sm:w-auto"
+                className="bg-[#F97316] hover:bg-[#EA580C] btn-responsive w-full sm:w-auto"
               >
                 <Save className="icon-responsive mr-2" />
                 {editingSlide ? t.admin.update : t.admin.create} {t.admin.slide}
@@ -244,3 +244,5 @@ export default function HeroSliderPage() {
     </div>
   )
 }
+
+

@@ -195,3 +195,7 @@ export function SearchWithSuggestions({ onClose }: SearchWithSuggestionsProps) {
     </div>
   )
 }
+
+
+
+

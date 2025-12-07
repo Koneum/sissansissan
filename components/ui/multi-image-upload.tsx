@@ -118,7 +118,7 @@ export function MultiImageUpload({
                 <X className="w-4 h-4" />
               </Button>
               {index === 0 && (
-                <div className="absolute bottom-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">
+                <div className="absolute bottom-2 left-2 bg-orange-500 text-white text-xs px-2 py-1 rounded">
                   Primary
                 </div>
               )}
@@ -153,4 +153,8 @@ export function MultiImageUpload({
     </div>
   )
 }
+
+
+
+
 

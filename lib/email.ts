@@ -83,7 +83,7 @@ export async function sendWelcomeEmail(email: string, name: string, provider?: s
             <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
               <!-- Header -->
               <tr>
-                <td style="background: linear-gradient(135deg, #2E5BA8 0%, #1e40af 100%); padding: 40px 20px; text-align: center;">
+                <td style="background: linear-gradient(135deg, #F97316 0%, #1e40af 100%); padding: 40px 20px; text-align: center;">
                   <h1 style="color: #ffffff; margin: 0; font-size: 32px; font-weight: 700;">
                     🎉 Bienvenue sur Sissan-Sissan!
                   </h1>
@@ -142,7 +142,7 @@ export async function sendWelcomeEmail(email: string, name: string, provider?: s
                   <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
                     <tr>
                       <td align="center">
-                        <a href="${STORE_URL}" style="display: inline-block; padding: 16px 40px; background-color: #F39C12; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                        <a href="${STORE_URL}" style="display: inline-block; padding: 16px 40px; background-color: #F97316; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
                           Commencer mes achats 🛒
                         </a>
                       </td>
@@ -219,7 +219,7 @@ export async function sendVerificationCodeEmail(email: string, code: string) {
             <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
               <!-- Header -->
               <tr>
-                <td style="background: linear-gradient(135deg, #2E5BA8 0%, #1e40af 100%); padding: 40px 20px; text-align: center;">
+                <td style="background: linear-gradient(135deg, #F97316 0%, #1e40af 100%); padding: 40px 20px; text-align: center;">
                   <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">
                     🔐 Code de vérification
                   </h1>
@@ -238,8 +238,8 @@ export async function sendVerificationCodeEmail(email: string, code: string) {
                   </p>
                   
                   <!-- Code Box -->
-                  <div style="background-color: #f8fafc; border: 2px dashed #2E5BA8; border-radius: 12px; padding: 30px; margin: 30px 0;">
-                    <p style="color: #2E5BA8; font-size: 42px; font-weight: 700; letter-spacing: 8px; margin: 0; font-family: monospace;">
+                  <div style="background-color: #f8fafc; border: 2px dashed #F97316; border-radius: 12px; padding: 30px; margin: 30px 0;">
+                    <p style="color: #F97316; font-size: 42px; font-weight: 700; letter-spacing: 8px; margin: 0; font-family: monospace;">
                       ${code}
                     </p>
                   </div>
@@ -407,3 +407,6 @@ Si vous n'avez pas demandé cette réinitialisation, vous pouvez ignorer cet ema
     textContent,
   })
 }
+
+
+

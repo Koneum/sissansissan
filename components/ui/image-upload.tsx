@@ -119,7 +119,7 @@ export function ImageUpload({
           <div className="flex flex-col items-center justify-center text-center">
             {uploading ? (
               <>
-                <Loader2 className="w-12 h-12 text-blue-500 animate-spin mb-4" />
+                <Loader2 className="w-12 h-12 text-orange-500 animate-spin mb-4" />
                 <p className="text-sm text-slate-400">Uploading...</p>
               </>
             ) : (
@@ -172,4 +172,8 @@ export function ImageUpload({
     </div>
   )
 }
+
+
+
+
 

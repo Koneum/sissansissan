@@ -80,7 +80,7 @@ export function CountdownSection() {
             </div>
           </div>
 
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8">Check it Out!</Button>
+          <Button className="bg-orange-600 hover:bg-orange-700 text-white px-8">Check it Out!</Button>
         </div>
 
         <div className="flex-1 flex justify-center">
@@ -90,3 +90,7 @@ export function CountdownSection() {
     </section>
   )
 }
+
+
+
+

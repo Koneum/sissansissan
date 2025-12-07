@@ -187,3 +187,7 @@ export function CartSidebar({ open, onClose }: CartSidebarProps) {
     </Sheet>
   )
 }
+
+
+
+

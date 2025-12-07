@@ -268,7 +268,7 @@ export default function ProductsPage() {
                           action="edit"
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 sm:h-9 sm:w-9 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-950"
+                          className="h-8 w-8 sm:h-9 sm:w-9 hover:bg-orange-50 hover:text-orange-600 dark:hover:bg-orange-950"
                           onClick={() => router.push(`/admin/products/edit/${product.id}`)}
                         >
                           <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -306,3 +306,5 @@ export default function ProductsPage() {
     </PagePermissionGuard>
   )
 }
+
+

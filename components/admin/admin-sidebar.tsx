@@ -109,7 +109,7 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
   const sidebarContent = (
     <>
       <Link href="/" className="flex items-center gap-2 mb-6 sm:mb-8 px-2">
-        <img src="/logo.png" alt="Zissan-Sissan" className="h-10 sm:h-12 w-auto" />
+        <img src="/Sissan-logo-150-150.png" alt="Zissan-Sissan" className="h-10 sm:h-12 w-auto" />
       </Link>
 
       <div className="mb-4 px-2">
@@ -130,7 +130,7 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
                   variant="ghost"
                   className={cn(
                     "w-full justify-between text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 h-10 sm:h-auto",
-                    isActive && "bg-blue-50 dark:bg-blue-950 text-[#2E5BA8] dark:text-[#4F7FD5]",
+                    isActive && "bg-orange-50 dark:bg-orange-950 text-[#F97316] dark:text-[#FB923C]",
                   )}
                   onClick={() => toggleExpand(item.label)}
                 >
@@ -146,7 +146,7 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
                     variant="ghost"
                     className={cn(
                       "w-full justify-start text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 h-10 sm:h-auto",
-                      isActive && "bg-blue-50 dark:bg-blue-950 text-[#2E5BA8] dark:text-[#4F7FD5]",
+                      isActive && "bg-orange-50 dark:bg-orange-950 text-[#F97316] dark:text-[#FB923C]",
                     )}
                   >
                     <Icon className="icon-responsive mr-2 sm:mr-3" />
@@ -164,7 +164,7 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
                         size="sm"
                         className={cn(
                           "w-full justify-start text-responsive-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 h-9",
-                          pathname === subitem.href && "bg-blue-50 dark:bg-blue-950 text-[#2E5BA8] dark:text-[#4F7FD5]",
+                          pathname === subitem.href && "bg-orange-50 dark:bg-orange-950 text-[#F97316] dark:text-[#FB923C]",
                         )}
                       >
                         {subitem.label}

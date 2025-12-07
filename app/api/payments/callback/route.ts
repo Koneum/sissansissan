@@ -76,10 +76,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Vérifier que la commande existe
-    // L'orderId de VitePay correspond au orderNumber (ex: ORD-12345678-ABCD)
-    const order = await prisma.order.findFirst({
-      where: { orderNumber: orderId },
+    // L'orderId de VitePay correspond à l'ID de la commande (UUID)
+    // On cherche d'abord par ID, puis par orderNumber en fallback
+    let order = await prisma.order.findUnique({
+      where: { id: orderId },
     })
+    
+    // Fallback: chercher par orderNumber si pas trouvé par ID
+    if (!order) {
+      order = await prisma.order.findFirst({
+        where: { orderNumber: orderId },
+      })
+    }
 
     if (!order) {
       return NextResponse.json(
@@ -133,3 +141,4 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+

@@ -32,7 +32,7 @@ export function PromoBanners() {
               )}
               <h3 className="heading-responsive-h2 mb-4 text-[#1e293b] dark:text-white">{banner.title}</h3>
               {banner.discount && (
-                <div className="text-blue-600 font-semibold mb-4 sm:mb-6">{banner.discount}</div>
+                <div className="text-orange-600 font-semibold mb-4 sm:mb-6">{banner.discount}</div>
               )}
               {banner.description && (
                 <p className="text-responsive-sm text-gray-600 dark:text-gray-400 mb-4 sm:mb-6">
@@ -58,3 +58,7 @@ export function PromoBanners() {
     </section>
   )
 }
+
+
+
+

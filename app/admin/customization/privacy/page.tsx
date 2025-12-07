@@ -35,7 +35,7 @@ export default function PrivacyPolicyPage() {
           <h1 className="heading-responsive-h1">{t.admin.privacyPolicy}</h1>
           <p className="text-responsive-sm text-muted-foreground">{t.admin.managePrivacyContent}</p>
         </div>
-        <Button onClick={handleSave} className="bg-[#4F46E5] hover:bg-[#4338CA] btn-responsive w-full sm:w-auto">
+        <Button onClick={handleSave} className="bg-[#F97316] hover:bg-[#EA580C] btn-responsive w-full sm:w-auto">
           <Save className="icon-responsive mr-2" />
           {t.admin.saveChanges}
         </Button>
@@ -76,7 +76,7 @@ export default function PrivacyPolicyPage() {
       </Card>
 
       <div className="flex justify-end">
-        <Button onClick={handleSave} className="bg-[#4F46E5] hover:bg-[#4338CA] btn-responsive w-full sm:w-auto">
+        <Button onClick={handleSave} className="bg-[#F97316] hover:bg-[#EA580C] btn-responsive w-full sm:w-auto">
           <Save className="icon-responsive mr-2" />
           {t.admin.savePrivacyPolicy}
         </Button>
@@ -84,3 +84,5 @@ export default function PrivacyPolicyPage() {
     </div>
   )
 }
+
+

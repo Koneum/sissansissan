@@ -81,7 +81,7 @@ export default function AdminDashboard() {
     return (
       <div className="flex items-center justify-center h-[60vh]">
         <div className="text-center space-y-4">
-          <Loader2 className="w-12 h-12 animate-spin text-blue-500 dark:text-blue-400 mx-auto" />
+          <Loader2 className="w-12 h-12 animate-spin text-orange-500 dark:text-orange-400 mx-auto" />
           <p className="text-muted-foreground">{t.common.loading}</p>
         </div>
       </div>
@@ -116,9 +116,9 @@ export default function AdminDashboard() {
       change: `${data.stats.totalOrders.change}%`,
       trend: data.stats.totalOrders.trend,
       icon: ShoppingCart,
-      color: "from-blue-500 to-blue-600",
-      bgColor: "bg-blue-500/10",
-      iconColor: "text-blue-500"
+      color: "from-orange-500 to-orange-600",
+      bgColor: "bg-orange-500/10",
+      iconColor: "text-orange-500"
     },
     {
       title: t.admin.pending,
@@ -156,7 +156,7 @@ export default function AdminDashboard() {
   const getStatusColor = (status: string) => {
     const statusMap: Record<string, string> = {
       PENDING: "bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20",
-      PROCESSING: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20",
+      PROCESSING: "bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20",
       SHIPPED: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20",
       DELIVERED: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20",
       CANCELLED: "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20"
@@ -176,10 +176,10 @@ export default function AdminDashboard() {
   }
 
   const productColors = [
-    "bg-blue-500",
-    "bg-cyan-500",
-    "bg-indigo-500",
-    "bg-purple-500"
+    "bg-orange-500",
+    "bg-amber-500",
+    "bg-yellow-500",
+    "bg-orange-400"
   ]
 
   return (
@@ -195,7 +195,7 @@ export default function AdminDashboard() {
             {t.admin.refresh}
           </Button>
           <Link href="/admin/orders">
-            <Button size="sm" className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 dark:from-blue-500 dark:to-blue-600 dark:hover:from-blue-600 dark:hover:to-blue-700 text-xs sm:text-sm">
+            <Button size="sm" className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 dark:from-orange-500 dark:to-orange-600 dark:hover:from-orange-600 dark:hover:to-orange-700 text-xs sm:text-sm">
               <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
               <span className="hidden xs:inline">{t.admin.viewOrders}</span>
               <span className="xs:hidden">Orders</span>
@@ -261,7 +261,7 @@ export default function AdminDashboard() {
                 <div key={i} className="flex-1 flex flex-col items-center gap-3 group">
                   <div className="relative w-full">
                     <div
-                      className="w-full bg-gradient-to-t from-blue-600 to-blue-500 dark:from-blue-600 dark:to-blue-500 rounded-t-md sm:rounded-t-lg transition-all duration-500 hover:from-blue-500 hover:to-blue-400 dark:hover:from-blue-500 dark:hover:to-blue-400 cursor-pointer relative overflow-hidden group-hover:shadow-lg group-hover:shadow-blue-500/50"
+                      className="w-full bg-gradient-to-t from-orange-500 to-orange-400 dark:from-orange-600 dark:to-orange-500 rounded-t-md sm:rounded-t-lg transition-all duration-500 hover:from-orange-400 hover:to-orange-300 dark:hover:from-orange-500 dark:hover:to-orange-400 cursor-pointer relative overflow-hidden group-hover:shadow-lg group-hover:shadow-orange-500/50"
                       style={{ height: `${(monthData.value / maxValue) * (window.innerWidth < 640 ? 180 : window.innerWidth < 768 ? 240 : 280)}px`, minHeight: '3px' }}
                     >
                       <div className="absolute inset-0 bg-gradient-to-t from-transparent to-white/10" />
@@ -295,7 +295,7 @@ export default function AdminDashboard() {
                         <span className="text-slate-500 dark:text-slate-400 font-medium flex-shrink-0">#{index + 1}</span>
                         <span className="font-medium text-slate-900 dark:text-white truncate">{product.name}</span>
                       </div>
-                      <span className="font-semibold text-blue-600 dark:text-blue-400 ml-2 flex-shrink-0 text-xs sm:text-sm">{formatPrice(product.value)}</span>
+                      <span className="font-semibold text-orange-600 dark:text-orange-400 ml-2 flex-shrink-0 text-xs sm:text-sm">{formatPrice(product.value)}</span>
                     </div>
                     <div className="flex items-center gap-2 sm:gap-3">
                       <div className="flex-1 h-1.5 sm:h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
@@ -324,7 +324,7 @@ export default function AdminDashboard() {
               <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t.admin.orderDetails}</p>
             </div>
             <Link href="/admin/orders">
-              <Button variant="ghost" size="sm" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-500/10 text-xs sm:text-sm">
+              <Button variant="ghost" size="sm" className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 hover:bg-orange-500/10 text-xs sm:text-sm">
                 {t.admin.allOrders} →
               </Button>
             </Link>
@@ -359,7 +359,7 @@ export default function AdminDashboard() {
                       }`}
                     >
                       <td className="py-3 px-3 sm:py-4 sm:px-6">
-                        <span className="font-mono text-xs sm:text-sm font-semibold text-blue-600 dark:text-blue-400">#{order.id}</span>
+                        <span className="font-mono text-xs sm:text-sm font-semibold text-orange-600 dark:text-orange-400">#{order.id}</span>
                       </td>
                       <td className="py-3 px-3 sm:py-4 sm:px-6">
                         <div>
@@ -393,10 +393,10 @@ export default function AdminDashboard() {
       {/* Quick Actions */}
       <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
         <Link href="/admin/products/add">
-          <Card className="border-slate-200 dark:border-slate-800 bg-gradient-to-br from-blue-50/80 to-blue-100/80 dark:from-blue-900/30 dark:to-blue-950/30 hover:shadow-md transition-all cursor-pointer group">
+          <Card className="border-slate-200 dark:border-slate-800 bg-gradient-to-br from-orange-50/80 to-orange-100/80 dark:from-orange-900/30 dark:to-orange-950/30 hover:shadow-md transition-all cursor-pointer group">
             <CardContent className="p-4 sm:p-5 md:p-6 flex items-center gap-3 sm:gap-4">
-              <div className="p-2 sm:p-2.5 md:p-3 rounded-lg sm:rounded-xl bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors flex-shrink-0">
-                <Package className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400" />
+              <div className="p-2 sm:p-2.5 md:p-3 rounded-lg sm:rounded-xl bg-orange-500/10 group-hover:bg-orange-500/20 transition-colors flex-shrink-0">
+                <Package className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600 dark:text-orange-400" />
               </div>
               <div className="min-w-0">
                 <p className="font-semibold text-slate-900 dark:text-white text-sm sm:text-base">{t.admin.addProduct}</p>
@@ -437,3 +437,5 @@ export default function AdminDashboard() {
     </div>
   )
 }
+
+

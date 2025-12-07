@@ -33,15 +33,15 @@ export function Footer() {
 
             {/* Contact Info */}
             <div className="space-y-2 text-responsive-sm text-muted-foreground">
-              <div className="flex items-center gap-2 hover:text-[#2E5BA8] transition-colors">
+              <div className="flex items-center gap-2 hover:text-[#F97316] transition-colors">
                 <Phone className="icon-responsive" />
                 <span>{footerData.contactInfo.phone}</span>
               </div>
-              <div className="flex items-center gap-2 hover:text-[#2E5BA8] transition-colors">
+              <div className="flex items-center gap-2 hover:text-[#F97316] transition-colors">
                 <Mail className="icon-responsive" />
                 <span>{footerData.contactInfo.email}</span>
               </div>
-              <div className="flex items-center gap-2 hover:text-[#2E5BA8] transition-colors">
+              <div className="flex items-center gap-2 hover:text-[#F97316] transition-colors">
                 <MapPin className="icon-responsive" />
                 <span>{footerData.contactInfo.address}</span>
               </div>
@@ -50,28 +50,28 @@ export function Footer() {
             <div className="flex gap-2">
               {footerData.socialMedia?.facebook && (
                 <Link href={footerData.socialMedia.facebook} target="_blank">
-                  <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 hover:bg-[#2E5BA8] hover:text-white transition-all hover:scale-110">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 hover:bg-[#F97316] hover:text-white transition-all hover:scale-110">
                     <Facebook className="icon-responsive" />
                   </Button>
                 </Link>
               )}
               {footerData.socialMedia?.twitter && (
                 <Link href={footerData.socialMedia.twitter} target="_blank">
-                  <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 hover:bg-[#F39C12] hover:text-white transition-all hover:scale-110">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 hover:bg-[#F97316] hover:text-white transition-all hover:scale-110">
                     <Twitter className="icon-responsive" />
                   </Button>
                 </Link>
               )}
               {footerData.socialMedia?.instagram && (
                 <Link href={footerData.socialMedia.instagram} target="_blank">
-                  <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 hover:bg-[#2E5BA8] hover:text-white transition-all hover:scale-110">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 hover:bg-[#F97316] hover:text-white transition-all hover:scale-110">
                     <Instagram className="icon-responsive" />
                   </Button>
                 </Link>
               )}
               {footerData.socialMedia?.linkedin && (
                 <Link href={footerData.socialMedia.linkedin} target="_blank">
-                  <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 hover:bg-[#F39C12] hover:text-white transition-all hover:scale-110">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 hover:bg-[#F97316] hover:text-white transition-all hover:scale-110">
                     <Linkedin className="icon-responsive" />
                   </Button>
                 </Link>
@@ -87,7 +87,7 @@ export function Footer() {
                 <li key={link.id}>
                   <Link
                     href={link.url}
-                    className="text-sm text-muted-foreground hover:text-[#2E5BA8] transition-all inline-block hover:translate-x-1 duration-200 hover:border-b-2 hover:border-[#F39C12]"
+                    className="text-sm text-muted-foreground hover:text-[#F97316] transition-all inline-block hover:translate-x-1 duration-200 hover:border-b-2 hover:border-[#F97316]"
                   >
                     {link.text}
                   </Link>
@@ -104,7 +104,7 @@ export function Footer() {
                 <li key={link.id}>
                   <Link
                     href={link.url}
-                    className="text-sm text-muted-foreground hover:text-[#2E5BA8] transition-all inline-block hover:translate-x-1 duration-200 hover:border-b-2 hover:border-[#F39C12]"
+                    className="text-sm text-muted-foreground hover:text-[#F97316] transition-all inline-block hover:translate-x-1 duration-200 hover:border-b-2 hover:border-[#F97316]"
                   >
                     {link.text}
                   </Link>
@@ -157,7 +157,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="border-t mt-8 sm:mt-10 md:mt-12 pt-6 sm:pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-responsive-sm text-muted-foreground text-center sm:text-left">
-            {footerData.copyrightText} Powered by <Link href={footerData.poweredByUrl} className="text-[#2E5BA8]">{footerData.poweredByText}</Link>
+            {footerData.copyrightText} Powered by <Link href={footerData.poweredByUrl} className="text-[#F97316]">{footerData.poweredByText}</Link>
           </p>
           
           {/* Payment Methods */}
@@ -184,3 +184,7 @@ export function Footer() {
     </footer>
   )
 }
+
+
+
+

@@ -90,7 +90,7 @@ export function ProductCard({ product }: ProductCardProps) {
           )}
 
           {product.isNew && (
-            <span className="absolute top-3 left-3 bg-[#F39C12] text-white text-xs font-bold px-2.5 py-1 rounded animate-in fade-in slide-in-from-left-2 z-10">
+            <span className="absolute top-3 left-3 bg-[#F97316] text-white text-xs font-bold px-2.5 py-1 rounded animate-in fade-in slide-in-from-left-2 z-10">
               NEW
             </span>
           )}
@@ -154,3 +154,7 @@ export function ProductCard({ product }: ProductCardProps) {
     </>
   )
 }
+
+
+
+

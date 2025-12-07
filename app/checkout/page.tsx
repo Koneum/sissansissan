@@ -260,14 +260,14 @@ export default function CheckoutPage() {
 
         {/* Guest Checkout Info */}
         {!user && (
-          <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
+          <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
             <div className="flex items-start gap-2 sm:gap-3">
-              <Lock className="icon-responsive text-blue-600 mt-0.5" />
+              <Lock className="icon-responsive text-orange-600 mt-0.5" />
               <div>
-                <h3 className="heading-responsive-h4 text-blue-900 dark:text-blue-100 mb-1">
+                <h3 className="heading-responsive-h4 text-orange-900 dark:text-orange-100 mb-1">
                   Commande sans compte
                 </h3>
-                <p className="text-responsive-sm text-blue-700 dark:text-blue-300">
+                <p className="text-responsive-sm text-orange-700 dark:text-orange-300">
                   Vous pouvez commander sans créer de compte. Vos informations seront conservées pendant 48h. 
                   Pour le paiement à la livraison, aucun compte n&apos;est requis.
                 </p>
@@ -569,8 +569,8 @@ export default function CheckoutPage() {
                       </p>
                     </div>
 
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-                      <p className="text-xs text-blue-700 dark:text-blue-300">
+                    <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3">
+                      <p className="text-xs text-orange-700 dark:text-orange-300">
                         💡 <strong>Mode Test:</strong> Utilisez le numéro <strong>77000001</strong> pour simuler un paiement réussi, 
                         ou <strong>77000009</strong> pour simuler un échec.
                       </p>
@@ -684,3 +684,5 @@ export default function CheckoutPage() {
     </div>
   )
 }
+
+

@@ -221,7 +221,7 @@ export default function FooterCustomizationPage() {
           <h1 className="heading-responsive-h1">{t.admin.footerCustomization}</h1>
           <p className="text-responsive-sm text-muted-foreground">{t.admin.customizeFooter}</p>
         </div>
-        <Button onClick={handleSave} className="bg-[#4F46E5] hover:bg-[#4338CA] btn-responsive w-full sm:w-auto">
+        <Button onClick={handleSave} className="bg-[#F97316] hover:bg-[#EA580C] btn-responsive w-full sm:w-auto">
           <Save className="icon-responsive mr-2" />
           {t.admin.saveChanges}
         </Button>
@@ -743,7 +743,7 @@ export default function FooterCustomizationPage() {
       </Tabs>
 
       <div className="flex justify-end">
-        <Button onClick={handleSave} size="lg" className="bg-[#4F46E5] hover:bg-[#4338CA]">
+        <Button onClick={handleSave} size="lg" className="bg-[#F97316] hover:bg-[#EA580C]">
           <Save className="w-4 h-4 mr-2" />
           {t.admin.saveAllChanges}
         </Button>
@@ -751,4 +751,6 @@ export default function FooterCustomizationPage() {
     </div>
   )
 }
+
+
 

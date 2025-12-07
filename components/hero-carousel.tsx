@@ -42,14 +42,14 @@ export function HeroCarousel() {
                 {/* Product Image */}
                 <div className="flex justify-center items-center order-1 md:order-1">
                   <div 
-                    className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-blue-500/20 p-8
+                    className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-orange-500/20 p-8
                     shadow-[0_20px_60px_rgba(168,85,247,0.4),0_0_80px_rgba(236,72,153,0.3),0_0_100px_rgba(59,130,246,0.2)]
                     backdrop-blur-sm border border-white/10"
                     style={{
                       background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(236, 72, 153, 0.15) 50%, rgba(59, 130, 246, 0.15) 100%)',
                     }}
                   >
-                    <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-transparent to-blue-600/10 blur-3xl" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-transparent to-orange-600/10 blur-3xl" />
                     <Image
                       src={slides[currentSlide].image || "/placeholder.svg"}
                       alt={slides[currentSlide].title}
@@ -66,7 +66,7 @@ export function HeroCarousel() {
                 {/* Product Info */}
                 <div className="flex flex-col justify-center order-2 md:order-2">
                   <div className="mb-4">
-                    <span className="text-blue-400 text-6xl font-bold">{slides[currentSlide].badge}</span>
+                    <span className="text-orange-400 text-6xl font-bold">{slides[currentSlide].badge}</span>
                     <div className="text-sm text-gray-400 uppercase mt-1">
                       <div>SALE</div>
                       <div>OFF</div>
@@ -136,3 +136,6 @@ export function HeroCarousel() {
 }
 
 //DEV BY MOUSSA KONE ET ABOUBAKAR SIDIBE (KRIS BEAT)
+
+
+

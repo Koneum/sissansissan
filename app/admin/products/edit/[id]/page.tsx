@@ -338,7 +338,7 @@ export default function EditProductPage() {
             <div className="pt-4 flex gap-3">
               <Button
                 type="submit"
-                className="bg-[#4F46E5] hover:bg-[#4338CA] text-white px-8"
+                className="bg-[#F97316] hover:bg-[#EA580C] text-white px-8"
                 size="lg"
                 disabled={saving}
               >

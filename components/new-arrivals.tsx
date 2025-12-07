@@ -59,7 +59,7 @@ export function NewArrivals() {
     <section className="container mx-auto px-4 py-8 sm:py-12">
       <div className="flex items-center justify-between mb-6 sm:mb-8">
         <h2 className="heading-responsive-h2">{t.products.newArrivals}</h2>
-        <Link href="/products" className="text-responsive-sm font-medium text-blue-600 hover:underline">
+        <Link href="/products" className="text-responsive-sm font-medium text-orange-600 hover:underline">
           {t.products.viewAll}
         </Link>
       </div>
@@ -83,3 +83,7 @@ export function NewArrivals() {
     </section>
   )
 }
+
+
+
+

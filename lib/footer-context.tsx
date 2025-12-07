@@ -60,10 +60,10 @@ const defaultFooterData: FooterData = {
     address: "123 Commerce St, Tech City"
   },
   socialLinks: [
-    { platform: "Facebook", url: "https://facebook.com", color: "#2E5BA8" },
-    { platform: "Twitter", url: "https://twitter.com", color: "#F39C12" },
-    { platform: "Instagram", url: "https://instagram.com", color: "#2E5BA8" },
-    { platform: "LinkedIn", url: "https://linkedin.com", color: "#F39C12" },
+    { platform: "Facebook", url: "https://facebook.com", color: "#F97316" },
+    { platform: "Twitter", url: "https://twitter.com", color: "#F97316" },
+    { platform: "Instagram", url: "https://instagram.com", color: "#F97316" },
+    { platform: "LinkedIn", url: "https://linkedin.com", color: "#F97316" },
   ],
   helpSupport: [
     { id: "1", text: "Contact", url: "/contact" },
@@ -166,4 +166,7 @@ export function useFooter() {
   }
   return context
 }
+
+
+
 

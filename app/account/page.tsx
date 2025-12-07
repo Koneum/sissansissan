@@ -551,8 +551,8 @@ export default function AccountPage() {
                     
                     {/* Afficher le code en mode développement */}
                     {devCode && (
-                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-                        <p className="text-responsive-xs text-blue-700 dark:text-blue-300">
+                      <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3">
+                        <p className="text-responsive-xs text-orange-700 dark:text-orange-300">
                           💡 <strong>Mode Test:</strong> Votre code est <strong>{devCode}</strong>
                         </p>
                       </div>
@@ -626,3 +626,5 @@ export default function AccountPage() {
     </div>
   )
 }
+
+

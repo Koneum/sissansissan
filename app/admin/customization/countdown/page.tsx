@@ -18,7 +18,7 @@ export default function CountdownSettingsPage() {
   const [enabled, setEnabled] = useState(true)
   const [title, setTitle] = useState("")
   const [endDate, setEndDate] = useState("")
-  const [backgroundColor, setBackgroundColor] = useState("#4F46E5")
+  const [backgroundColor, setBackgroundColor] = useState("#F97316")
   const [textColor, setTextColor] = useState("#FFFFFF")
 
   useEffect(() => {
@@ -47,7 +47,7 @@ export default function CountdownSettingsPage() {
           <h1 className="heading-responsive-h1">{t.admin.countdownSettings}</h1>
           <p className="text-responsive-sm text-muted-foreground">{t.admin.manageFlashSale}</p>
         </div>
-        <Button onClick={handleSave} className="bg-[#4F46E5] hover:bg-[#4338CA] btn-responsive w-full sm:w-auto">
+        <Button onClick={handleSave} className="bg-[#F97316] hover:bg-[#EA580C] btn-responsive w-full sm:w-auto">
           <Save className="icon-responsive mr-2" />
           {t.admin.saveChanges}
         </Button>
@@ -104,7 +104,7 @@ export default function CountdownSettingsPage() {
                 <Input
                   value={backgroundColor}
                   onChange={(e) => setBackgroundColor(e.target.value)}
-                  placeholder="#4F46E5"
+                  placeholder="#F97316"
                 />
               </div>
             </div>
@@ -135,7 +135,7 @@ export default function CountdownSettingsPage() {
       </Card>
 
       <div className="flex justify-end">
-        <Button onClick={handleSave} className="bg-[#4F46E5] hover:bg-[#4338CA] btn-responsive w-full sm:w-auto">
+        <Button onClick={handleSave} className="bg-[#F97316] hover:bg-[#EA580C] btn-responsive w-full sm:w-auto">
           <Save className="icon-responsive mr-2" />
           {t.admin.saveCountdownSettings}
         </Button>
@@ -143,3 +143,5 @@ export default function CountdownSettingsPage() {
     </div>
   )
 }
+
+

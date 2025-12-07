@@ -81,10 +81,14 @@ export function BestSellingProducts() {
       </div>
 
       <div className="text-center">
-        <Link href="/shop" className="inline-block text-responsive-sm font-medium text-blue-600 dark:text-blue-400 hover:underline">
+        <Link href="/shop" className="inline-block text-responsive-sm font-medium text-orange-600 dark:text-orange-400 hover:underline">
           Voir TOUT
         </Link>
       </div>
     </section>
   )
 }
+
+
+
+

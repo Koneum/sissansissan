@@ -39,7 +39,7 @@ export default function AddCountdownPage() {
               Countdown Image (Recommended Size 65 × 75) <span className="text-red-500">*</span>
             </Label>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-              <Button type="button" variant="default" className="bg-[#4F46E5] hover:bg-[#4338CA] btn-responsive w-full sm:w-auto">
+              <Button type="button" variant="default" className="bg-[#F97316] hover:bg-[#EA580C] btn-responsive w-full sm:w-auto">
                 Choose File
               </Button>
               <span className="text-responsive-sm text-slate-500">No file chosen</span>
@@ -61,7 +61,7 @@ export default function AddCountdownPage() {
           </div>
 
           <div className="pt-4">
-            <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white btn-responsive w-full sm:w-auto">
+            <Button className="bg-[#F97316] hover:bg-[#EA580C] text-white btn-responsive w-full sm:w-auto">
               Save Countdown
             </Button>
           </div>
@@ -70,3 +70,5 @@ export default function AddCountdownPage() {
     </div>
   )
 }
+
+

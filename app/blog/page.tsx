@@ -101,7 +101,7 @@ export default function BlogPage() {
                 <Badge variant="outline" className="w-fit mb-4">
                   Featured
                 </Badge>
-                <h2 className="text-3xl font-bold mb-4 group-hover:text-blue-600 transition-colors">
+                <h2 className="text-3xl font-bold mb-4 group-hover:text-orange-600 transition-colors">
                   {blogPosts[0].title}
                 </h2>
                 <p className="text-muted-foreground mb-6">{blogPosts[0].excerpt}</p>
@@ -139,7 +139,7 @@ export default function BlogPage() {
                   <Badge className="absolute top-4 left-4">{post.category}</Badge>
                 </div>
                 <div className="p-6">
-                  <h3 className="text-xl font-semibold mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                  <h3 className="text-xl font-semibold mb-3 line-clamp-2 group-hover:text-orange-600 transition-colors">
                     {post.title}
                   </h3>
                   <p className="text-muted-foreground text-sm mb-4 line-clamp-2">{post.excerpt}</p>
@@ -167,3 +167,5 @@ export default function BlogPage() {
     </div>
   )
 }
+
+

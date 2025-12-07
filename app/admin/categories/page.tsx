@@ -210,7 +210,7 @@ export default function CategoriesPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 sm:h-9 sm:w-9 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-950"
+                          className="h-8 w-8 sm:h-9 sm:w-9 hover:bg-orange-50 hover:text-orange-600 dark:hover:bg-orange-950"
                           onClick={() => handleEditCategory(category)}
                         >
                           <Edit className="icon-responsive" />
@@ -293,7 +293,7 @@ export default function CategoriesPage() {
             <Button variant="outline" onClick={() => setCategoryToEdit(null)}>
               {t.common.cancel}
             </Button>
-            <Button onClick={handleSaveEdit} className="bg-[#4F46E5] hover:bg-[#4338CA]">
+            <Button onClick={handleSaveEdit} className="bg-[#F97316] hover:bg-[#EA580C]">
               {t.common.save}
             </Button>
           </DialogFooter>
@@ -302,3 +302,5 @@ export default function CategoriesPage() {
     </div>
   )
 }
+
+

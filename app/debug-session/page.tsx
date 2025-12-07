@@ -98,7 +98,7 @@ export default function DebugSessionPage() {
               </ul>
             </div>
 
-            <div className="p-4 bg-blue-50 rounded">
+            <div className="p-4 bg-orange-50 rounded">
               <h3 className="font-semibold mb-2">🎯 Expected Behavior:</h3>
               <p className="text-sm">
                 For user <code className="bg-white px-1">test@sissan.com</code>, 
@@ -144,3 +144,5 @@ export default function DebugSessionPage() {
     </div>
   )
 }
+
+

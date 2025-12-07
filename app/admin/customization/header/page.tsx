@@ -50,7 +50,7 @@ export default function HeaderSettingsPage() {
           <h1 className="heading-responsive-h1">{t.admin.headerSettings}</h1>
           <p className="text-responsive-sm text-muted-foreground">{t.admin.customizeHeader}</p>
         </div>
-        <Button onClick={handleSave} className="bg-[#4F46E5] hover:bg-[#4338CA] btn-responsive w-full sm:w-auto">
+        <Button onClick={handleSave} className="bg-[#F97316] hover:bg-[#EA580C] btn-responsive w-full sm:w-auto">
           <Save className="icon-responsive mr-2" />
           {t.admin.saveChanges}
         </Button>
@@ -117,7 +117,7 @@ export default function HeaderSettingsPage() {
       </Card>
 
       <div className="flex justify-end">
-        <Button onClick={handleSave} className="bg-[#4F46E5] hover:bg-[#4338CA] btn-responsive w-full sm:w-auto">
+        <Button onClick={handleSave} className="bg-[#F97316] hover:bg-[#EA580C] btn-responsive w-full sm:w-auto">
           <Save className="icon-responsive mr-2" />
           {t.admin.saveAllChanges}
         </Button>
@@ -125,3 +125,5 @@ export default function HeaderSettingsPage() {
     </div>
   )
 }
+
+

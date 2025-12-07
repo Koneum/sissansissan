@@ -206,3 +206,7 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
   )
 }
 
+
+
+
+

@@ -2,6 +2,15 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 /**
+ * Helper pour récupérer le token de session
+ * En production avec HTTPS, le cookie a le préfixe __Secure-
+ */
+function getSessionToken(request: NextRequest): string | undefined {
+  return request.cookies.get('__Secure-sissan.session_token')?.value 
+    || request.cookies.get('sissan.session_token')?.value
+}
+
+/**
  * Middleware de sécurité global pour Sissan-Sissan
  * 
  * Routes autorisées sans authentification:
@@ -89,7 +98,7 @@ export async function middleware(request: NextRequest) {
   // 6. Routes /admin/* - Vérifier le cookie de session
   // ====================================================
   if (pathname.startsWith('/admin')) {
-    const sessionToken = request.cookies.get('sissan.session_token')?.value
+    const sessionToken = getSessionToken(request)
     
     if (!sessionToken) {
       // Rediriger vers la page de connexion
@@ -107,7 +116,7 @@ export async function middleware(request: NextRequest) {
   // ====================================================
   for (const route of ADMIN_ROUTES) {
     if (pathname.startsWith(route)) {
-      const sessionToken = request.cookies.get('sissan.session_token')?.value
+      const sessionToken = getSessionToken(request)
       
       if (!sessionToken) {
         return NextResponse.json(
@@ -126,7 +135,7 @@ export async function middleware(request: NextRequest) {
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
     // Vérifier si c'est une route API
     if (pathname.startsWith('/api/')) {
-      const sessionToken = request.cookies.get('sissan.session_token')?.value
+      const sessionToken = getSessionToken(request)
       
       // Exceptions déjà gérées plus haut (auth, payments, checkout, contact)
       // Pour les autres mutations, exiger une authentification
@@ -143,7 +152,7 @@ export async function middleware(request: NextRequest) {
   // 9. Routes API orders - Protection spéciale
   // ====================================================
   if (pathname.startsWith('/api/orders')) {
-    const sessionToken = request.cookies.get('sissan.session_token')?.value
+    const sessionToken = getSessionToken(request)
     
     if (!sessionToken) {
       return NextResponse.json(
@@ -157,7 +166,7 @@ export async function middleware(request: NextRequest) {
   // 10. Routes API wishlist/cart - Authentification requise
   // ====================================================
   if (pathname.startsWith('/api/wishlist') || pathname.startsWith('/api/cart')) {
-    const sessionToken = request.cookies.get('sissan.session_token')?.value
+    const sessionToken = getSessionToken(request)
     
     if (!sessionToken) {
       return NextResponse.json(
@@ -171,7 +180,7 @@ export async function middleware(request: NextRequest) {
   // 11. Routes API addresses - Authentification requise
   // ====================================================
   if (pathname.startsWith('/api/addresses')) {
-    const sessionToken = request.cookies.get('sissan.session_token')?.value
+    const sessionToken = getSessionToken(request)
     
     if (!sessionToken) {
       return NextResponse.json(
@@ -185,7 +194,7 @@ export async function middleware(request: NextRequest) {
   // 12. Routes API user - Authentification requise
   // ====================================================
   if (pathname.startsWith('/api/user')) {
-    const sessionToken = request.cookies.get('sissan.session_token')?.value
+    const sessionToken = getSessionToken(request)
     
     if (!sessionToken) {
       return NextResponse.json(

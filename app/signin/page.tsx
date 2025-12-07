@@ -67,16 +67,18 @@ export default function SignInPage() {
         
         toast({
           title: "Succès",
-          description: "Connexion réussie",
+          description: "Redirection en cours...",
         })
         
-        // Rediriger selon le rôle
+        // Rediriger selon le rôle avec window.location pour forcer le rechargement des cookies
         const userRole = result.data?.user?.role
-        if (userRole === "CUSTOMER") {
-          router.push("/")
-        } else {
-          router.push("/admin/dashboard")
-        }
+        
+        // Délai augmenté pour s'assurer que les cookies sont bien définis en production
+        setTimeout(() => {
+          const targetUrl = userRole === "CUSTOMER" ? "/" : "/admin/dashboard"
+          console.log(`[Auth] Redirecting to ${targetUrl}, role: ${userRole}`)
+          window.location.replace(targetUrl)
+        }, 500)
       }
     } catch {
       toast({

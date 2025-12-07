@@ -53,6 +53,11 @@ export const auth = betterAuth({
     crossSubDomainCookies: {
       enabled: false,
     },
+    // Configuration pour fonctionner derrière un reverse proxy (Nginx)
+    defaultCookieAttributes: {
+      sameSite: 'lax',
+      path: '/',
+    },
   },
   trustedOrigins: [
     'http://localhost:3000',

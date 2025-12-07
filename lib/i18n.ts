@@ -4,7 +4,7 @@ export type Locale = "en" | "fr"
 
 export const translations = {
   en: {
-    common: {
+    common: { 
       loading: "Loading...",
       error: "Error",
       success: "Success",
@@ -46,7 +46,7 @@ export const translations = {
     nav: {
       home: "Home",
       shop: "Shop",
-      pages: "Pages",
+      pages: "All",
       blog: "Blog",
       contact: "Contact",
       popular: "Popular",
@@ -621,7 +621,7 @@ export const translations = {
     nav: {
       home: "Accueil",
       shop: "Boutique",
-      pages: "Pages",
+      pages: "Tout",
       blog: "Blog",
       contact: "Contact",
       popular: "Populaire",

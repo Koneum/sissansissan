@@ -228,6 +228,20 @@ export default function SignInPage() {
               S&apos;inscrire
             </Link>
           </p>
+
+          {/* Legal Links */}
+          <div className="text-center text-xs text-slate-500 dark:text-slate-500 pt-4 border-t border-slate-100 dark:border-slate-800">
+            <p>
+              En vous connectant, vous acceptez nos{" "}
+              <Link href="/terms" className="text-orange-600 hover:underline">
+                Conditions Générales
+              </Link>{" "}
+              et notre{" "}
+              <Link href="/privacy" className="text-orange-600 hover:underline">
+                Politique de Confidentialité
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
 

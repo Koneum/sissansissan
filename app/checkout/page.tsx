@@ -167,11 +167,10 @@ export default function CheckoutPage() {
         router.push("/order-success")
       } else if (paymentMethod === 'orangemoney') {
         // Intégration VitePay pour Orange Money
-        const email = formData.get('email') as string
+        const email = (formData.get('email') as string) || 'client@sissan-sissan.net' // Email par défaut si non fourni
         const phone = formData.get('phone') as string
-        const omPhone = formData.get('omPhone') as string
         
-        console.log('Données de paiement:', { email, phone, omPhone, orderData })
+        console.log('Données de paiement Orange Money:', { email, phone })
         
         // Créer la commande en base de données d'abord
         const createOrderResponse = await fetch('/api/orders/create', {
@@ -209,7 +208,7 @@ export default function CheckoutPage() {
             amount: finalTotal,
             description: `Commande #${orderId} - ${items.length} article(s)`,
             email,
-            phoneNumber: omPhone || phone,
+            phoneNumber: phone,
           }),
         })
         
@@ -429,9 +428,9 @@ export default function CheckoutPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="email">
-                      Adresse email <span className="text-red-500">*</span>
+                      Adresse email <span className="text-muted-foreground text-xs">(optionnel)</span>
                     </Label>
-                    <Input id="email" name="email" type="email" required defaultValue={user?.email || "admin@gmail.com"} />
+                    <Input id="email" name="email" type="email" placeholder="votre@email.com" defaultValue={user?.email || ""} />
                   </div>
                 </div>
               </div>
@@ -619,49 +618,13 @@ export default function CheckoutPage() {
                   </div> */}
                 </RadioGroup>
 
-                {/* Orange Money Details - Affichage conditionnel */}
+                {/* Orange Money - Note simple sans panneau déroulant */}
                 {paymentMethod === "orangemoney" && (
-                  <div className="mt-6 space-y-4 border-t pt-6">
-                    <div className="flex items-center gap-2 text-sm font-medium mb-4">
-                      <Lock className="h-4 w-4 text-orange-600" />
-                      <span>Paiement sécurisé via VitePay</span>
-                    </div>
-
-                    <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4 mb-4">
-                      <h4 className="font-semibold text-orange-900 dark:text-orange-100 mb-2">
-                        Comment ça marche ?
-                      </h4>
-                      <ol className="text-sm text-orange-700 dark:text-orange-300 space-y-1 list-decimal list-inside">
-                        <li>Cliquez sur &quot;Payer&quot;</li>
-                        <li>Vous serez redirigé vers VitePay</li>
-                        <li>Entrez votre numéro Orange Money</li>
-                        <li>Confirmez le paiement sur votre téléphone</li>
-                      </ol>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="omPhone">
-                        Numéro Orange Money <span className="text-red-500">*</span>
-                      </Label>
-                      <Input 
-                        id="omPhone" 
-                        name="omPhone"
-                        type="tel"
-                        placeholder="+223 70 00 00 01" 
-                        required={paymentMethod === "orangemoney"}
-                        className="text-lg"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Format: +223 XX XX XX XX (Mali)
-                      </p>
-                    </div>
-
-                    <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3">
-                      <p className="text-xs text-orange-700 dark:text-orange-300">
-                        💡 <strong>Mode Test:</strong> Utilisez le numéro <strong>77000001</strong> pour simuler un paiement réussi, 
-                        ou <strong>77000009</strong> pour simuler un échec.
-                      </p>
-                    </div>
+                  <div className="mt-4 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
+                    <p className="text-sm text-orange-700 dark:text-orange-300">
+                      <Lock className="inline h-4 w-4 mr-1" />
+                      Vous serez redirigé vers VitePay pour saisir votre numéro Orange Money et confirmer le paiement.
+                    </p>
                   </div>
                 )}
 

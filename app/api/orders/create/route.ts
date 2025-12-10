@@ -21,17 +21,26 @@ export async function POST(request: NextRequest) {
     // Vérifier ou créer un utilisateur guest
     let finalUserId = userId
     
+    // Email est optionnel - utiliser le téléphone pour identifier le client si pas d'email
+    const customerEmail = customer.email || `guest_${customer.phone?.replace(/\D/g, '') || Date.now()}@sissan-sissan.net`
+    
     if (!userId) {
-      // Chercher ou créer un utilisateur guest
+      // Chercher par email OU par téléphone
       let guestUser = await prisma.user.findFirst({
-        where: { email: customer.email }
+        where: {
+          OR: [
+            { email: customerEmail },
+            ...(customer.phone ? [{ phone: customer.phone }] : [])
+          ]
+        }
       })
       
       if (!guestUser) {
         guestUser = await prisma.user.create({
           data: {
-            email: customer.email,
+            email: customerEmail,
             name: `${customer.firstName} ${customer.lastName || ""}`.trim(),
+            phone: customer.phone || null,
             role: "CUSTOMER",
           }
         })
@@ -52,7 +61,7 @@ export async function POST(request: NextRequest) {
         userId: finalUserId,
         shippingAddress: {
           name: `${customer.firstName} ${customer.lastName || ""}`.trim(),
-          email: customer.email,
+          email: customerEmail,
           phone: customer.phone,
           address: billingAddress.address,
           city: billingAddress.city,
@@ -61,7 +70,7 @@ export async function POST(request: NextRequest) {
         },
         billingAddress: {
           name: `${customer.firstName} ${customer.lastName || ""}`.trim(),
-          email: customer.email,
+          email: customerEmail,
           phone: customer.phone,
           address: billingAddress.address,
           city: billingAddress.city,

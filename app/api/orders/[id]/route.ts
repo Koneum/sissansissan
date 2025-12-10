@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { checkPermission } from "@/lib/check-permission"
 import { updateOrderSchema, validateData } from "@/lib/validations"
+import { logOrderStatusChange, logUpdate } from "@/lib/audit-log"
 
 type RouteContext = {
   params: Promise<{ id: string }>
@@ -215,6 +216,17 @@ export async function PATCH(
         }
       }
     })
+
+    // Log du changement de statut
+    if (validatedData.status && validatedData.status !== order.status) {
+      await logOrderStatusChange(request, id, order.status, validatedData.status)
+    } else {
+      // Log de mise à jour générale
+      await logUpdate(request, 'order', id, {
+        orderNumber: order.orderNumber,
+        changes: updateData
+      })
+    }
 
     return NextResponse.json({
       success: true,

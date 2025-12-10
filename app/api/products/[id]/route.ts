@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
+import { logDelete, logUpdate } from "@/lib/audit-log"
 
 type RouteContext = {
   params: Promise<{ id: string }>
@@ -225,6 +226,12 @@ export async function DELETE(
     // Delete product (cascade will handle variants, reviews, etc.)
     await prisma.product.delete({
       where: { id }
+    })
+
+    // Log de suppression
+    await logDelete(request, 'product', id, { 
+      productName: product.name,
+      productSlug: product.slug 
     })
 
     return NextResponse.json({

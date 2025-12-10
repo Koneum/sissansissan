@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { auth } from "@/lib/auth"
+import { logRoleChange, logDelete, createAuditLog } from "@/lib/audit-log"
 
 type RouteContext = {
   params: Promise<{ id: string }>
@@ -70,10 +71,26 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       updateData.password = password
     }
 
+    // Récupérer l'ancien rôle pour le log
+    const existingUser = await prisma.user.findUnique({ where: { id } })
+    const oldRole = existingUser?.role
+
     const user = await prisma.user.update({
       where: { id },
       data: updateData
     })
+
+    // Log du changement de rôle si applicable
+    if (oldRole && role && oldRole !== role) {
+      await logRoleChange(request, id, oldRole, role)
+    } else if (permissions) {
+      await createAuditLog(request, {
+        action: 'PERMISSION_CHANGE',
+        resource: 'user',
+        resourceId: id,
+        details: { permissions }
+      })
+    }
 
     // Update permissions
     if (permissions) {
@@ -130,9 +147,22 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
 
     const { id } = await context.params
 
+    // Récupérer les infos avant suppression pour le log
+    const userToDelete = await prisma.user.findUnique({ 
+      where: { id },
+      select: { name: true, email: true, role: true }
+    })
+
     // Delete user (permissions will be cascade deleted)
     await prisma.user.delete({
       where: { id }
+    })
+
+    // Log de suppression
+    await logDelete(request, 'staff', id, {
+      userName: userToDelete?.name,
+      userEmail: userToDelete?.email,
+      userRole: userToDelete?.role
     })
 
     return NextResponse.json({ success: true })

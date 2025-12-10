@@ -550,3 +550,53 @@ enum NotificationType {
   PRICE_DROP // Baisse de prix
   BACK_STOCK // Retour en stock
 }
+
+// ============================================
+// AUDIT LOGS - Traçabilité des actions
+// ============================================
+
+model AuditLog {
+  id          String      @id @default(cuid())
+  userId      String?     // Utilisateur qui a effectué l'action (null si système)
+  userName    String?     // Nom de l'utilisateur pour référence rapide
+  userEmail   String?     // Email pour référence
+  action      AuditAction // Type d'action
+  resource    String      // Ressource affectée (product, order, user, etc.)
+  resourceId  String?     // ID de la ressource
+  details     Json?       // Détails supplémentaires (avant/après, etc.)
+  ipAddress   String?     // Adresse IP
+  userAgent   String?     // User Agent du navigateur
+  success     Boolean     @default(true)
+  errorMessage String?    // Message d'erreur si échec
+  createdAt   DateTime    @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([resource])
+  @@index([createdAt])
+  @@map("audit_log")
+}
+
+enum AuditAction {
+  // Authentification
+  LOGIN
+  LOGOUT
+  LOGIN_FAILED
+  PASSWORD_RESET
+  PASSWORD_CHANGE
+  
+  // CRUD générique
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  
+  // Actions spécifiques
+  ROLE_CHANGE
+  PERMISSION_CHANGE
+  ORDER_STATUS_CHANGE
+  BULK_DELETE
+  EXPORT_DATA
+  IMPORT_DATA
+  SETTINGS_CHANGE
+}

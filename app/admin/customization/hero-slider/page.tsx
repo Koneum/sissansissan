@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { Plus, Edit, Trash2, Save, Search, Package } from "lucide-react"
+import { Plus, Edit, Trash2, Save, Search, Package, ToggleLeft, ToggleRight } from "lucide-react"
 import { useHeroSlider, type HeroSlide } from "@/lib/hero-slider-context"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { toast } from "sonner"
@@ -47,6 +47,7 @@ export default function HeroSliderPage() {
   const [isLoadingProducts, setIsLoadingProducts] = useState(false)
   const [productSearchOpen, setProductSearchOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [showBadge, setShowBadge] = useState(false)
   
   const [formData, setFormData] = useState({
     badge: "",
@@ -81,16 +82,18 @@ export default function HeroSliderPage() {
     setSelectedProduct(product)
     setProductSearchOpen(false)
     
-    // Calculer le badge de réduction
+    // Calculer le badge de réduction (mais ne pas l'activer automatiquement)
     let badge = ""
+    let hasDiscount = false
     if (product.discountPrice && product.price > product.discountPrice) {
       const discount = Math.round(((product.price - product.discountPrice) / product.price) * 100)
       badge = `-${discount}%`
+      hasDiscount = true
     }
     
     // Remplir le formulaire avec les infos du produit
     setFormData({
-      badge,
+      badge: hasDiscount ? badge : formData.badge,
       title: product.name,
       description: product.description || "",
       image: product.thumbnail || (product.images && product.images[0]) || "",
@@ -98,12 +101,19 @@ export default function HeroSliderPage() {
       productId: product.id
     })
     
-    toast.success(`Produit "${product.name}" sélectionné`)
+    // Ne pas activer automatiquement le badge - laisser l'utilisateur choisir
+    // Mais si le produit a une réduction, proposer d'activer le badge
+    if (hasDiscount && !showBadge) {
+      toast.success(`Produit "${product.name}" sélectionné. Ce produit a une réduction de ${badge} - activez le badge si souhaité.`)
+    } else {
+      toast.success(`Produit "${product.name}" sélectionné`)
+    }
   }
 
   const openAddDialog = () => {
     setEditingSlide(null)
     setSelectedProduct(null)
+    setShowBadge(false)
     setFormData({
       badge: "",
       title: "",
@@ -120,6 +130,8 @@ export default function HeroSliderPage() {
     // Trouver le produit correspondant si productId existe
     const linkedProduct = slide.productId ? products.find(p => p.id === slide.productId) : null
     setSelectedProduct(linkedProduct || null)
+    // Activer le badge si le slide en a un
+    setShowBadge(!!slide.badge && slide.badge.trim() !== "")
     setFormData({
       badge: slide.badge,
       title: slide.title,
@@ -137,13 +149,19 @@ export default function HeroSliderPage() {
       return
     }
 
+    // Si le badge n'est pas activé, le vider
+    const dataToSave = {
+      ...formData,
+      badge: showBadge ? formData.badge : ""
+    }
+
     if (editingSlide) {
-      updateSlide(editingSlide.id, formData)
+      updateSlide(editingSlide.id, dataToSave)
       toast.success(t.admin.slideUpdated)
     } else {
       const newSlide: HeroSlide = {
         id: Date.now().toString(),
-        ...formData
+        ...dataToSave
       }
       addSlide(newSlide)
       toast.success(t.admin.slideAdded)
@@ -326,15 +344,43 @@ export default function HeroSliderPage() {
             </div>
 
             <div className="grid-responsive-2">
+              {/* Badge avec toggle */}
               <div className="space-y-2">
-                <Label htmlFor="badge" className="text-responsive-sm font-medium">{t.admin.badge}</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="badge" className="text-responsive-sm font-medium">{t.admin.badge}</Label>
+                  <button
+                    type="button"
+                    onClick={() => setShowBadge(!showBadge)}
+                    className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full transition-colors ${
+                      showBadge 
+                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
+                        : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+                    }`}
+                  >
+                    {showBadge ? (
+                      <>
+                        <ToggleRight className="h-4 w-4" />
+                        <span>Activé</span>
+                      </>
+                    ) : (
+                      <>
+                        <ToggleLeft className="h-4 w-4" />
+                        <span>Désactivé</span>
+                      </>
+                    )}
+                  </button>
+                </div>
                 <Input
                   id="badge"
                   value={formData.badge}
                   onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
                   placeholder="-33%"
                   className="text-responsive-base"
+                  disabled={!showBadge}
                 />
+                {!showBadge && (
+                  <p className="text-xs text-muted-foreground">Activez pour afficher un badge de réduction</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="buttonText" className="text-responsive-sm font-medium">{t.admin.buttonText}</Label>

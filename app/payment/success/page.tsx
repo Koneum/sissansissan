@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useState, Suspense } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useEffect, useState, Suspense, useRef } from "react"
+import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { CheckCircle, Package, ArrowRight } from "lucide-react"
 import { Header } from "@/components/header"
@@ -10,10 +10,10 @@ import { Button } from "@/components/ui/button"
 import { useCart } from "@/lib/cart-context"
 
 function PaymentSuccessContent() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const { clearCart } = useCart()
   const [orderId, setOrderId] = useState<string | null>(null)
+  const hasCleared = useRef(false) // Éviter de vider le panier plusieurs fois
 
   useEffect(() => {
     // Récupérer l'order_id des paramètres URL si présent
@@ -22,9 +22,12 @@ function PaymentSuccessContent() {
       setOrderId(orderIdFromUrl)
     }
 
-    // Vider le panier après paiement réussi
-    clearCart()
-  }, [searchParams, clearCart])
+    // Vider le panier UNE SEULE FOIS après paiement réussi
+    if (!hasCleared.current) {
+      hasCleared.current = true
+      clearCart()
+    }
+  }, [searchParams]) // Retirer clearCart des dépendances pour éviter la boucle
 
   return (
     <div className="min-h-screen bg-background flex flex-col">

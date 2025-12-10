@@ -105,14 +105,16 @@ export function HeroCarousel() {
             className="relative z-10 order-2 lg:order-1"
             style={{ transform: `translate(${mousePosition.x * 0.5}px, ${mousePosition.y * 0.5}px)` }}
           >
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-orange-500/20 to-pink-500/20 border border-orange-500/30 backdrop-blur-sm mb-6 animate-in slide-in-from-left duration-500">
-              <Zap className="w-4 h-4 text-orange-500 dark:text-orange-400 animate-pulse" />
-              <span className="text-sm font-semibold text-orange-600 dark:text-orange-300 uppercase tracking-wider">
-                {slides[currentSlide].badge || "Offre Spéciale"}
-              </span>
-              <Sparkles className="w-4 h-4 text-pink-500 dark:text-pink-400" />
-            </div>
+            {/* Badge - Affiché seulement si défini */}
+            {slides[currentSlide].badge && slides[currentSlide].badge.trim() !== "" && (
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-orange-500/20 to-pink-500/20 border border-orange-500/30 backdrop-blur-sm mb-6 animate-in slide-in-from-left duration-500">
+                <Zap className="w-4 h-4 text-orange-500 dark:text-orange-400 animate-pulse" />
+                <span className="text-sm font-semibold text-orange-600 dark:text-orange-300 uppercase tracking-wider">
+                  {slides[currentSlide].badge}
+                </span>
+                <Sparkles className="w-4 h-4 text-pink-500 dark:text-pink-400" />
+              </div>
+            )}
 
             {/* Title */}
             <h1 
@@ -219,11 +221,13 @@ export function HeroCarousel() {
                   />
                 </div>
 
-                {/* Price Tag */}
-                <div className="absolute -bottom-4 -right-4 md:bottom-4 md:right-4 bg-gradient-to-r from-orange-500 to-pink-500 text-white px-6 py-3 rounded-2xl shadow-lg animate-in slide-in-from-right duration-500">
-                  <p className="text-xs font-medium opacity-80">À partir de</p>
-                  <p className="text-2xl font-black">-50%</p>
-                </div>
+                {/* Price Tag - Affiché seulement si badge défini */}
+                {slides[currentSlide].badge && slides[currentSlide].badge.trim() !== "" && (
+                  <div className="absolute -bottom-4 -right-4 md:bottom-4 md:right-4 bg-gradient-to-r from-orange-500 to-pink-500 text-white px-6 py-3 rounded-2xl shadow-lg animate-in slide-in-from-right duration-500">
+                    <p className="text-xs font-medium opacity-80">Réduction</p>
+                    <p className="text-2xl font-black">{slides[currentSlide].badge}</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

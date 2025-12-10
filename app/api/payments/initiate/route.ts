@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
       email,
       phoneNumber,
       hash,
-      hashString,
+      // Ne pas logger le hashString complet (contient api_secret)
     })
 
     // Appel à l'API VitePay

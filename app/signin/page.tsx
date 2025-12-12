@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,7 +12,7 @@ import { useAuth } from "@/lib/auth-context"
 import { authClient } from "@/lib/auth-client"
 import { Eye, EyeOff, ArrowLeft } from "lucide-react"
 
-export default function SignInPage() {
+function SignInContent() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
@@ -279,4 +279,14 @@ export default function SignInPage() {
   )
 }
 
-
+export default function SignInPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+      </div>
+    }>
+      <SignInContent />
+    </Suspense>
+  )
+}

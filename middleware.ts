@@ -135,6 +135,15 @@ export async function middleware(request: NextRequest) {
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
     // Vérifier si c'est une route API
     if (pathname.startsWith('/api/')) {
+      // Exceptions pour le checkout guest
+      const guestAllowedRoutes = [
+        '/api/orders/create',  // Création de commande guest (< 20000 XOF)
+      ]
+      
+      if (guestAllowedRoutes.includes(pathname)) {
+        return NextResponse.next()
+      }
+      
       const sessionToken = getSessionToken(request)
       
       // Exceptions déjà gérées plus haut (auth, payments, checkout, contact)
@@ -152,6 +161,11 @@ export async function middleware(request: NextRequest) {
   // 9. Routes API orders - Protection spéciale
   // ====================================================
   if (pathname.startsWith('/api/orders')) {
+    // Autoriser /api/orders/create pour le checkout guest (commandes < 20000 XOF)
+    if (pathname === '/api/orders/create') {
+      return NextResponse.next()
+    }
+    
     const sessionToken = getSessionToken(request)
     
     if (!sessionToken) {

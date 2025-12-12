@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { toast } from "sonner"
 import { useLocale } from "@/lib/locale-context"
+import { useAuth } from "@/lib/auth-context"
 import { Loader2 } from "lucide-react"
 
 interface ShippingMethod {
@@ -20,6 +21,10 @@ interface ShippingMethod {
 
 export default function SettingsPage() {
   const { t } = useLocale()
+  const { user } = useAuth()
+  
+  // Vérifier si l'utilisateur est ADMIN ou SUPER_ADMIN
+  const isAdmin = user && ['ADMIN', 'SUPER_ADMIN'].includes((user as any).role)
   
   // Store Information
   const [storeName, setStoreName] = useState("")
@@ -27,6 +32,13 @@ export default function SettingsPage() {
   const [storePhone, setStorePhone] = useState("")
   const [storeAddress, setStoreAddress] = useState("")
   const [storeDescription, setStoreDescription] = useState("")
+  
+  // Email Configuration
+  const [emailNoreply, setEmailNoreply] = useState("noreply@sissan-sissan.net")
+  const [emailSupport, setEmailSupport] = useState("support@sissan-sissan.net")
+  const [emailContact, setEmailContact] = useState("contact@sissan-sissan.net")
+  const [emailAdmin, setEmailAdmin] = useState("")
+  const [savingEmails, setSavingEmails] = useState(false)
 
   // Shipping Settings
   const [loading, setLoading] = useState(true)
@@ -54,6 +66,13 @@ export default function SettingsPage() {
           setStorePhone(storeData.data.phone)
           setStoreAddress(storeData.data.address)
           setStoreDescription(storeData.data.description || "")
+          // Charger les emails
+          if (storeData.data.emails) {
+            setEmailNoreply(storeData.data.emails.noreply || "noreply@sissan-sissan.net")
+            setEmailSupport(storeData.data.emails.support || "support@sissan-sissan.net")
+            setEmailContact(storeData.data.emails.contact || "contact@sissan-sissan.net")
+            setEmailAdmin(storeData.data.emails.admin || "")
+          }
         }
 
         // Charger les paramètres de livraison
@@ -146,6 +165,39 @@ export default function SettingsPage() {
     )
   }
 
+  const handleSaveEmails = async () => {
+    try {
+      setSavingEmails(true)
+      
+      const response = await fetch('/api/settings/store', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          emails: {
+            noreply: emailNoreply,
+            support: emailSupport,
+            contact: emailContact,
+            admin: emailAdmin,
+          },
+        }),
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        toast.success("Configuration des emails sauvegardée avec succès")
+      } else {
+        toast.error("Erreur lors de la sauvegarde")
+      }
+    } catch (error) {
+      toast.error("Erreur lors de la sauvegarde")
+    } finally {
+      setSavingEmails(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -218,6 +270,97 @@ export default function SettingsPage() {
             </Button>
           </CardContent>
         </Card>
+
+        {/* Section Configuration des Emails - Visible uniquement pour ADMIN et SUPER_ADMIN */}
+        {isAdmin && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Configuration des Emails</CardTitle>
+              <CardDescription>
+                Configurez les adresses email pour les différents services
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="card-responsive space-y-4">
+              <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+                <div className="space-y-1">
+                  <Label className="text-base font-semibold">Emails transactionnels</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Ces emails sont utilisés pour envoyer des notifications automatiques
+                  </p>
+                </div>
+                
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="emailNoreply">Email No-Reply (envoi uniquement)</Label>
+                    <Input 
+                      id="emailNoreply" 
+                      type="email" 
+                      value={emailNoreply}
+                      onChange={(e) => setEmailNoreply(e.target.value)}
+                      placeholder="noreply@sissan-sissan.net"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Utilisé pour les emails transactionnels. Ne reçoit pas de réponses.
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="emailSupport">Email Support</Label>
+                    <Input 
+                      id="emailSupport" 
+                      type="email" 
+                      value={emailSupport}
+                      onChange={(e) => setEmailSupport(e.target.value)}
+                      placeholder="support@sissan-sissan.net"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Pour le support client
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="emailContact">Email Contact</Label>
+                    <Input 
+                      id="emailContact" 
+                      type="email" 
+                      value={emailContact}
+                      onChange={(e) => setEmailContact(e.target.value)}
+                      placeholder="contact@sissan-sissan.net"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Contact général de la boutique
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="emailAdmin">Email Admin (notifications)</Label>
+                    <Input 
+                      id="emailAdmin" 
+                      type="email" 
+                      value={emailAdmin}
+                      onChange={(e) => setEmailAdmin(e.target.value)}
+                      placeholder="admin@sissan-sissan.net"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Reçoit les notifications de nouvelles commandes
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  <strong>Note:</strong> Les notifications de commandes sont automatiquement envoyées à tous les utilisateurs avec le rôle Admin ou ayant la permission de gérer les commandes.
+                </p>
+              </div>
+              
+              <Button onClick={handleSaveEmails} disabled={savingEmails}>
+                {savingEmails && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Sauvegarder les emails
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         <Card>
           <CardHeader>

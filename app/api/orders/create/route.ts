@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
+import { 
+  sendOrderConfirmationEmail, 
+  sendNewOrderNotificationToAdmins 
+} from "@/lib/email"
+import { sendOrderConfirmationSMS } from "@/lib/sms"
 
 export async function POST(request: NextRequest) {
   try {
@@ -98,9 +103,77 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    // ========================================
+    // ENVOI DES NOTIFICATIONS
+    // ========================================
+    try {
+      // 1. Email de confirmation au client (si email fourni)
+      if (customer.email) {
+        sendOrderConfirmationEmail({
+          email: customer.email,
+          customerName: `${customer.firstName} ${customer.lastName || ''}`.trim(),
+          orderNumber: order.orderNumber,
+          items: items.map((item: any) => ({
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price * item.quantity
+          })),
+          subtotal,
+          shipping: shippingCost,
+          tax: 0,
+          discount: 0,
+          total,
+          shippingAddress: {
+            firstName: customer.firstName,
+            lastName: customer.lastName || '',
+            address: billingAddress.address,
+            city: billingAddress.city,
+            country: billingAddress.country || 'ML',
+            zipCode: billingAddress.zipCode || '',
+            phone: customer.phone || ''
+          }
+        }).catch(err => console.error('Erreur envoi email confirmation:', err))
+      }
+
+      // 2. SMS de confirmation au client (si téléphone fourni)
+      if (customer.phone) {
+        sendOrderConfirmationSMS(customer.phone, order.orderNumber, total)
+          .catch(err => console.error('Erreur envoi SMS confirmation:', err))
+      }
+
+      // 3. Notification aux admins/managers
+      sendNewOrderNotificationToAdmins({
+        orderNumber: order.orderNumber,
+        customerName: `${customer.firstName} ${customer.lastName || ''}`.trim(),
+        customerEmail: customerEmail,
+        customerPhone: customer.phone,
+        items: items.map((item: any) => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price * item.quantity
+        })),
+        total,
+        shippingAddress: {
+          firstName: customer.firstName,
+          lastName: customer.lastName || '',
+          address: billingAddress.address,
+          city: billingAddress.city,
+          country: billingAddress.country || 'ML',
+          zipCode: billingAddress.zipCode || '',
+          phone: customer.phone || ''
+        },
+        paymentMethod: paymentMethod.toUpperCase()
+      }).catch(err => console.error('Erreur envoi notification admin:', err))
+
+    } catch (notifError) {
+      console.error('Erreur notifications:', notifError)
+      // Ne pas bloquer la commande si les notifications échouent
+    }
+
     return NextResponse.json({
       success: true,
       orderId: order.id,
+      orderNumber: order.orderNumber,
     })
   } catch (error) {
     console.error("Erreur création commande:", error)

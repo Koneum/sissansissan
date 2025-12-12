@@ -1,9 +1,12 @@
-import { NextRequest, NextResponse } from "next/server"
-import prisma from "@/lib/prisma"
+import { logOrderStatusChange, logUpdate } from "@/lib/audit-log"
 import { auth } from "@/lib/auth"
 import { checkPermission } from "@/lib/check-permission"
+import { sendOrderStatusEmail } from "@/lib/email"
+import prisma from "@/lib/prisma"
+import { sendOrderStatusPush } from "@/lib/push-notifications"
+import { sendOrderStatusSMS } from "@/lib/sms"
 import { updateOrderSchema, validateData } from "@/lib/validations"
-import { logOrderStatusChange, logUpdate } from "@/lib/audit-log"
+import { NextRequest, NextResponse } from "next/server"
 
 type RouteContext = {
   params: Promise<{ id: string }>
@@ -42,7 +45,8 @@ export async function GET(
             id: true,
             name: true,
             email: true,
-            phone: true
+            phone: true,
+            pushToken: true
           }
         },
         items: {
@@ -206,7 +210,8 @@ export async function PATCH(
             id: true,
             name: true,
             email: true,
-            phone: true
+            phone: true,
+            pushToken: true
           }
         },
         items: {
@@ -220,6 +225,49 @@ export async function PATCH(
     // Log du changement de statut
     if (validatedData.status && validatedData.status !== order.status) {
       await logOrderStatusChange(request, id, order.status, validatedData.status)
+      
+      // Envoyer les notifications de changement de statut
+      try {
+        const statusForEmail = validatedData.status as 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'REFUNDED'
+        const statusForSMS = validatedData.status as 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED'
+        
+        // Email de changement de statut
+        if (updatedOrder.user?.email) {
+          sendOrderStatusEmail({
+            orderNumber: updatedOrder.orderNumber,
+            customerName: updatedOrder.user.name,
+            email: updatedOrder.user.email,
+            status: statusForEmail,
+            trackingNumber: updatedOrder.trackingNumber || undefined,
+            total: updatedOrder.total
+          }).catch(err => console.error('Erreur envoi email statut:', err))
+        }
+        
+        // SMS de changement de statut (seulement pour certains statuts)
+        if (['PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'].includes(validatedData.status)) {
+          const phone = updatedOrder.user?.phone || (updatedOrder.shippingAddress as any)?.phone
+          if (phone) {
+            sendOrderStatusSMS(
+              phone, 
+              updatedOrder.orderNumber, 
+              statusForSMS,
+              updatedOrder.trackingNumber || undefined
+            ).catch(err => console.error('Erreur envoi SMS statut:', err))
+          }
+        }
+        
+        // Push notification de changement de statut
+        if (updatedOrder.user?.pushToken) {
+          sendOrderStatusPush(
+            updatedOrder.user.pushToken,
+            updatedOrder.orderNumber,
+            updatedOrder.id,
+            statusForEmail
+          ).catch(err => console.error('Erreur envoi push statut:', err))
+        }
+      } catch (notifError) {
+        console.error('Erreur notifications statut:', notifError)
+      }
     } else {
       // Log de mise à jour générale
       await logUpdate(request, 'order', id, {

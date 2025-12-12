@@ -1,8 +1,11 @@
-import { NextRequest, NextResponse } from "next/server"
-import prisma from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { checkPermission } from "@/lib/check-permission"
+import { sendOrderConfirmationEmail, sendNewOrderNotificationToAdmins } from "@/lib/email"
+import prisma from "@/lib/prisma"
+import { sendOrderConfirmationPush } from "@/lib/push-notifications"
+import { sendOrderConfirmationSMS } from "@/lib/sms"
 import { createOrderSchema, validateData } from "@/lib/validations"
+import { NextRequest, NextResponse } from "next/server"
 
 // Helper function to generate order number
 function generateOrderNumber() {
@@ -91,7 +94,8 @@ export async function GET(request: NextRequest) {
               id: true,
               name: true,
               email: true,
-              phone: true
+              phone: true,
+              pushToken: true
             }
           },
           items: {
@@ -341,7 +345,8 @@ export async function POST(request: NextRequest) {
               id: true,
               name: true,
               email: true,
-              phone: true
+              phone: true,
+              pushToken: true
             }
           }
         }
@@ -378,6 +383,82 @@ export async function POST(request: NextRequest) {
 
       return newOrder
     })
+
+    // Envoyer les notifications (en arrière-plan, ne bloque pas la réponse)
+    try {
+      const shippingAddr = order.shippingAddress as any
+      
+      // Email de confirmation
+      if (order.user?.email) {
+        sendOrderConfirmationEmail({
+          orderNumber: order.orderNumber,
+          customerName: order.user.name,
+          email: order.user.email,
+          items: order.items.map(item => ({
+            name: (item.productSnapshot as any)?.name || item.product.name,
+            quantity: item.quantity,
+            price: item.price * item.quantity
+          })),
+          subtotal: order.subtotal,
+          shipping: order.shipping || 0,
+          tax: order.tax || 0,
+          discount: order.discount || 0,
+          total: order.total,
+          shippingAddress: {
+            firstName: shippingAddr?.firstName || '',
+            lastName: shippingAddr?.lastName || '',
+            address: shippingAddr?.address || '',
+            city: shippingAddr?.city || '',
+            country: shippingAddr?.country || '',
+            zipCode: shippingAddr?.zipCode || '',
+            phone: shippingAddr?.phone || ''
+          }
+        }).catch(err => console.error('Erreur envoi email confirmation:', err))
+      }
+      
+      // SMS de confirmation (si numéro de téléphone disponible)
+      const phone = order.user?.phone || shippingAddr?.phone
+      if (phone) {
+        sendOrderConfirmationSMS(phone, order.orderNumber, order.total)
+          .catch(err => console.error('Erreur envoi SMS confirmation:', err))
+      }
+      
+      // Push notification (si token disponible)
+      if (order.user?.pushToken) {
+        sendOrderConfirmationPush(
+          order.user.pushToken,
+          order.orderNumber,
+          order.id,
+          order.total
+        ).catch(err => console.error('Erreur envoi push confirmation:', err))
+      }
+
+      // Notification aux admins pour la nouvelle commande
+      sendNewOrderNotificationToAdmins({
+        orderNumber: order.orderNumber,
+        customerName: order.user?.name || 'Client',
+        customerEmail: order.user?.email || '',
+        customerPhone: order.user?.phone || shippingAddr?.phone,
+        items: order.items.map((item: any) => ({
+          name: (item.productSnapshot as any)?.name || item.product?.name || 'Produit',
+          quantity: item.quantity,
+          price: item.price * item.quantity
+        })),
+        total: order.total,
+        shippingAddress: {
+          firstName: shippingAddr?.firstName || '',
+          lastName: shippingAddr?.lastName || '',
+          address: shippingAddr?.address || '',
+          city: shippingAddr?.city || '',
+          country: shippingAddr?.country || '',
+          zipCode: shippingAddr?.zipCode || '',
+          phone: shippingAddr?.phone || ''
+        },
+        paymentMethod: order.paymentMethod || undefined
+      }).catch(err => console.error('Erreur envoi notification admin:', err))
+    } catch (notifError) {
+      console.error('Erreur notifications:', notifError)
+    }
 
     return NextResponse.json({
       success: true,

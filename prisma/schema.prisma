@@ -27,6 +27,7 @@ model User {
   image         String?
   password      String?        // Not used by Better Auth (uses Account.password)
   phone         String?
+  pushToken     String?        // Expo push notification token
   role          UserRole       @default(CUSTOMER)
   resetToken    String?        // Token pour réinitialisation mot de passe
   resetTokenExpiry DateTime?   // Expiration du token

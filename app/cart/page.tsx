@@ -4,16 +4,23 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/lib/cart-context"
+import { useAuth } from "@/lib/auth-context"
 import { useLocale } from "@/lib/locale-context"
 import { formatPrice } from "@/lib/currency"
-import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Package } from "lucide-react"
+import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Package, AlertTriangle } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 
+const GUEST_CART_LIMIT = 20000 // Limite du panier pour les guests en XOF
+
 export default function CartPage() {
   const { items, updateQuantity, removeItem, total, itemCount } = useCart()
+  const { user } = useAuth()
   const { t } = useLocale()
+  
+  const isGuest = !user
+  const isOverGuestLimit = isGuest && total >= GUEST_CART_LIMIT
 
   if (items.length === 0) {
     return (
@@ -176,13 +183,39 @@ export default function CartPage() {
                 </div>
               </div>
 
+              {/* Guest Limit Warning */}
+              {isOverGuestLimit && (
+                <div className="p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg mb-4">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="w-6 h-6 text-orange-500 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-semibold text-orange-700 dark:text-orange-300">
+                        Panier supérieur à {GUEST_CART_LIMIT.toLocaleString()} FCFA
+                      </p>
+                      <p className="text-sm text-orange-600 dark:text-orange-400 mt-1">
+                        Pour finaliser une commande de ce montant, veuillez vous connecter ou créer un compte.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-3">
-                <Link href="/checkout">
-                  <Button className="w-full h-12 text-base font-semibold gap-2 shadow-lg hover:shadow-xl transition-all" size="lg">
-                    {t.cart.checkout}
-                    <ArrowRight className="w-5 h-5" />
-                  </Button>
-                </Link>
+                {isOverGuestLimit ? (
+                  <Link href="/signin?redirect=/checkout">
+                    <Button className="w-full h-12 text-base font-semibold gap-2 shadow-lg hover:shadow-xl transition-all bg-orange-500 hover:bg-orange-600" size="lg">
+                      Se connecter pour commander
+                      <ArrowRight className="w-5 h-5" />
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link href="/checkout">
+                    <Button className="w-full h-12 text-base font-semibold gap-2 shadow-lg hover:shadow-xl transition-all" size="lg">
+                      {t.cart.checkout}
+                      <ArrowRight className="w-5 h-5" />
+                    </Button>
+                  </Link>
+                )}
 
                 <Link href="/products">
                   <Button variant="outline" className="w-full h-11 gap-2">

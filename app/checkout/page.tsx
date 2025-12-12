@@ -4,7 +4,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { ChevronDown, CreditCard, DollarSign, Lock } from "lucide-react"
+import { ChevronDown, CreditCard, DollarSign, Lock, AlertTriangle } from "lucide-react"
 import Link from "next/link"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
@@ -31,6 +31,8 @@ interface ShippingSettings {
   shippingMethods: ShippingMethod[]
 }
 
+const GUEST_CART_LIMIT = 20000 // Limite du panier pour les guests en XOF
+
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart()
   const { user } = useAuth()
@@ -41,8 +43,17 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState("cash") // Default to cash on delivery
   const [showShippingAddress, setShowShippingAddress] = useState(false)
   const [showCardDetails, setShowCardDetails] = useState(false)
-  const [couponCode, setCouponCode] = useState("")
   const [shippingSettings, setShippingSettings] = useState<ShippingSettings | null>(null)
+  
+  const isGuest = !user
+  const isOverGuestLimit = isGuest && total >= GUEST_CART_LIMIT
+
+  // Rediriger les guests qui dépassent la limite vers la connexion
+  useEffect(() => {
+    if (isOverGuestLimit) {
+      router.push('/signin?redirect=/checkout&reason=cart_limit')
+    }
+  }, [isOverGuestLimit, router])
 
   // Charger les paramètres de livraison
   useEffect(() => {
@@ -120,7 +131,6 @@ export default function CheckoutPage() {
         total: finalTotal,
         shippingMethod,
         paymentMethod,
-        couponCode,
         // User ID if logged in (optional)
         userId: user?.id || null,
       }
@@ -242,6 +252,31 @@ export default function CheckoutPage() {
   if (items.length === 0) {
     router.push("/cart")
     return null
+  }
+
+  // Afficher un message de chargement pendant la redirection
+  if (isOverGuestLimit) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900 flex flex-col">
+        <Header />
+        <main className="flex-1 container mx-auto px-4 py-12 flex items-center justify-center">
+          <div className="text-center max-w-md">
+            <AlertTriangle className="w-16 h-16 text-orange-500 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold mb-4">Connexion requise</h1>
+            <p className="text-muted-foreground mb-6">
+              Pour les commandes supérieures à {GUEST_CART_LIMIT.toLocaleString()} FCFA, vous devez être connecté.
+            </p>
+            <Link href="/signin?redirect=/checkout">
+              <Button className="gap-2">
+                Se connecter
+                <Lock className="w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
   }
 
   return (
@@ -505,23 +540,21 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Coupon Code */}
-              <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-200 dark:border-slate-800">
+              {/* Code promo désactivé temporairement */}
+              {/* <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-200 dark:border-slate-800">
                 <h3 className="font-bold mb-4 flex items-center gap-2">
                   <span>🎁</span> Code promo ?
                 </h3>
                 <div className="flex gap-2">
                   <Input
                     placeholder="Entrez votre code"
-                    value={couponCode}
-                    onChange={(e) => setCouponCode(e.target.value)}
                     className="rounded-xl"
                   />
                   <Button type="button" className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 rounded-xl px-6">
                     Appliquer
                   </Button>
                 </div>
-              </div>
+              </div> */}
 
               {/* Shipping Method */}
               <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-200 dark:border-slate-800">
@@ -538,33 +571,64 @@ export default function CheckoutPage() {
                   </div>
                 )}
                 
-                <RadioGroup value={shippingMethod} onValueChange={setShippingMethod}>
+                <RadioGroup value={shippingMethod} onValueChange={(value) => {
+                    // Empêcher la sélection de livraison gratuite si le seuil n'est pas atteint
+                    const selectedMethod = shippingSettings?.shippingMethods.find(m => m.id === value)
+                    if (selectedMethod?.cost === 0 && !isFreeShippingApplied && shippingSettings?.freeShippingEnabled) {
+                      return // Ne pas permettre la sélection
+                    }
+                    setShippingMethod(value)
+                  }}>
                   {shippingSettings?.shippingMethods
                     .filter(method => method.enabled)
-                    .map((method) => (
-                      <div 
-                        key={method.id}
-                        className="flex items-center justify-between p-3 border rounded-lg mb-3 hover:border-primary transition-colors"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <RadioGroupItem value={method.id} id={method.id} />
-                          <Label htmlFor={method.id} className="cursor-pointer font-medium">
-                            {method.name}
-                          </Label>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-bold">
-                            {isFreeShippingApplied && method.cost > 0 
-                              ? <span className="line-through text-muted-foreground">{formatPrice(method.cost)}</span>
-                              : formatPrice(method.cost)
-                            }
-                            {isFreeShippingApplied && method.cost > 0 && (
-                              <span className="ml-2 text-green-600">{formatPrice(0)}</span>
-                            )}
+                    .map((method) => {
+                      // Vérifier si cette option doit être désactivée
+                      // L'option "gratuite" (cost === 0) est désactivée si le seuil n'est pas atteint
+                      const isFreeOption = method.cost === 0
+                      const isDisabled = isFreeOption && !isFreeShippingApplied && shippingSettings?.freeShippingEnabled
+                      
+                      return (
+                        <div 
+                          key={method.id}
+                          className={`flex items-center justify-between p-3 border rounded-lg mb-3 transition-colors ${
+                            isDisabled 
+                              ? 'opacity-50 cursor-not-allowed bg-gray-50 dark:bg-gray-900/50' 
+                              : 'hover:border-primary'
+                          }`}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <RadioGroupItem 
+                              value={method.id} 
+                              id={method.id} 
+                              disabled={isDisabled}
+                              className={isDisabled ? 'cursor-not-allowed' : ''}
+                            />
+                            <Label 
+                              htmlFor={method.id} 
+                              className={`font-medium ${isDisabled ? 'cursor-not-allowed text-muted-foreground' : 'cursor-pointer'}`}
+                            >
+                              {method.name}
+                              {isDisabled && (
+                                <span className="block text-xs text-orange-500 dark:text-orange-400 mt-1">
+                                  Disponible à partir de {formatPrice(shippingSettings?.freeShippingThreshold || 0)}
+                                </span>
+                              )}
+                            </Label>
+                          </div>
+                          <div className="text-right">
+                            <div className={`font-bold ${isDisabled ? 'text-muted-foreground' : ''}`}>
+                              {isFreeShippingApplied && method.cost > 0 
+                                ? <span className="line-through text-muted-foreground">{formatPrice(method.cost)}</span>
+                                : formatPrice(method.cost)
+                              }
+                              {isFreeShippingApplied && method.cost > 0 && (
+                                <span className="ml-2 text-green-600">{formatPrice(0)}</span>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))
+                      )
+                    })
                   }
                 </RadioGroup>
               </div>

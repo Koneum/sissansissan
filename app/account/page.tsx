@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { Loader2, Package, RefreshCw, CheckCircle, XCircle, Clock, Truck, AlertCircle, LayoutDashboard } from "lucide-react"
+import { Loader2, Package, RefreshCw, CheckCircle, XCircle, Clock, Truck, AlertCircle, LayoutDashboard, Trash2, AlertTriangle } from "lucide-react"
 import { formatPrice } from "@/lib/currency"
 
 interface OrderItem {
@@ -63,6 +63,11 @@ export default function AccountPage() {
   const [isSendingCode, setIsSendingCode] = useState(false)
   const [isVerifying, setIsVerifying] = useState(false)
   const [devCode, setDevCode] = useState<string | null>(null)
+
+  // Delete account state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleteConfirmText, setDeleteConfirmText] = useState("")
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false)
 
   // Fetch profile from API
   const fetchProfile = useCallback(async () => {
@@ -314,6 +319,41 @@ export default function AccountPage() {
     }
     const { variant, label } = variants[status]
     return <Badge variant={variant}>{label}</Badge>
+  }
+
+  // Handle delete account
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== "SUPPRIMER") {
+      toast.error("Veuillez taper 'SUPPRIMER' pour confirmer")
+      return
+    }
+
+    try {
+      setIsDeletingAccount(true)
+      const response = await fetch("/api/user/delete-account", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ confirmText: deleteConfirmText })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        toast.success("Compte supprimé avec succès")
+        // Déconnecter et rediriger
+        await signOut()
+        router.push("/")
+      } else {
+        toast.error(data.error || "Erreur lors de la suppression")
+      }
+    } catch (error) {
+      console.error("Erreur:", error)
+      toast.error("Erreur de connexion")
+    } finally {
+      setIsDeletingAccount(false)
+    }
   }
 
   return (
@@ -612,6 +652,78 @@ export default function AccountPage() {
                       >
                         {isVerifying && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                         Changer le mot de passe
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Delete Account Section */}
+              <div className="bg-card rounded-lg p-4 sm:p-6 border border-red-200 dark:border-red-900">
+                <div className="flex items-center gap-2 mb-4">
+                  <Trash2 className="w-5 h-5 text-red-500" />
+                  <h2 className="heading-responsive-h4 text-red-600 dark:text-red-400">Supprimer mon compte</h2>
+                </div>
+                
+                {!showDeleteConfirm ? (
+                  <div className="space-y-4">
+                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                      <div className="flex items-start gap-3">
+                        <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-responsive-sm font-medium text-red-700 dark:text-red-300">
+                            Attention : Cette action est irréversible
+                          </p>
+                          <ul className="text-responsive-xs text-red-600 dark:text-red-400 mt-2 space-y-1 list-disc list-inside">
+                            <li>Toutes vos informations personnelles seront supprimées</li>
+                            <li>Votre historique de commandes sera anonymisé</li>
+                            <li>Vos adresses et favoris seront effacés</li>
+                            <li>Vous ne pourrez plus accéder à ce compte</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                    <Button 
+                      variant="destructive"
+                      onClick={() => setShowDeleteConfirm(true)}
+                      className="btn-responsive"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Supprimer mon compte
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                      <p className="text-responsive-sm text-red-700 dark:text-red-300 mb-3">
+                        Pour confirmer la suppression, tapez <strong>SUPPRIMER</strong> ci-dessous :
+                      </p>
+                      <Input
+                        value={deleteConfirmText}
+                        onChange={(e) => setDeleteConfirmText(e.target.value.toUpperCase())}
+                        placeholder="Tapez SUPPRIMER"
+                        className="text-responsive-base border-red-300 dark:border-red-700 focus:ring-red-500"
+                      />
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button 
+                        variant="outline"
+                        onClick={() => {
+                          setShowDeleteConfirm(false)
+                          setDeleteConfirmText("")
+                        }}
+                        className="btn-responsive"
+                      >
+                        Annuler
+                      </Button>
+                      <Button 
+                        variant="destructive"
+                        onClick={handleDeleteAccount}
+                        disabled={isDeletingAccount || deleteConfirmText !== "SUPPRIMER"}
+                        className="btn-responsive"
+                      >
+                        {isDeletingAccount && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                        Confirmer la suppression
                       </Button>
                     </div>
                   </div>

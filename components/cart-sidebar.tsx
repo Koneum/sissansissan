@@ -1,8 +1,9 @@
 "use client"
 
-import { Minus, Plus, ShoppingBag, ArrowRight, X } from "lucide-react"
+import { Minus, Plus, ShoppingBag, ArrowRight, X, AlertTriangle } from "lucide-react"
 import { Button } from "./ui/button"
 import { useCart } from "@/lib/cart-context"
+import { useAuth } from "@/lib/auth-context"
 import { useLocale } from "@/lib/locale-context"
 import { formatPrice } from "@/lib/currency"
 import Image from "next/image"
@@ -16,9 +17,15 @@ interface CartSidebarProps {
   onClose: () => void
 }
 
+const GUEST_CART_LIMIT = 20000 // Limite du panier pour les guests en XOF
+
 export function CartSidebar({ open, onClose }: CartSidebarProps) {
   const { items, updateQuantity, removeItem, total, itemCount } = useCart()
+  const { user } = useAuth()
   const { t } = useLocale()
+  
+  const isGuest = !user
+  const isOverGuestLimit = isGuest && total >= GUEST_CART_LIMIT
 
   return (
     <Sheet open={open} onOpenChange={onClose}>
@@ -165,14 +172,40 @@ export function CartSidebar({ open, onClose }: CartSidebarProps) {
                 </span>
               </div>
 
+              {/* Guest Limit Warning */}
+              {isOverGuestLimit && (
+                <div className="p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-orange-700 dark:text-orange-300">
+                        Panier supérieur à {GUEST_CART_LIMIT.toLocaleString()} FCFA
+                      </p>
+                      <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
+                        Connectez-vous pour finaliser votre commande
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Buttons */}
               <div className="space-y-2">
-                <Link href="/checkout" onClick={onClose}>
-                  <Button className="w-full h-11 font-semibold gap-2 shadow-lg hover:shadow-xl transition-all">
-                    {t.cart.checkout}
-                    <ArrowRight className="w-4 h-4" />
-                  </Button>
-                </Link>
+                {isOverGuestLimit ? (
+                  <Link href="/signin?redirect=/checkout" onClick={onClose}>
+                    <Button className="w-full h-11 font-semibold gap-2 shadow-lg hover:shadow-xl transition-all bg-orange-500 hover:bg-orange-600">
+                      Se connecter pour commander
+                      <ArrowRight className="w-4 h-4" />
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link href="/checkout" onClick={onClose}>
+                    <Button className="w-full h-11 font-semibold gap-2 shadow-lg hover:shadow-xl transition-all">
+                      {t.cart.checkout}
+                      <ArrowRight className="w-4 h-4" />
+                    </Button>
+                  </Link>
+                )}
 
                 <Link href="/cart" onClick={onClose}>
                   <Button variant="outline" className="w-full h-10 gap-2">

@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -21,6 +21,9 @@ export default function SignInPage() {
   const { toast } = useToast()
   const { signIn } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectUrl = searchParams.get('redirect')
+  const reason = searchParams.get('reason')
 
   useEffect(() => {
     const savedEmail = localStorage.getItem("rememberedEmail")
@@ -75,7 +78,13 @@ export default function SignInPage() {
         
         // Délai augmenté pour s'assurer que les cookies sont bien définis en production
         setTimeout(() => {
-          const targetUrl = userRole === "CUSTOMER" ? "/" : "/admin/dashboard"
+          // Si une URL de redirection est spécifiée (ex: depuis le panier), l'utiliser
+          let targetUrl: string
+          if (redirectUrl && userRole === "CUSTOMER") {
+            targetUrl = redirectUrl
+          } else {
+            targetUrl = userRole === "CUSTOMER" ? "/" : "/admin/dashboard"
+          }
           console.log(`[Auth] Redirecting to ${targetUrl}, role: ${userRole}`)
           window.location.replace(targetUrl)
         }, 500)
@@ -125,6 +134,13 @@ export default function SignInPage() {
             <p className="text-slate-500 dark:text-slate-400 text-sm sm:text-base">
               Continuez avec l&apos;une des options suivantes
             </p>
+            {reason === 'cart_limit' && (
+              <div className="p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg mt-4">
+                <p className="text-sm text-orange-700 dark:text-orange-300">
+                  ⚠️ Pour les commandes supérieures à 20 000 FCFA, la connexion est requise.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Form */}

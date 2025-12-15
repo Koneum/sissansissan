@@ -26,6 +26,7 @@ interface Order {
     id: string
     name: string
     email: string
+    phone?: string
   }
   items: {
     id: string
@@ -311,6 +312,9 @@ export default function OrdersPage() {
                   <Label className="text-sm font-medium">{t.admin.customer}</Label>
                   <p className="text-lg">{selectedOrder.user?.name || "Client invité"}</p>
                   <p className="text-sm text-muted-foreground">{selectedOrder.user?.email || "-"}</p>
+                  {selectedOrder.user?.phone && (
+                    <p className="text-sm text-muted-foreground">{selectedOrder.user.phone}</p>
+                  )}
                 </div>
                 <div>
                   <Label className="text-sm font-medium">{t.admin.orderDate}</Label>

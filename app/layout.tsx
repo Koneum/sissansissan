@@ -19,6 +19,7 @@ import { FeaturesProvider } from "@/lib/features-context"
 import { Chatbot } from "@/components/chatbot"
 import { Toaster } from "sonner"
 import { Toaster as ShadcnToaster } from "@/components/ui/toaster"
+import { Analytics } from "@vercel/analytics/react"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -50,6 +51,7 @@ export default function RootLayout({
   return (
     <html lang="fr" suppressHydrationWarning>
       <body className={`${inter.variable} ${poppins.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <Analytics/>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <AuthProvider>
             <LocaleProvider>

@@ -1,12 +1,11 @@
 "use client"
 
-import type React from "react"
-import Link from "next/link"
-import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin, ArrowRight, Sparkles } from "lucide-react"
-import { Button } from "./ui/button"
-import { useLocale } from "@/lib/locale-context"
 import { useFooter } from "@/lib/footer-context"
+import { useLocale } from "@/lib/locale-context"
+import { ArrowRight, Facebook, Instagram, Linkedin, Mail, MapPin, Phone, Sparkles, Twitter } from "lucide-react"
 import Image from "next/image"
+import Link from "next/link"
+import { Button } from "./ui/button"
 
 export function Footer() {
   const { t } = useLocale()
@@ -189,15 +188,26 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-slate-300/50 dark:border-slate-700/50">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            {/* Copyright */}
-            <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-              <Sparkles className="w-4 h-4 text-orange-500" />
-              <span>
-                {footerData.copyrightText} Powered by{" "}
-                <Link href={footerData.poweredByUrl} className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-500 hover:underline">
-                  {footerData.poweredByText}
+            {/* Copyright & Legal Links */}
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                <Sparkles className="w-4 h-4 text-orange-500" />
+                <span>
+                  {footerData.copyrightText} Powered by{" "}
+                  <Link href={footerData.poweredByUrl} className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-500 hover:underline">
+                    {footerData.poweredByText}
+                  </Link>
+                </span>
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <Link href="/privacy" className="text-slate-500 hover:text-orange-500 transition-colors">
+                  Confidentialité
                 </Link>
-              </span>
+                <span className="text-slate-300 dark:text-slate-600">|</span>
+                <Link href="/data-deletion" className="text-slate-500 hover:text-orange-500 transition-colors">
+                  Suppression des données
+                </Link>
+              </div>
             </div>
             
             {/* Payment Methods */}

@@ -1,6 +1,6 @@
-import { auth } from "@/lib/auth"
 import { checkPermission } from "@/lib/check-permission"
-import { sendOrderConfirmationEmail, sendNewOrderNotificationToAdmins } from "@/lib/email"
+import { sendNewOrderNotificationToAdmins, sendOrderConfirmationEmail } from "@/lib/email"
+import { getSession } from "@/lib/get-session"
 import prisma from "@/lib/prisma"
 import { sendOrderConfirmationPush } from "@/lib/push-notifications"
 import { sendOrderConfirmationSMS } from "@/lib/sms"
@@ -20,13 +20,13 @@ function generateOrderNumber() {
 export async function GET(request: NextRequest) {
   try {
     // ========================================
-    // 1. AUTHENTIFICATION
+    // 1. AUTHENTIFICATION (cookies ou Bearer token)
     // ========================================
-    const session = await auth.api.getSession({ headers: request.headers })
+    const session = await getSession(request)
     
     if (!session?.user) {
       return NextResponse.json(
-        { success: false, error: "Non authentifié" },
+        { success: false, error: "Non authentifié", code: "UNAUTHENTICATED" },
         { status: 401 }
       )
     }
@@ -145,13 +145,13 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // ========================================
-    // 1. AUTHENTIFICATION
+    // 1. AUTHENTIFICATION (cookies ou Bearer token)
     // ========================================
-    const session = await auth.api.getSession({ headers: request.headers })
+    const session = await getSession(request)
     
     if (!session?.user) {
       return NextResponse.json(
-        { success: false, error: "Non authentifié" },
+        { success: false, error: "Non authentifié", code: "UNAUTHENTICATED" },
         { status: 401 }
       )
     }

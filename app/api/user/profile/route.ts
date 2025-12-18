@@ -1,20 +1,20 @@
-import { NextRequest, NextResponse } from "next/server"
+import { getSession } from "@/lib/get-session"
 import prisma from "@/lib/prisma"
-import { auth } from "@/lib/auth"
 import { updateProfileSchema, validateData } from "@/lib/validations"
+import { NextRequest, NextResponse } from "next/server"
 
 // GET /api/user/profile - Récupérer le profil utilisateur (PROTECTED)
 // CORRECTION SÉCURITÉ: Utilise la session au lieu du header x-user-id (falsifiable)
 export async function GET(request: NextRequest) {
   try {
     // ========================================
-    // 1. AUTHENTIFICATION VIA SESSION
+    // 1. AUTHENTIFICATION VIA SESSION (cookies ou Bearer token)
     // ========================================
-    const session = await auth.api.getSession({ headers: request.headers })
+    const session = await getSession(request)
     
     if (!session?.user) {
       return NextResponse.json(
-        { success: false, error: "Non authentifié" },
+        { success: false, error: "Non authentifié", code: "UNAUTHENTICATED" },
         { status: 401 }
       )
     }
@@ -57,13 +57,13 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     // ========================================
-    // 1. AUTHENTIFICATION VIA SESSION
+    // 1. AUTHENTIFICATION VIA SESSION (cookies ou Bearer token)
     // ========================================
-    const session = await auth.api.getSession({ headers: request.headers })
+    const session = await getSession(request)
     
     if (!session?.user) {
       return NextResponse.json(
-        { success: false, error: "Non authentifié" },
+        { success: false, error: "Non authentifié", code: "UNAUTHENTICATED" },
         { status: 401 }
       )
     }

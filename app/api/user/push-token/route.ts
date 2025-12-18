@@ -1,11 +1,11 @@
-import { auth } from "@/lib/auth"
+import { getSession } from "@/lib/get-session"
 import prisma from "@/lib/prisma"
 import { NextRequest, NextResponse } from "next/server"
 
 // POST /api/user/push-token - Enregistrer ou mettre à jour le token push
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: request.headers })
+    const session = await getSession(request)
     
     if (!session?.user) {
       return NextResponse.json(
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
 // DELETE /api/user/push-token - Supprimer le token push (logout, désactivation)
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: request.headers })
+    const session = await getSession(request)
     
     if (!session?.user) {
       return NextResponse.json(

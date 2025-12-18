@@ -1,7 +1,7 @@
 import { logOrderStatusChange, logUpdate } from "@/lib/audit-log"
-import { auth } from "@/lib/auth"
 import { checkPermission } from "@/lib/check-permission"
 import { sendOrderStatusEmail } from "@/lib/email"
+import { getSession } from "@/lib/get-session"
 import prisma from "@/lib/prisma"
 import { sendOrderStatusPush } from "@/lib/push-notifications"
 import { sendOrderStatusSMS } from "@/lib/sms"
@@ -23,7 +23,7 @@ export async function GET(
     // ========================================
     // 1. AUTHENTIFICATION
     // ========================================
-    const session = await auth.api.getSession({ headers: request.headers })
+    const session = await getSession(request)
     
     if (!session?.user) {
       return NextResponse.json(
@@ -124,7 +124,7 @@ export async function PATCH(
     // ========================================
     // 1. AUTHENTIFICATION
     // ========================================
-    const session = await auth.api.getSession({ headers: request.headers })
+    const session = await getSession(request)
     
     if (!session?.user) {
       return NextResponse.json(
@@ -301,7 +301,7 @@ export async function DELETE(
     // ========================================
     // 1. AUTHENTIFICATION
     // ========================================
-    const session = await auth.api.getSession({ headers: request.headers })
+    const session = await getSession(request)
     
     if (!session?.user) {
       return NextResponse.json(

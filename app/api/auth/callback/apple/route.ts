@@ -11,6 +11,8 @@ import { randomBytes } from 'crypto'
 const VALID_APPLE_AUDIENCES = [
   process.env.APPLE_CLIENT_ID,      // Service ID (web)
   process.env.APPLE_APP_ID,         // App ID (mobile)
+  'com.empire.sissansissan',        // App ID fallback
+  'com.empire.sissan-sissan',       // Bundle ID mobile
 ].filter(Boolean)
 
 export async function POST(request: NextRequest) {

@@ -198,12 +198,19 @@ async function createSessionAndRedirect(
     }
   })
 
-  const response = NextResponse.redirect(new URL(redirectUrl, request.url), { status: 303 })
+  // Rediriger vers /auth/complete pour forcer la synchronisation côté client
+  const completeUrl = new URL('/auth/complete', request.url)
+  completeUrl.searchParams.set('redirect', redirectUrl)
   
-  // Set session cookie
-  response.cookies.set('sissan.session_token', session.token, {
+  const response = NextResponse.redirect(completeUrl, { status: 303 })
+  
+  // Set session cookie - utiliser le même format que Better Auth
+  const isProduction = process.env.NODE_ENV === 'production'
+  const cookieName = isProduction ? '__Secure-sissan.session_token' : 'sissan.session_token'
+  
+  response.cookies.set(cookieName, session.token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: isProduction,
     sameSite: 'lax',
     maxAge: 30 * 24 * 60 * 60,
     path: '/'

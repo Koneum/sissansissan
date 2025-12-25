@@ -2,6 +2,24 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 /**
+ * Helper pour ajouter les headers CORS
+ */
+function addCorsHeaders(response: NextResponse): NextResponse {
+  response.headers.set('Access-Control-Allow-Origin', '*')
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
+  return response
+}
+
+/**
+ * Helper pour créer une réponse JSON avec CORS
+ */
+function jsonResponseWithCors(data: object, status: number): NextResponse {
+  const response = NextResponse.json(data, { status })
+  return addCorsHeaders(response)
+}
+
+/**
  * Helper pour récupérer le token de session
  * En production avec HTTPS, le cookie a le préfixe __Secure-
  */
@@ -56,31 +74,46 @@ export async function middleware(request: NextRequest) {
   const method = request.method
 
   // ====================================================
+  // 0. CORS - Permettre les requêtes depuis l'app mobile
+  // ====================================================
+  if (pathname.startsWith('/api/')) {
+    // Gérer les requêtes preflight OPTIONS
+    if (method === 'OPTIONS') {
+      const response = new NextResponse(null, { status: 200 })
+      response.headers.set('Access-Control-Allow-Origin', '*')
+      response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
+      response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
+      response.headers.set('Access-Control-Max-Age', '86400')
+      return response
+    }
+  }
+
+  // ====================================================
   // 1. Toujours autoriser les routes Better Auth
   // ====================================================
   if (pathname.startsWith('/api/auth')) {
-    return NextResponse.next()
+    return addCorsHeaders(NextResponse.next())
   }
 
   // ====================================================
   // 2. Autoriser les callbacks VitePay (webhooks externes)
   // ====================================================
   if (pathname.startsWith('/api/payments')) {
-    return NextResponse.next()
+    return addCorsHeaders(NextResponse.next())
   }
 
   // ====================================================
   // 3. Autoriser le checkout (peut être guest)
   // ====================================================
   if (pathname.startsWith('/api/checkout')) {
-    return NextResponse.next()
+    return addCorsHeaders(NextResponse.next())
   }
 
   // ====================================================
   // 4. Autoriser le formulaire de contact (public)
   // ====================================================
   if (pathname.startsWith('/api/contact') && method === 'POST') {
-    return NextResponse.next()
+    return addCorsHeaders(NextResponse.next())
   }
 
   // ====================================================
@@ -89,7 +122,7 @@ export async function middleware(request: NextRequest) {
   if (method === 'GET') {
     for (const route of PUBLIC_GET_ROUTES) {
       if (pathname.startsWith(route)) {
-        return NextResponse.next()
+        return addCorsHeaders(NextResponse.next())
       }
     }
   }
@@ -108,7 +141,7 @@ export async function middleware(request: NextRequest) {
     }
     
     // Le cookie existe, laisser passer (la vérification du rôle se fait côté composant/API)
-    return NextResponse.next()
+    return addCorsHeaders(NextResponse.next())
   }
 
   // ====================================================
@@ -119,13 +152,13 @@ export async function middleware(request: NextRequest) {
       const sessionToken = getSessionToken(request)
       
       if (!sessionToken) {
-        return NextResponse.json(
+        return jsonResponseWithCors(
           { error: 'Non authentifié', code: 'UNAUTHENTICATED' },
-          { status: 401 }
+          401
         )
       }
       
-      return NextResponse.next()
+      return addCorsHeaders(NextResponse.next())
     }
   }
 
@@ -149,9 +182,9 @@ export async function middleware(request: NextRequest) {
       // Exceptions déjà gérées plus haut (auth, payments, checkout, contact)
       // Pour les autres mutations, exiger une authentification
       if (!sessionToken) {
-        return NextResponse.json(
+        return jsonResponseWithCors(
           { error: 'Non authentifié', code: 'UNAUTHENTICATED' },
-          { status: 401 }
+          401
         )
       }
     }
@@ -163,15 +196,15 @@ export async function middleware(request: NextRequest) {
   if (pathname.startsWith('/api/orders')) {
     // Autoriser /api/orders/create pour le checkout guest (commandes < 20000 XOF)
     if (pathname === '/api/orders/create') {
-      return NextResponse.next()
+      return addCorsHeaders(NextResponse.next())
     }
     
     const sessionToken = getSessionToken(request)
     
     if (!sessionToken) {
-      return NextResponse.json(
+      return jsonResponseWithCors(
         { error: 'Non authentifié', code: 'UNAUTHENTICATED' },
-        { status: 401 }
+        401
       )
     }
   }
@@ -183,9 +216,9 @@ export async function middleware(request: NextRequest) {
     const sessionToken = getSessionToken(request)
     
     if (!sessionToken) {
-      return NextResponse.json(
+      return jsonResponseWithCors(
         { error: 'Non authentifié', code: 'UNAUTHENTICATED' },
-        { status: 401 }
+        401
       )
     }
   }
@@ -197,9 +230,9 @@ export async function middleware(request: NextRequest) {
     const sessionToken = getSessionToken(request)
     
     if (!sessionToken) {
-      return NextResponse.json(
+      return jsonResponseWithCors(
         { error: 'Non authentifié', code: 'UNAUTHENTICATED' },
-        { status: 401 }
+        401
       )
     }
   }
@@ -211,14 +244,18 @@ export async function middleware(request: NextRequest) {
     const sessionToken = getSessionToken(request)
     
     if (!sessionToken) {
-      return NextResponse.json(
+      return jsonResponseWithCors(
         { error: 'Non authentifié', code: 'UNAUTHENTICATED' },
-        { status: 401 }
+        401
       )
     }
   }
 
   // Laisser passer toutes les autres requêtes (pages publiques, etc.)
+  // Pour les routes API, ajouter CORS
+  if (pathname.startsWith('/api/')) {
+    return addCorsHeaders(NextResponse.next())
+  }
   return NextResponse.next()
 }
 

@@ -102,15 +102,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Aucun compte trouvé
-    if (!isRegister) {
-      return NextResponse.redirect(
-        new URL('/signin?error=no_account&message=Aucun compte trouvé', request.url),
-        { status: 303 }
-      )
-    }
-
-    // Créer un nouveau compte
+    // Aucun compte trouvé - créer automatiquement
     if (!email) {
       return NextResponse.redirect(
         new URL('/signin?error=email_required', request.url),

@@ -33,19 +33,13 @@ function SignInContent() {
     }
   }, [])
 
-  const handleAppleSignIn = async () => {
-    try {
-      await authClient.signIn.social({
-        provider: "apple",
-        callbackURL: "/", // Customers go to home page
-      })
-    } catch {
-      toast({
-        title: "Erreur",
-        description: "Impossible de se connecter avec Apple",
-        variant: "destructive",
-      })
-    }
+  const handleAppleSignIn = () => {
+    // Utiliser la route personnalisée Apple
+    const state = Buffer.from(JSON.stringify({ 
+      action: 'login', 
+      redirect: redirectUrl || '/' 
+    })).toString('base64')
+    window.location.href = `/api/auth/signin/apple?state=${state}`
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { createContext, useContext } from "react"
+import { createContext, useContext, useState, useEffect } from "react"
 import { useSession, signIn as betterAuthSignIn, signOut as betterAuthSignOut, signUp as betterAuthSignUp } from "./auth-client"
 
 interface User {
@@ -24,13 +24,36 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { data: session, isPending } = useSession()
+  const [fallbackUser, setFallbackUser] = useState<User | null>(null)
+  const [fallbackLoading, setFallbackLoading] = useState(false)
+
+  // Fallback: vérifier via /api/auth/me si Better Auth ne trouve pas de session
+  useEffect(() => {
+    if (!isPending && !session?.user && !fallbackUser && !fallbackLoading) {
+      setFallbackLoading(true)
+      fetch('/api/auth/me', { credentials: 'include' })
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data?.user) {
+            setFallbackUser({
+              id: data.user.id,
+              email: data.user.email,
+              name: data.user.name,
+              role: data.user.role || 'CUSTOMER'
+            })
+          }
+        })
+        .catch(() => {})
+        .finally(() => setFallbackLoading(false))
+    }
+  }, [isPending, session, fallbackUser, fallbackLoading])
 
   const user = session?.user ? {
     id: session.user.id,
     email: session.user.email,
     name: session.user.name,
     role: (session.user as any).role as "CUSTOMER" | "PERSONNEL" | "MANAGER" | "ADMIN" | "SUPER_ADMIN"
-  } : null
+  } : fallbackUser
 
   const handleSignIn = async (email: string, password: string, rememberMe?: boolean) => {
     try {
@@ -59,6 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const handleSignOut = async () => {
+    setFallbackUser(null)
     await betterAuthSignOut()
   }
 
@@ -66,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
-        isLoading: isPending,
+        isLoading: isPending || fallbackLoading,
         signIn: handleSignIn,
         signUp: handleSignUp,
         signOut: handleSignOut,

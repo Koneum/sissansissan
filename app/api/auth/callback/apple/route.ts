@@ -60,6 +60,8 @@ export async function POST(request: NextRequest) {
       ? `${appleUserData.name.firstName || ''} ${appleUserData.name.lastName || ''}`.trim()
       : undefined
 
+    console.log('[Apple Callback] Recherche utilisateur:', { appleId, email, fullName })
+
     // Chercher un compte existant avec cet Apple ID
     let user = await prisma.user.findFirst({
       where: {
@@ -73,8 +75,11 @@ export async function POST(request: NextRequest) {
     })
 
     if (user) {
+      console.log('[Apple Callback] Utilisateur trouvé par Apple ID:', user.id)
       return await createSessionAndRedirect(user, redirectUrl, request)
     }
+
+    console.log('[Apple Callback] Pas trouvé par Apple ID, recherche par email...')
 
     // Chercher par email
     if (email) {
@@ -83,12 +88,14 @@ export async function POST(request: NextRequest) {
       })
 
       if (user) {
+        console.log('[Apple Callback] Utilisateur trouvé par email:', user.id)
         // Lier le compte Apple
         const existingAccount = await prisma.account.findFirst({
           where: { providerId: 'apple', accountId: appleId }
         })
         
         if (!existingAccount) {
+          console.log('[Apple Callback] Liaison du compte Apple...')
           await prisma.account.create({
             data: {
               id: generateToken(32),
@@ -102,32 +109,40 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    console.log('[Apple Callback] Aucun utilisateur trouvé, création...')
+
     // Aucun compte trouvé - créer automatiquement
     if (!email) {
+      console.log('[Apple Callback] ERREUR: Email manquant')
       return NextResponse.redirect(
         new URL('/signin?error=email_required', request.url),
         { status: 303 }
       )
     }
 
-    const newUser = await prisma.user.create({
-      data: {
-        email,
-        name: fullName || email.split('@')[0],
-        emailVerified: true,
-        role: 'CUSTOMER',
-        accounts: {
-          create: {
-            id: generateToken(32),
-            providerId: 'apple',
-            accountId: appleId,
+    try {
+      const newUser = await prisma.user.create({
+        data: {
+          email,
+          name: fullName || email.split('@')[0],
+          emailVerified: true,
+          role: 'CUSTOMER',
+          accounts: {
+            create: {
+              id: generateToken(32),
+              providerId: 'apple',
+              accountId: appleId,
+            }
           }
         }
-      }
-    })
+      })
 
-    console.log(`✅ Nouvel utilisateur créé via Apple: ${email}`)
-    return await createSessionAndRedirect(newUser, redirectUrl, request)
+      console.log(`✅ Nouvel utilisateur créé via Apple: ${email}, ID: ${newUser.id}`)
+      return await createSessionAndRedirect(newUser, redirectUrl, request)
+    } catch (createError) {
+      console.error('[Apple Callback] Erreur création utilisateur:', createError)
+      throw createError
+    }
 
   } catch (error) {
     console.error('Apple callback error:', error)

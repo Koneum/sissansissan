@@ -23,19 +23,13 @@ export default function RegisterPage() {
   const { toast } = useToast()
   const router = useRouter()
 
-  const handleAppleSignUp = async () => {
-    try {
-      await authClient.signIn.social({
-        provider: "apple",
-        callbackURL: "/",
-      })
-    } catch {
-      toast({
-        title: "Erreur",
-        description: "Impossible de s'inscrire avec Apple",
-        variant: "destructive",
-      })
-    }
+  const handleAppleSignUp = () => {
+    // Utiliser la route personnalisée avec action=register
+    const state = Buffer.from(JSON.stringify({ 
+      action: 'register', 
+      redirect: '/' 
+    })).toString('base64')
+    window.location.href = `/api/auth/signin/apple?state=${state}`
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

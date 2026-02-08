@@ -443,7 +443,7 @@ interface OrderEmailData {
     address: string
     city: string
     country: string
-    zipCode: string
+    district: string
     phone: string
   }
   paymentMethod?: string
@@ -552,7 +552,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
                     <p style="color: #334155; margin: 0; line-height: 1.8;">
                       <strong>${data.shippingAddress.firstName} ${data.shippingAddress.lastName}</strong><br>
                       ${data.shippingAddress.address}<br>
-                      ${data.shippingAddress.city}, ${data.shippingAddress.zipCode}<br>
+                      ${data.shippingAddress.city}${data.shippingAddress.district ? `, ${data.shippingAddress.district}` : ''}<br>
                       ${data.shippingAddress.country}<br>
                       📞 ${data.shippingAddress.phone}
                     </p>
@@ -605,7 +605,7 @@ Total: ${data.total.toLocaleString('fr-FR')} FCFA
 Adresse de livraison:
 ${data.shippingAddress.firstName} ${data.shippingAddress.lastName}
 ${data.shippingAddress.address}
-${data.shippingAddress.city}, ${data.shippingAddress.zipCode}
+${data.shippingAddress.city}${data.shippingAddress.district ? `, ${data.shippingAddress.district}` : ''}
 ${data.shippingAddress.country}
 
 Suivre ma commande: ${STORE_URL}/account/orders
@@ -906,7 +906,7 @@ interface AdminOrderNotificationData {
     address: string
     city: string
     country: string
-    zipCode: string
+    district: string
     phone: string
   }
   paymentMethod?: string
@@ -1062,7 +1062,7 @@ export async function sendNewOrderNotificationToAdmins(data: AdminOrderNotificat
                       <p style="color: #334155; margin: 0; line-height: 1.8;">
                         <strong>${data.shippingAddress.firstName} ${data.shippingAddress.lastName}</strong><br>
                         ${data.shippingAddress.address}<br>
-                        ${data.shippingAddress.city}, ${data.shippingAddress.zipCode}<br>
+                        ${data.shippingAddress.city}${data.shippingAddress.district ? `, ${data.shippingAddress.district}` : ''}<br>
                         ${data.shippingAddress.country}<br>
                         📞 ${data.shippingAddress.phone}
                       </p>
@@ -1121,7 +1121,7 @@ TOTAL: ${data.total.toLocaleString('fr-FR')} FCFA
 Adresse de livraison:
 ${data.shippingAddress.firstName} ${data.shippingAddress.lastName}
 ${data.shippingAddress.address}
-${data.shippingAddress.city}, ${data.shippingAddress.zipCode}
+${data.shippingAddress.city}${data.shippingAddress.district ? `, ${data.shippingAddress.district}` : ''}
 ${data.shippingAddress.country}
 Tél: ${data.shippingAddress.phone}
 

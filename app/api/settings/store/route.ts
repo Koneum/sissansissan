@@ -2,26 +2,28 @@ import { auth } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 import { NextRequest, NextResponse } from "next/server"
 
-// Simuler une base de données pour les informations de la boutique
-let storeInfo = {
+const defaultStoreInfo = {
   name: "Sissan Store",
   email: "contact@sissan-sissan.net",
   phone: "+223 XX XX XX XX",
   address: "Bamako, Mali",
   description: "Votre boutique en ligne de confiance",
-  // Configuration des emails
   emails: {
-    noreply: "noreply@sissan-sissan.net",      // Emails transactionnels (envoi uniquement, pas de réception)
-    support: "support@sissan-sissan.net",       // Support client
-    contact: "contact@sissan-sissan.net",       // Contact général
-    admin: "admin@sissan-sissan.net"            // Notifications admin (peut être modifié)
+    noreply: "noreply@sissan-sissan.net",
+    support: "support@sissan-sissan.net",
+    contact: "contact@sissan-sissan.net",
+    admin: "admin@sissan-sissan.net"
   }
 }
 
 export async function GET() {
+  const setting = await prisma.siteSettings.findUnique({
+    where: { key: "store" }
+  })
+
   return NextResponse.json({
     success: true,
-    data: storeInfo
+    data: setting?.value || defaultStoreInfo
   })
 }
 
@@ -58,16 +60,26 @@ export async function PUT(request: NextRequest) {
       console.log(`[AUDIT] ${session.user.email} a modifié la configuration des emails`)
     }
     
-    // Mettre à jour les informations
-    storeInfo = {
-      ...storeInfo,
-      ...body
+    const current = await prisma.siteSettings.findUnique({
+      where: { key: "store" }
+    })
+
+    const nextValue = {
+      ...defaultStoreInfo,
+      ...(current?.value as any),
+      ...body,
     }
+
+    await prisma.siteSettings.upsert({
+      where: { key: "store" },
+      update: { value: nextValue },
+      create: { key: "store", value: nextValue },
+    })
     
     return NextResponse.json({
       success: true,
       message: "Informations de la boutique mises à jour",
-      data: storeInfo
+      data: nextValue
     })
   } catch (error) {
     console.error("Erreur mise à jour store settings:", error)

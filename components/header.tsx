@@ -53,21 +53,6 @@ export function Header() {
                 {t.nav.home}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
               </Link>
-              <Link href="/shop" className="text-responsive-sm font-medium hover:text-primary transition-colors relative group">
-                {t.nav.shop}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
-              </Link>
-              <Link
-                href="/products"
-                className="text-responsive-sm font-medium hover:text-primary transition-colors relative group"
-              >
-                {t.nav.pages}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
-              </Link>
-              {/* <Link href="/blog" className="text-responsive-sm font-medium hover:text-primary transition-colors relative group">
-                {t.nav.blog}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
-              </Link> */}
               <Link href="/contact" className="text-responsive-sm font-medium hover:text-primary transition-colors relative group">
                 {t.nav.contact}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
@@ -170,38 +155,7 @@ export function Header() {
                           <Home className="icon-responsive text-muted-foreground group-hover:text-primary transition-colors" />
                           <span className="text-responsive-sm font-medium">{t.nav.home}</span>
                         </Link>
-                        <Link
-                          href="/shop"
-                          onClick={() => setMobileMenuOpen(false)}
-                          className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
-                        >
-                          <Store className="icon-responsive text-muted-foreground group-hover:text-primary transition-colors" />
-                          <span className="text-responsive-sm font-medium">{t.nav.shop}</span>
-                        </Link>
-                        <Link
-                          href="/products"
-                          onClick={() => setMobileMenuOpen(false)}
-                          className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
-                        >
-                          <FileText className="icon-responsive text-muted-foreground group-hover:text-primary transition-colors" />
-                          <span className="text-responsive-sm font-medium">{t.nav.pages}</span>
-                        </Link>
-                        <Link
-                          href="/blog"
-                          onClick={() => setMobileMenuOpen(false)}
-                          className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
-                        >
-                          <BookOpen className="icon-responsive text-muted-foreground group-hover:text-primary transition-colors" />
-                          <span className="text-responsive-sm font-medium">{t.nav.blog}</span>
-                        </Link>
-                        <Link
-                          href="/contact"
-                          onClick={() => setMobileMenuOpen(false)}
-                          className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
-                        >
-                          <Mail className="icon-responsive text-muted-foreground group-hover:text-primary transition-colors" />
-                          <span className="text-responsive-sm font-medium">{t.nav.contact}</span>
-                        </Link>
+                        
                       </div>
 
                       <Separator className="my-6" />

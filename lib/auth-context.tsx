@@ -14,8 +14,8 @@ interface User {
 interface AuthContextType {
   user: User | null
   isLoading: boolean
-  signIn: (email: string, password: string, rememberMe?: boolean) => Promise<{ error?: any; data?: any }>
-  signUp: (email: string, password: string, name: string) => Promise<{ error?: any; data?: any }>
+  signIn: (identifier: string, password: string, rememberMe?: boolean) => Promise<{ error?: any; data?: any }>
+  signUp: (phone: string, email: string | null, password: string, name: string) => Promise<{ error?: any; data?: any }>
   signOut: () => Promise<void>
   isAdmin: boolean
 }
@@ -26,11 +26,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { data: session, isPending } = useSession()
   const [fallbackUser, setFallbackUser] = useState<User | null>(null)
   const [fallbackLoading, setFallbackLoading] = useState(false)
+  const [fallbackTried, setFallbackTried] = useState(false)
 
   // Fallback: vérifier via /api/auth/me si Better Auth ne trouve pas de session
   useEffect(() => {
-    if (!isPending && !session?.user && !fallbackUser && !fallbackLoading) {
+    if (!isPending && !session?.user && !fallbackUser && !fallbackLoading && !fallbackTried) {
       setFallbackLoading(true)
+      setFallbackTried(true)
       fetch('/api/auth/me', { credentials: 'include' })
         .then(res => res.ok ? res.json() : null)
         .then(data => {
@@ -46,7 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .catch(() => {})
         .finally(() => setFallbackLoading(false))
     }
-  }, [isPending, session, fallbackUser, fallbackLoading])
+  }, [isPending, session, fallbackUser, fallbackLoading, fallbackTried])
 
   const user = session?.user ? {
     id: session.user.id,
@@ -55,8 +57,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     role: (session.user as any).role as "CUSTOMER" | "PERSONNEL" | "MANAGER" | "ADMIN" | "SUPER_ADMIN"
   } : fallbackUser
 
-  const handleSignIn = async (email: string, password: string, rememberMe?: boolean) => {
+  const normalizePhone = (v: string) => String(v || "").replace(/\D/g, "")
+  const isEmail = (v: string) => v.includes("@")
+
+  const handleSignIn = async (identifier: string, password: string, rememberMe?: boolean) => {
     try {
+      let email = String(identifier || "").trim()
+
+      if (!isEmail(email)) {
+        const phone = normalizePhone(email)
+        const res = await fetch("/api/auth/phone-to-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone }),
+        })
+        const data = await res.json().catch(() => null)
+        if (!res.ok || !data?.email) {
+          return { error: new Error(data?.error || "Compte introuvable") }
+        }
+        email = String(data.email)
+      }
+
       const result = await betterAuthSignIn.email({
         email,
         password,
@@ -68,13 +89,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const handleSignUp = async (email: string, password: string, name: string) => {
+  const handleSignUp = async (phone: string, email: string | null, password: string, name: string) => {
     try {
+      const normalizedPhone = normalizePhone(phone)
+      if (!normalizedPhone) {
+        return { error: new Error("Téléphone requis") }
+      }
+
+      const fallbackEmail = `phone-${normalizedPhone}@sissan.local`
+      const signupEmail = (email && email.trim()) ? email.trim() : fallbackEmail
+
       const result = await betterAuthSignUp.email({
-        email,
+        email: signupEmail,
         password,
         name,
       })
+
+      if ((result as any)?.error) {
+        return result as any
+      }
+
+      await fetch("/api/auth/profile/phone", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: normalizedPhone }),
+      })
+
       return result
     } catch (error) {
       return { error }
@@ -83,6 +123,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const handleSignOut = async () => {
     setFallbackUser(null)
+    setFallbackTried(false)
     await betterAuthSignOut()
   }
 

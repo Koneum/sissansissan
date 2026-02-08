@@ -47,7 +47,7 @@ export const addressSchema = z.object({
   city: z.string().optional(),
   state: z.string().optional(),
   country: z.string().optional(),
-  zipCode: z.string().optional(),
+  district: z.string().optional(),
   phone: z.string().optional(),
   email: z.string().email().optional(),
 })
@@ -155,11 +155,11 @@ export const contactMessageSchema = z.object({
 export const guestInfoSchema = z.object({
   firstName: z.string().min(1, "Le prénom est requis"),
   lastName: z.string().min(1, "Le nom est requis"),
-  email: z.string().email("Email invalide"),
+  email: z.string().email("Email invalide").optional().nullable(),
   phone: z.string().optional().nullable(),
   address: z.string().optional(),
   city: z.string().optional(),
-  zipCode: z.string().optional(),
+  district: z.string().optional().nullable(),
 })
 
 export const checkoutSchema = z.object({

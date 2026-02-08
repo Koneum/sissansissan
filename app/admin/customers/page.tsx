@@ -55,7 +55,8 @@ export default function CustomersPage() {
   const filteredAndSortedCustomers = useMemo(() => {
     const filtered = customers.filter(customer =>
       customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      customer.email.toLowerCase().includes(searchQuery.toLowerCase())
+      customer.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (customer.phone || "").toLowerCase().includes(searchQuery.toLowerCase())
     )
 
     filtered.sort((a, b) => {

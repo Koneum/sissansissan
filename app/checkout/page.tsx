@@ -48,6 +48,13 @@ export default function CheckoutPage() {
   const isGuest = !user
   const isOverGuestLimit = isGuest && total >= GUEST_CART_LIMIT
 
+  // Rediriger vers le panier si panier vide (éviter router.push pendant le render)
+  useEffect(() => {
+    if (items.length === 0) {
+      router.push("/cart")
+    }
+  }, [items.length, router])
+
   // Rediriger les guests qui dépassent la limite vers la connexion
   useEffect(() => {
     if (isOverGuestLimit) {
@@ -116,13 +123,13 @@ export default function CheckoutPage() {
           country: formData.get('region'),
           address: formData.get('street'),
           city: formData.get('city'),
-          zipCode: formData.get('country'),
+          district: formData.get('district'),
         },
         // Shipping address (if different)
         shippingAddress: showShippingAddress ? {
           address: formData.get('shippingAddress'),
           city: formData.get('shippingCity'),
-          zipCode: formData.get('shippingZipCode'),
+          district: formData.get('shippingDistrict'),
         } : null,
         // Order details
         items,
@@ -250,7 +257,6 @@ export default function CheckoutPage() {
   }
 
   if (items.length === 0) {
-    router.push("/cart")
     return null
   }
 
@@ -451,7 +457,7 @@ export default function CheckoutPage() {
                     <Label htmlFor="country">
                       Quartier <span className="text-red-500">*</span>
                     </Label>
-                    <Input id="country" name="country" required />
+                    <Input id="district" name="district" required />
                   </div>
 
                   <div className="space-y-2">
@@ -482,7 +488,9 @@ export default function CheckoutPage() {
                 </button>
                 {showShippingAddress && (
                   <div className="mt-4 space-y-4">
-                    <Input placeholder="Adresse de livraison" />
+                    <Input id="shippingAddress" name="shippingAddress" placeholder="Adresse de livraison" />
+                    <Input id="shippingCity" name="shippingCity" placeholder="Ville" />
+                    <Input id="shippingDistrict" name="shippingDistrict" placeholder="Quartier" />
                   </div>
                 )}
               </div>

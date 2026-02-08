@@ -14,6 +14,7 @@ export default function RegisterForm() {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
+    phone: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -87,6 +88,15 @@ export default function RegisterForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    if (!String(formData.phone || "").trim()) {
+      toast({
+        title: "Erreur",
+        description: "Le téléphone est obligatoire",
+        variant: "destructive",
+      })
+      return
+    }
+
     if (formData.password !== formData.confirmPassword) {
       toast({
         title: "Erreur",
@@ -109,7 +119,7 @@ export default function RegisterForm() {
 
     try {
       const fullName = `${formData.firstName} ${formData.lastName}`
-      const result = await signUp(formData.email, formData.password, fullName)
+      const result = await signUp(formData.phone, formData.email?.trim() || null, formData.password, fullName)
       
       if (result.error) {
         toast({
@@ -170,8 +180,24 @@ export default function RegisterForm() {
       </div>
 
       <div className="space-y-1.5 sm:space-y-2">
+        <label htmlFor="phone" className="text-responsive-sm font-medium text-foreground">
+          Téléphone
+        </label>
+        <Input
+          id="phone"
+          name="phone"
+          type="tel"
+          placeholder="+223..."
+          value={formData.phone}
+          onChange={handleChange}
+          required
+          className="bg-background border-border text-responsive-base"
+        />
+      </div>
+
+      <div className="space-y-1.5 sm:space-y-2">
         <label htmlFor="email" className="text-responsive-sm font-medium text-foreground">
-          Adresse email
+          Email (optionnel)
         </label>
         <Input
           id="email"
@@ -180,7 +206,6 @@ export default function RegisterForm() {
           placeholder="votre@email.com"
           value={formData.email}
           onChange={handleChange}
-          required
           className="bg-background border-border text-responsive-base"
         />
       </div>

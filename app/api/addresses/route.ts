@@ -36,9 +36,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { userId, firstName, lastName, address, city, state, country, zipCode, phone, isDefault } = body
+    const { userId, firstName, lastName, address, city, state, country, district, phone, isDefault } = body
 
-    if (!userId || !firstName || !lastName || !address || !city || !country || !phone) {
+    if (!userId || !firstName || !lastName || !address || !city || !country || !district || !phone) {
       return NextResponse.json(
         { success: false, error: "Missing required fields" },
         { status: 400 }
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    const newAddress = await prisma.address.create({
+    const newAddress = await (prisma.address as any).create({
       data: {
         userId,
         firstName,
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
         city,
         state: state || null,
         country,
-        zipCode,
+        district,
         phone,
         isDefault: isDefault || false,
       },

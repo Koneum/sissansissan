@@ -11,7 +11,7 @@ import { useAuth } from "@/lib/auth-context"
 import { authClient } from "@/lib/auth-client"
 
 export default function LoginForm() {
-  const [email, setEmail] = useState("")
+  const [identifier, setIdentifier] = useState("")
   const [password, setPassword] = useState("")
   const [rememberMe, setRememberMe] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -22,9 +22,9 @@ export default function LoginForm() {
 
   // Charger l'email sauvegardé et détecter Apple au montage du composant
   useEffect(() => {
-    const savedEmail = localStorage.getItem("rememberedEmail")
-    if (savedEmail) {
-      setEmail(savedEmail)
+    const saved = localStorage.getItem("rememberedLogin")
+    if (saved) {
+      setIdentifier(saved)
       setRememberMe(true)
     }
     
@@ -84,20 +84,20 @@ export default function LoginForm() {
     setIsLoading(true)
 
     try {
-      const result = await signIn(email, password)
+      const result = await signIn(identifier, password, rememberMe)
       
       if (result.error) {
         toast({
           title: "Erreur",
-          description: "Email ou mot de passe incorrect",
+          description: "Téléphone/Email ou mot de passe incorrect",
           variant: "destructive",
         })
       } else {
-        // Sauvegarder l'email si "Se souvenir de moi" est coché
+        // Sauvegarder le login si "Se souvenir de moi" est coché
         if (rememberMe) {
-          localStorage.setItem("rememberedEmail", email)
+          localStorage.setItem("rememberedLogin", identifier)
         } else {
-          localStorage.removeItem("rememberedEmail")
+          localStorage.removeItem("rememberedLogin")
         }
         
         toast({
@@ -121,15 +121,15 @@ export default function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <label htmlFor="email" className="text-sm font-medium text-foreground">
-          Adresse email
+        <label htmlFor="identifier" className="text-sm font-medium text-foreground">
+          Téléphone ou Email
         </label>
         <Input
-          id="email"
-          type="email"
-          placeholder="votre@email.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          id="identifier"
+          type="text"
+          placeholder="Téléphone ou email"
+          value={identifier}
+          onChange={(e) => setIdentifier(e.target.value)}
           required
           className="bg-background border-border"
         />

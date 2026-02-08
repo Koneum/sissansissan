@@ -9,11 +9,10 @@ import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
-import { authClient } from "@/lib/auth-client"
 import { Eye, EyeOff, ArrowLeft } from "lucide-react"
 
 function SignInContent() {
-  const [email, setEmail] = useState("")
+  const [identifier, setIdentifier] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
@@ -26,9 +25,9 @@ function SignInContent() {
   const reason = searchParams.get('reason')
 
   useEffect(() => {
-    const savedEmail = localStorage.getItem("rememberedEmail")
-    if (savedEmail) {
-      setEmail(savedEmail)
+    const saved = localStorage.getItem("rememberedLogin")
+    if (saved) {
+      setIdentifier(saved)
       setRememberMe(true)
     }
   }, [])
@@ -47,19 +46,19 @@ function SignInContent() {
     setIsLoading(true)
 
     try {
-      const result = await signIn(email, password, rememberMe)
+      const result = await signIn(identifier, password, rememberMe)
       
       if (result.error) {
         toast({
           title: "Erreur",
-          description: "Email ou mot de passe incorrect",
+          description: "Téléphone/Email ou mot de passe incorrect",
           variant: "destructive",
         })
       } else {
         if (rememberMe) {
-          localStorage.setItem("rememberedEmail", email)
+          localStorage.setItem("rememberedLogin", identifier)
         } else {
-          localStorage.removeItem("rememberedEmail")
+          localStorage.removeItem("rememberedLogin")
         }
         
         toast({
@@ -141,15 +140,15 @@ function SignInContent() {
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email */}
             <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                Email
-              </label>
+                <label htmlFor="identifier" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Téléphone ou Email
+                </label>
               <Input
-                id="email"
-                type="email"
-                placeholder="Adresse email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="identifier"
+                type="text"
+                placeholder="Téléphone ou email"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
                 required
                 className="h-11 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 focus:border-orange-500 focus:ring-orange-500"
               />

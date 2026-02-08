@@ -44,7 +44,7 @@ export async function PATCH(
   try {
     const { id } = await context.params
     const body = await request.json()
-    const { firstName, lastName, address, city, state, country, zipCode, phone, isDefault } = body
+    const { firstName, lastName, address, city, state, country, district, phone, isDefault } = body
 
     // Check if address exists
     const existingAddress = await prisma.address.findUnique({
@@ -66,7 +66,7 @@ export async function PATCH(
       })
     }
 
-    const updatedAddress = await prisma.address.update({
+    const updatedAddress = await (prisma.address as any).update({
       where: { id },
       data: {
         firstName: firstName ?? existingAddress.firstName,
@@ -75,7 +75,7 @@ export async function PATCH(
         city: city ?? existingAddress.city,
         state: state !== undefined ? state : existingAddress.state,
         country: country ?? existingAddress.country,
-        zipCode: zipCode ?? existingAddress.zipCode,
+        district: district ?? (existingAddress as any).district,
         phone: phone ?? existingAddress.phone,
         isDefault: isDefault ?? existingAddress.isDefault,
       },

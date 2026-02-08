@@ -107,12 +107,34 @@ export function FooterProvider({ children }: { children: ReactNode }) {
 
   const fetchFooterData = async () => {
     try {
-      const response = await fetch("/api/settings/footer")
-      if (response.ok) {
-        const result = await response.json()
-        if (result.data) {
-          setFooterData(result.data)
+      const [footerRes, storeRes] = await Promise.all([
+        fetch("/api/settings/footer"),
+        fetch("/api/settings/store"),
+      ])
+
+      let footerValue: any = null
+      if (footerRes.ok) {
+        const footerJson = await footerRes.json()
+        footerValue = footerJson?.data || null
+      }
+
+      let storeValue: any = null
+      if (storeRes.ok) {
+        const storeJson = await storeRes.json()
+        storeValue = storeJson?.data || null
+      }
+
+      if (footerValue || storeValue) {
+        const merged: FooterData = {
+          ...(footerValue || defaultFooterData),
+          contactInfo: {
+            ...(footerValue?.contactInfo || defaultFooterData.contactInfo),
+            phone: storeValue?.phone || footerValue?.contactInfo?.phone || defaultFooterData.contactInfo.phone,
+            email: storeValue?.email || footerValue?.contactInfo?.email || defaultFooterData.contactInfo.email,
+            address: storeValue?.address || footerValue?.contactInfo?.address || defaultFooterData.contactInfo.address,
+          },
         }
+        setFooterData(merged)
       }
     } catch (error) {
       console.error("Error loading footer data:", error)

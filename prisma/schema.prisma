@@ -100,7 +100,7 @@ model Address {
   city      String
   state     String?
   country   String
-  zipCode   String
+  district  String   @map("zipCode")
   phone     String
   isDefault Boolean  @default(false)
   createdAt DateTime @default(now())

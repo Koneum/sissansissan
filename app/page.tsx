@@ -10,13 +10,14 @@ import { CountdownSection } from "@/components/countdown-section"
 import { Testimonials } from "@/components/testimonials"
 import { Newsletter } from "@/components/newsletter"
 import { Features } from "@/components/features"
+import { HomeShopFilters } from "@/components/home-shop-filters"
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-        
+        <HomeShopFilters />
         <HeroCarousel />
         <CategoryBrowser />
         <NewArrivals />

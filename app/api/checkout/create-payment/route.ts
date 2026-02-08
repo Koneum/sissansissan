@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     
     const {
       userId,         // null for guest checkout
-      guestInfo,      // { firstName, lastName, email, phone, address, city, zipCode }
+      guestInfo,      // { firstName, lastName, email, phone, address, city, district }
       items,          // [{ productId, quantity, price }]
       subtotal,
       shipping,
@@ -57,14 +57,14 @@ export async function POST(request: NextRequest) {
       customerName = user.name || ""
     } else if (guestInfo) {
       // Guest checkout
-      if (!guestInfo.email || !guestInfo.firstName || !guestInfo.lastName) {
+      if (!guestInfo.firstName || !guestInfo.lastName) {
         return NextResponse.json(
           { success: false, error: "Informations client manquantes" },
           { status: 400 }
         )
       }
 
-      email = guestInfo.email
+      email = guestInfo.email || `guest_${String(guestInfo.phone || '').replace(/\D/g, '') || Date.now()}@sissan-sissan.net`
       phone = guestInfo.phone || ""
       customerName = `${guestInfo.firstName} ${guestInfo.lastName}`
     } else {
@@ -174,11 +174,11 @@ export async function POST(request: NextRequest) {
     const shippingAddress = guestInfo ? {
       firstName: guestInfo.firstName,
       lastName: guestInfo.lastName,
-      email: guestInfo.email,
+      email,
       phone: guestInfo.phone,
       address: guestInfo.address,
       city: guestInfo.city,
-      zipCode: guestInfo.zipCode,
+      district: guestInfo.district,
       country: "Mali"
     } : {}
 
@@ -192,7 +192,7 @@ export async function POST(request: NextRequest) {
     if (!userId && guestInfo) {
       // Check if guest user already exists with this email
       let guestUser = await prisma.user.findUnique({
-        where: { email: guestInfo.email }
+        where: { email }
       })
 
       if (!guestUser) {
@@ -200,7 +200,7 @@ export async function POST(request: NextRequest) {
         guestUser = await prisma.user.create({
           data: {
             name: customerName,
-            email: guestInfo.email,
+            email,
             phone: guestInfo.phone || null,
             role: "CUSTOMER",
             emailVerified: false,

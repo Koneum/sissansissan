@@ -21,6 +21,7 @@ interface Order {
   total: number
   status: OrderStatus
   paymentStatus: PaymentStatus
+  paymentMethod?: string | null
   createdAt: string
   user: {
     id: string
@@ -38,11 +39,15 @@ interface Order {
     }
   }[]
   shippingAddress?: {
-    street?: string
+    name?: string
+    email?: string
+    phone?: string
+    address?: string
     city?: string
-    state?: string
-    postalCode?: string
+    district?: string
     country?: string
+    street?: string
+    state?: string
   }
 }
 
@@ -322,6 +327,13 @@ export default function OrdersPage() {
                 </div>
               </div>
 
+              {selectedOrder.paymentMethod && (
+                <div>
+                  <Label className="text-sm font-medium">{((t as any).admin?.paymentMethod as string) || "Mode de paiement"}</Label>
+                  <p className="text-sm text-muted-foreground">{selectedOrder.paymentMethod}</p>
+                </div>
+              )}
+
               <div>
                 <Label className="text-sm font-medium mb-2 block">{t.admin.orderItems}</Label>
                 <div className="border rounded-lg divide-y">
@@ -341,9 +353,18 @@ export default function OrdersPage() {
                 <div>
                   <Label className="text-sm font-medium mb-2 block">{t.admin.shippingAddress}</Label>
                   <div className="p-4 border rounded-lg bg-muted/30">
-                    <p>{selectedOrder.shippingAddress.street}</p>
-                    <p>{selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.state} {selectedOrder.shippingAddress.postalCode}</p>
-                    <p>{selectedOrder.shippingAddress.country}</p>
+                    <p>{selectedOrder.shippingAddress.name || selectedOrder.user?.name || "-"}</p>
+                    <p>{selectedOrder.shippingAddress.phone || selectedOrder.user?.phone || "-"}</p>
+                    <p>{selectedOrder.shippingAddress.email || selectedOrder.user?.email || "-"}</p>
+                    <p>{selectedOrder.shippingAddress.address || selectedOrder.shippingAddress.street || "-"}</p>
+                    <p>
+                      {selectedOrder.shippingAddress.city || "-"}
+                      {selectedOrder.shippingAddress.state ? `, ${selectedOrder.shippingAddress.state}` : ""}
+                    </p>
+                    {selectedOrder.shippingAddress.district && (
+                      <p>{selectedOrder.shippingAddress.district}</p>
+                    )}
+                    <p>{selectedOrder.shippingAddress.country || "-"}</p>
                   </div>
                 </div>
               )}

@@ -7,11 +7,13 @@ import { NextRequest, NextResponse } from "next/server"
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, email, password } = body
+    const { name, email, phone, password } = body
 
-    if (!email || !password || !name) {
+    const normalizedPhone = String(phone || "").replace(/\D/g, "")
+
+    if (!password || !name || !normalizedPhone) {
       return NextResponse.json(
-        { success: false, error: "Nom, email et mot de passe requis" },
+        { success: false, error: "Nom, téléphone et mot de passe requis" },
         { status: 400 }
       )
     }
@@ -23,12 +25,26 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if email already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() }
+    const internalEmail = `phone-${normalizedPhone}@sissan.local`
+    const finalEmail = String(email || "").trim() ? String(email).trim().toLowerCase() : internalEmail
+
+    const existingByPhone = await prisma.user.findFirst({
+      where: { phone: normalizedPhone },
+      select: { id: true },
     })
 
-    if (existingUser) {
+    if (existingByPhone) {
+      return NextResponse.json(
+        { success: false, error: "Ce téléphone est déjà utilisé" },
+        { status: 409 }
+      )
+    }
+
+    const existingByEmail = await prisma.user.findUnique({
+      where: { email: finalEmail }
+    })
+
+    if (existingByEmail) {
       return NextResponse.json(
         { success: false, error: "Cet email est déjà utilisé" },
         { status: 409 }
@@ -44,7 +60,8 @@ export async function POST(request: NextRequest) {
       const user = await tx.user.create({
         data: {
           name,
-          email: email.toLowerCase(),
+          email: finalEmail,
+          phone: normalizedPhone,
           role: "CUSTOMER",
           emailVerified: false,
         }
@@ -74,9 +91,12 @@ export async function POST(request: NextRequest) {
       return { user, session }
     })
 
-    // Send welcome email (non-blocking)
-    sendWelcomeEmail(result.user.email, result.user.name || "Cher client")
-      .catch(err => console.error("Failed to send welcome email:", err))
+    if (!String(email || "").trim()) {
+      // no-op
+    } else {
+      sendWelcomeEmail(result.user.email, result.user.name || "Cher client")
+        .catch(err => console.error("Failed to send welcome email:", err))
+    }
 
     return NextResponse.json({
       success: true,

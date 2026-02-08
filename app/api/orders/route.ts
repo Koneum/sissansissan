@@ -410,9 +410,9 @@ export async function POST(request: NextRequest) {
             address: shippingAddr?.address || '',
             city: shippingAddr?.city || '',
             country: shippingAddr?.country || '',
-            zipCode: shippingAddr?.zipCode || '',
+            district: shippingAddr?.district || '',
             phone: shippingAddr?.phone || ''
-          }
+          } as any
         }).catch(err => console.error('Erreur envoi email confirmation:', err))
       }
       
@@ -451,9 +451,9 @@ export async function POST(request: NextRequest) {
           address: shippingAddr?.address || '',
           city: shippingAddr?.city || '',
           country: shippingAddr?.country || '',
-          zipCode: shippingAddr?.zipCode || '',
+          district: shippingAddr?.district || '',
           phone: shippingAddr?.phone || ''
-        },
+        } as any,
         paymentMethod: order.paymentMethod || undefined
       }).catch(err => console.error('Erreur envoi notification admin:', err))
     } catch (notifError) {

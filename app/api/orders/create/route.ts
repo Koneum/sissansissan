@@ -12,6 +12,7 @@ export async function POST(request: NextRequest) {
     const {
       customer,
       billingAddress,
+      shippingAddress,
       items,
       subtotal,
       shippingCost,
@@ -68,10 +69,11 @@ export async function POST(request: NextRequest) {
           name: `${customer.firstName} ${customer.lastName || ""}`.trim(),
           email: customerEmail,
           phone: customer.phone,
-          address: billingAddress.address,
-          city: billingAddress.city,
-          zipCode: billingAddress.zipCode || "",
+          address: shippingAddress?.address || billingAddress.address,
+          city: shippingAddress?.city || billingAddress.city,
           country: billingAddress.country || "ML",
+          district: shippingAddress?.district || billingAddress.district || null,
+          shippingMethod: shippingMethod || null,
         },
         billingAddress: {
           name: `${customer.firstName} ${customer.lastName || ""}`.trim(),
@@ -79,8 +81,8 @@ export async function POST(request: NextRequest) {
           phone: customer.phone,
           address: billingAddress.address,
           city: billingAddress.city,
-          zipCode: billingAddress.zipCode || "",
           country: billingAddress.country || "ML",
+          district: billingAddress.district || null,
         },
         subtotal,
         shipping: shippingCost,
@@ -129,9 +131,9 @@ export async function POST(request: NextRequest) {
             address: billingAddress.address,
             city: billingAddress.city,
             country: billingAddress.country || 'ML',
-            zipCode: billingAddress.zipCode || '',
+            district: billingAddress.district || '',
             phone: customer.phone || ''
-          }
+          } as any
         }).catch(err => console.error('Erreur envoi email confirmation:', err))
       }
 
@@ -159,9 +161,9 @@ export async function POST(request: NextRequest) {
           address: billingAddress.address,
           city: billingAddress.city,
           country: billingAddress.country || 'ML',
-          zipCode: billingAddress.zipCode || '',
+          district: billingAddress.district || '',
           phone: customer.phone || ''
-        },
+        } as any,
         paymentMethod: paymentMethod.toUpperCase()
       }).catch(err => console.error('Erreur envoi notification admin:', err))
 

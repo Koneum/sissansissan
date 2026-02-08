@@ -7,6 +7,7 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/lib/auth-context"
@@ -42,6 +43,12 @@ interface Order {
 export default function AccountPage() {
   const { user, signOut, isAdmin } = useAuth()
   const router = useRouter()
+
+  // Guest order tracking
+  const [guestOrderNumber, setGuestOrderNumber] = useState("")
+  const [guestContact, setGuestContact] = useState("")
+  const [guestOrder, setGuestOrder] = useState<Order | null>(null)
+  const [isTrackingGuestOrder, setIsTrackingGuestOrder] = useState(false)
 
   // Profile state
   const [profileName, setProfileName] = useState("")
@@ -118,16 +125,129 @@ export default function AccountPage() {
     }
   }, [user?.id])
 
+  const handleTrackGuestOrder = async () => {
+    try {
+      if (!guestOrderNumber.trim() || !guestContact.trim()) {
+        toast.error("Veuillez entrer le numéro de commande et votre téléphone")
+        return
+      }
+
+      setIsTrackingGuestOrder(true)
+      setGuestOrder(null)
+
+      const response = await fetch("/api/orders/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderNumber: guestOrderNumber.trim(),
+          phone: guestContact.trim(),
+        }),
+      })
+
+      const data = await response.json().catch(() => null)
+
+      if (!response.ok) {
+        toast.error(data?.error || "Impossible de retrouver cette commande")
+        return
+      }
+
+      setGuestOrder(data?.data || null)
+      toast.success("Commande retrouvée")
+    } catch (e) {
+      toast.error("Erreur de connexion")
+    } finally {
+      setIsTrackingGuestOrder(false)
+    }
+  }
+
   useEffect(() => {
-    if (!user) {
-      router.push("/signin")
-    } else {
+    if (user) {
       fetchProfile()
       fetchOrders()
     }
-  }, [user, router, fetchProfile, fetchOrders])
+  }, [user, fetchProfile, fetchOrders])
 
-  if (!user) return null
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container mx-auto px-4 py-8">
+          <div className="max-w-xl mx-auto space-y-6">
+            <div>
+              <h1 className="text-2xl font-bold">Suivre ma commande</h1>
+              <p className="text-muted-foreground text-sm">
+                Entrez votre numéro de commande et le téléphone utilisé au checkout.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="orderNumber">Numéro de commande</Label>
+                <Input
+                  id="orderNumber"
+                  value={guestOrderNumber}
+                  onChange={(e) => setGuestOrderNumber(e.target.value)}
+                  placeholder="Ex: ORD-12345678-ABCD"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="contact">Téléphone</Label>
+                <Input
+                  id="contact"
+                  value={guestContact}
+                  onChange={(e) => setGuestContact(e.target.value)}
+                  placeholder="Ex: +223..."
+                />
+              </div>
+
+              <Button onClick={handleTrackGuestOrder} disabled={isTrackingGuestOrder} className="w-full">
+                {isTrackingGuestOrder ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Recherche...
+                  </>
+                ) : (
+                  "Rechercher"
+                )}
+              </Button>
+            </div>
+
+            {guestOrder && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Commande {guestOrder.orderNumber}</CardTitle>
+                  <CardDescription>
+                    Statut: {guestOrder.status} • Paiement: {guestOrder.paymentStatus}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="text-sm">
+                    Total: <span className="font-semibold">{formatPrice(guestOrder.total)}</span>
+                  </div>
+                  <div className="space-y-2">
+                    {guestOrder.items?.map((item) => (
+                      <div key={item.id} className="flex items-center justify-between text-sm">
+                        <span>{item.product.name} x{item.quantity}</span>
+                        <span className="text-muted-foreground">{formatPrice(item.price)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            <div className="text-center text-sm text-muted-foreground">
+              <Button variant="link" onClick={() => router.push("/signin")}>
+                Se connecter
+              </Button>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
 
   // Handle profile save
   const handleSaveProfile = async () => {

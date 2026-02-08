@@ -8,12 +8,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
-import { authClient } from "@/lib/auth-client"
+import { useAuth } from "@/lib/auth-context"
 import { Eye, EyeOff, ArrowLeft } from "lucide-react"
 
 export default function RegisterPage() {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
+  const [phone, setPhone] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
@@ -21,6 +22,7 @@ export default function RegisterPage() {
   const [acceptTerms, setAcceptTerms] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
+  const { signUp } = useAuth()
   const router = useRouter()
 
   const handleAppleSignUp = () => {
@@ -34,6 +36,15 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!phone.trim()) {
+      toast({
+        title: "Erreur",
+        description: "Le téléphone est obligatoire",
+        variant: "destructive",
+      })
+      return
+    }
     
     if (password !== confirmPassword) {
       toast({
@@ -65,11 +76,7 @@ export default function RegisterPage() {
     setIsLoading(true)
 
     try {
-      const result = await authClient.signUp.email({
-        email,
-        password,
-        name,
-      })
+      const result = await signUp(phone, email?.trim() || null, password, name)
       
       if (result.error) {
         toast({
@@ -141,18 +148,36 @@ export default function RegisterPage() {
               <Input
                 id="name"
                 type="text"
-                placeholder="Votre nom"
+                placeholder="Votre nom complet"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="h-11 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 focus:border-orange-500 focus:ring-orange-500"
+                className="h-12 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-xl pl-12 focus:border-orange-500 focus:ring-orange-500"
               />
+            </div>
+
+            {/* Phone */}
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Téléphone
+              </label>
+              <div className="relative">
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="+223..."
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  required
+                  className="h-12 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-xl pl-12 focus:border-orange-500 focus:ring-orange-500"
+                />
+              </div>
             </div>
 
             {/* Email */}
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                Email
+                Email (optionnel)
               </label>
               <Input
                 id="email"
@@ -160,7 +185,6 @@ export default function RegisterPage() {
                 placeholder="Adresse email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
                 className="h-11 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 focus:border-orange-500 focus:ring-orange-500"
               />
             </div>

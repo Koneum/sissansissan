@@ -19,7 +19,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 interface AdminSidebarProps {
   open: boolean
@@ -32,11 +32,16 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
   const [expandedItems, setExpandedItems] = useState<string[]>([])
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)
   const { hasAnyPermission } = usePermissions()
+  const isFetchingUnreadRef = useRef(false)
 
   // Fetch unread messages count
   useEffect(() => {
     const fetchUnreadCount = async () => {
       try {
+        if (typeof document !== "undefined" && document.visibilityState === "hidden") return
+        if (isFetchingUnreadRef.current) return
+        isFetchingUnreadRef.current = true
+
         const response = await fetch("/api/contact?status=NEW")
         if (response.ok) {
           const data = await response.json()
@@ -46,13 +51,39 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
         }
       } catch (error) {
         console.error("Error fetching unread messages:", error)
+      } finally {
+        isFetchingUnreadRef.current = false
       }
     }
 
     fetchUnreadCount()
+
+    // In dev (StrictMode/HMR), effects can run multiple times. Ensure a single global timer.
+    const w = globalThis as any
+    const timerKey = "__adminUnreadMessagesInterval__"
+    if (w[timerKey]) {
+      clearInterval(w[timerKey])
+      w[timerKey] = undefined
+    }
+
     // Refresh every 30 seconds
     const interval = setInterval(fetchUnreadCount, 30000)
-    return () => clearInterval(interval)
+    w[timerKey] = interval
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        fetchUnreadCount()
+      }
+    }
+    document.addEventListener("visibilitychange", onVisibilityChange)
+
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange)
+      clearInterval(interval)
+      if (w[timerKey] === interval) {
+        w[timerKey] = undefined
+      }
+    }
   }, [])
 
   const toggleExpand = (label: string) => {

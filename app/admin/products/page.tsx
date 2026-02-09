@@ -47,6 +47,9 @@ export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [stockFilter, setStockFilter] = useState<string>("all")
   const [sortBy, setSortBy] = useState<string>("name-asc")
+  const [currentPage, setCurrentPage] = useState(1)
+
+  const PAGE_SIZE = 30
 
   useEffect(() => {
     fetchProducts()
@@ -55,10 +58,24 @@ export default function ProductsPage() {
   const fetchProducts = async () => {
     try {
       setLoading(true)
-      const response = await fetch("/api/products?admin=true")
-      if (!response.ok) throw new Error("Failed to fetch products")
-      const data = await response.json()
-      setProducts(data.data || [])
+      const all: Product[] = []
+      let page = 1
+      const limit = 100
+
+      while (true) {
+        const response = await fetch(`/api/products?admin=true&page=${page}&limit=${limit}`)
+        if (!response.ok) throw new Error("Failed to fetch products")
+        const data = await response.json()
+        const pageItems: Product[] = data?.data || []
+        all.push(...pageItems)
+
+        const totalPages = data?.pagination?.totalPages
+        if (!totalPages || page >= totalPages) break
+        if (pageItems.length === 0) break
+        page += 1
+      }
+
+      setProducts(all)
     } catch (error) {
       console.error("Error fetching products:", error)
       toast.error("Erreur lors du chargement des produits")
@@ -69,7 +86,10 @@ export default function ProductsPage() {
 
   const filteredAndSortedProducts = useMemo(() => {
     const filtered = products.filter((product) => {
-      const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase())
+      const q = searchQuery.toLowerCase()
+      const matchesSearch =
+        product.name.toLowerCase().includes(q) ||
+        (product.description || "").toLowerCase().includes(q)
       const matchesStock = stockFilter === "all" || 
         (stockFilter === "low" && product.stock < 10) ||
         (stockFilter === "in-stock" && product.stock >= 10) ||
@@ -97,6 +117,19 @@ export default function ProductsPage() {
       }
     })
   }, [products, searchQuery, stockFilter, sortBy])
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, stockFilter, sortBy])
+
+  const totalPages = Math.max(1, Math.ceil(filteredAndSortedProducts.length / PAGE_SIZE))
+  const pageStart = (currentPage - 1) * PAGE_SIZE
+  const pageEnd = pageStart + PAGE_SIZE
+  const paginatedProducts = filteredAndSortedProducts.slice(pageStart, pageEnd)
+
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages)
+  }, [currentPage, totalPages])
 
   const handleDeleteProduct = async () => {
     if (!productToDelete) return
@@ -206,10 +239,10 @@ export default function ProductsPage() {
                   </td>
                 </tr>
               ) : (
-                filteredAndSortedProducts.map((product, index) => (
+                paginatedProducts.map((product, index) => (
                   <tr
                     key={product.id}
-                    className={index !== filteredAndSortedProducts.length - 1 ? "border-b border-slate-200 dark:border-slate-800" : ""}
+                    className={index !== paginatedProducts.length - 1 ? "border-b border-slate-200 dark:border-slate-800" : ""}
                   >
                     <td className="py-3 px-3 sm:py-4 sm:px-6">
                       <div className="flex items-center gap-2 sm:gap-3">
@@ -281,6 +314,32 @@ export default function ProductsPage() {
             </tbody>
           </table>
         </div>
+
+        {filteredAndSortedProducts.length > 0 && (
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 border-t border-slate-200 dark:border-slate-800">
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              {t.common.total} : {filteredAndSortedProducts.length} • Page {currentPage}/{totalPages}
+            </p>
+            <div className="flex items-center gap-2 justify-end">
+              <button
+                type="button"
+                className="px-3 py-2 rounded-md border border-slate-200 dark:border-slate-700 text-sm disabled:opacity-50"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage <= 1}
+              >
+                Précédent
+              </button>
+              <button
+                type="button"
+                className="px-3 py-2 rounded-md border border-slate-200 dark:border-slate-700 text-sm disabled:opacity-50"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage >= totalPages}
+              >
+                Suivant
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <AlertDialog open={!!productToDelete} onOpenChange={() => setProductToDelete(null)}>

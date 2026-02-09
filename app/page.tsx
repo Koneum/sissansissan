@@ -11,6 +11,7 @@ import { Testimonials } from "@/components/testimonials"
 import { Newsletter } from "@/components/newsletter"
 import { Features } from "@/components/features"
 import { HomeShopFilters } from "@/components/home-shop-filters"
+import { HomeAllProducts } from "@/components/home-all-products"
 
 export default function Home() {
   return (
@@ -23,8 +24,9 @@ export default function Home() {
         <NewArrivals />
         
         <BestSelling />
+        <HomeAllProducts />
         <CountdownSection />
-        
+        <PromoBanners />
         <Newsletter />
         <Features />
       </main>

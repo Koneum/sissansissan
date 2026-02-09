@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, Suspense, useMemo, useCallback } from "react"
+import { useState, useEffect, Suspense, useMemo, useCallback, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
@@ -42,6 +42,9 @@ function ShopContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { t } = useLocale()
+
+  const categoryIdFromUrl = searchParams.get("categoryId") || ""
+  const categorySlugFromUrl = searchParams.get("category") || ""
   
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -50,10 +53,14 @@ function ShopContent() {
   // Filters
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "")
   const [searchInput, setSearchInput] = useState(searchParams.get("search") || "")
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(() =>
+    categoryIdFromUrl ? [categoryIdFromUrl] : []
+  )
   const [priceRange, setPriceRange] = useState({ min: "", max: "" })
   const [sortBy, setSortBy] = useState(searchParams.get("sort") || "newest")
   const [inStockOnly, setInStockOnly] = useState(false)
+
+  const fetchSeq = useRef(0)
 
   const fetchCategories = async () => {
     try {
@@ -67,6 +74,7 @@ function ShopContent() {
   }
 
   const fetchProducts = useCallback(async () => {
+    const seq = ++fetchSeq.current
     try {
       setLoading(true)
       
@@ -111,12 +119,20 @@ function ShopContent() {
       if (!response.ok) throw new Error("Failed to fetch products")
       
       const data = await response.json()
-      setProducts(data.data || [])
+      if (seq !== fetchSeq.current) return
+      const incoming: Product[] = data.data || []
+      const selectedCategoryId = selectedCategories[0]
+
+      const safeFiltered = selectedCategoryId
+        ? incoming.filter((p: any) => p.categoryId === selectedCategoryId || p.category?.id === selectedCategoryId)
+        : incoming
+
+      setProducts(safeFiltered)
     } catch (error) {
       console.error("Error fetching products:", error)
       toast.error("Failed to load products")
     } finally {
-      setLoading(false)
+      if (seq === fetchSeq.current) setLoading(false)
     }
   }, [searchQuery, selectedCategories, priceRange, sortBy, inStockOnly])
 
@@ -125,6 +141,43 @@ function ShopContent() {
     fetchProducts()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Apply category filter when arriving from CategoryBrowser (?category=<slug>)
+  useEffect(() => {
+    if (categoryIdFromUrl) return
+    if (!categorySlugFromUrl) return
+    if (!categories.length) return
+
+    const match = categories.find((c) => c.slug === categorySlugFromUrl)
+    if (match) {
+      setSelectedCategories([match.id])
+    }
+  }, [categoryIdFromUrl, categorySlugFromUrl, categories])
+
+  // Keep URL in sync with filters
+  useEffect(() => {
+    const waitingForSlugResolution = !!categorySlugFromUrl && !categoryIdFromUrl && selectedCategories.length === 0
+    if (waitingForSlugResolution) {
+      // Do not rewrite the URL yet, otherwise we would lose ?category=<slug> before it gets converted to categoryId.
+      return
+    }
+
+    const params = new URLSearchParams()
+
+    if (searchQuery.trim()) params.set("search", searchQuery.trim())
+    if (selectedCategories.length > 0) params.set("categoryId", selectedCategories[0])
+    else if (categorySlugFromUrl && !categoryIdFromUrl) params.set("category", categorySlugFromUrl)
+    if (priceRange.min) params.set("minPrice", priceRange.min)
+    if (priceRange.max) params.set("maxPrice", priceRange.max)
+    if (sortBy) params.set("sort", sortBy)
+    if (inStockOnly) params.set("inStock", "true")
+
+    const nextQs = params.toString()
+    const currentQs = searchParams.toString()
+    if (nextQs === currentQs) return
+
+    router.replace(nextQs ? `/shop?${nextQs}` : "/shop")
+  }, [router, searchParams, searchQuery, selectedCategories, priceRange, sortBy, inStockOnly, categorySlugFromUrl, categoryIdFromUrl])
 
   // Debounce search input
   useEffect(() => {

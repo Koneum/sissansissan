@@ -9,6 +9,8 @@ import { toast } from "sonner"
 import { useLocale } from "@/lib/locale-context"
 import { formatPrice } from "@/lib/currency"
 import Link from "next/link"
+import { usePermissions } from "@/lib/use-permissions"
+import { useRouter } from "next/navigation"
 
 interface DashboardStats {
   totalRevenue: { value: number; change: string; trend: "up" | "down" }
@@ -54,13 +56,24 @@ interface DashboardData {
 
 export default function AdminDashboard() {
   const { t } = useLocale()
+  const router = useRouter()
+  const { isLoading: permissionsLoading, hasPermission } = usePermissions()
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<DashboardData | null>(null)
   const [activeTab, setActiveTab] = useState<"revenue" | "orders" | "customers">("revenue")
 
   useEffect(() => {
+    if (permissionsLoading) return
+
+    const canViewDashboard = hasPermission("dashboard", "view")
+    if (!canViewDashboard) {
+      router.replace("/check-role")
+      return
+    }
+
     fetchDashboardData()
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [permissionsLoading])
 
   const fetchDashboardData = async () => {
     try {
@@ -75,6 +88,17 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (permissionsLoading || (!hasPermission("dashboard", "view") && !permissionsLoading)) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <div className="text-center space-y-4">
+          <Loader2 className="w-12 h-12 animate-spin text-orange-500 dark:text-orange-400 mx-auto" />
+          <p className="text-muted-foreground">{t.common.loading}</p>
+        </div>
+      </div>
+    )
   }
 
   if (loading) {

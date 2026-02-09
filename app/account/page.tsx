@@ -60,6 +60,8 @@ export default function AccountPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [isLoadingOrders, setIsLoadingOrders] = useState(true)
   const [revalidatingOrderId, setRevalidatingOrderId] = useState<string | null>(null)
+  const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([])
+  const [isCancellingOrders, setIsCancellingOrders] = useState(false)
 
   // Password change state
   const [passwordStep, setPasswordStep] = useState<"email" | "code" | "password">("email")
@@ -117,6 +119,7 @@ export default function AccountPage() {
       if (response.ok) {
         const data = await response.json()
         setOrders(data.data || [])
+        setSelectedOrderIds([])
       }
     } catch (error) {
       console.error("Erreur chargement commandes:", error)
@@ -124,6 +127,41 @@ export default function AccountPage() {
       setIsLoadingOrders(false)
     }
   }, [user?.id])
+
+  const toggleSelection = (id: string) => {
+    setSelectedOrderIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+  }
+
+  const toggleSelectAllPending = () => {
+    const pendingIds = orders.filter((o) => o.status === "PENDING").map((o) => o.id)
+    setSelectedOrderIds((prev) => (prev.length === pendingIds.length ? [] : pendingIds))
+  }
+
+  const cancelOrders = async (ids: string[]) => {
+    if (!ids.length) return
+    try {
+      setIsCancellingOrders(true)
+      const response = await fetch("/api/orders/bulk-cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      })
+
+      const data = await response.json().catch(() => null)
+      if (!response.ok || !data?.success) {
+        const msg = data?.failed?.[0]?.error || data?.error || "Impossible d'annuler la commande"
+        throw new Error(msg)
+      }
+
+      toast.success("Commande(s) annulée(s)")
+      await fetchOrders()
+    } catch (error) {
+      console.error("Erreur annulation commandes:", error)
+      toast.error(error instanceof Error ? error.message : "Erreur de connexion")
+    } finally {
+      setIsCancellingOrders(false)
+    }
+  }
 
   const handleTrackGuestOrder = async () => {
     try {
@@ -589,6 +627,32 @@ export default function AccountPage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="text-sm text-muted-foreground">
+                        {selectedOrderIds.length > 0 ? `${selectedOrderIds.length} sélectionnée(s)` : ""}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={toggleSelectAllPending}
+                          disabled={orders.filter((o) => o.status === "PENDING").length === 0}
+                        >
+                          Tout sélectionner (en attente)
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => cancelOrders(selectedOrderIds)}
+                          disabled={selectedOrderIds.length === 0 || isCancellingOrders}
+                          className="btn-responsive"
+                        >
+                          {isCancellingOrders && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                          Annuler
+                        </Button>
+                      </div>
+                    </div>
+
                     {orders.map((order) => (
                       <div 
                         key={order.id} 
@@ -611,6 +675,36 @@ export default function AccountPage() {
                             {getStatusBadge(order.status)}
                             {getPaymentBadge(order.paymentStatus)}
                           </div>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-3 mb-3">
+                          <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <input
+                              type="checkbox"
+                              checked={selectedOrderIds.includes(order.id)}
+                              onChange={() => toggleSelection(order.id)}
+                              disabled={order.status !== "PENDING"}
+                              aria-label={`select ${order.orderNumber}`}
+                            />
+                            Sélectionner
+                          </label>
+
+                          {order.status === "PENDING" && (
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => cancelOrders([order.id])}
+                              disabled={isCancellingOrders}
+                              className="btn-responsive"
+                            >
+                              {isCancellingOrders ? (
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              ) : (
+                                <Trash2 className="w-4 h-4 mr-2" />
+                              )}
+                              Annuler
+                            </Button>
+                          )}
                         </div>
 
                         {/* Order items */}

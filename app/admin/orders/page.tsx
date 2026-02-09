@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { formatPrice } from "@/lib/currency"
 import { useLocale } from "@/lib/locale-context"
-import { Eye, Loader2, Search } from "lucide-react"
+import { Eye, Loader2, Search, Trash2 } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
 
@@ -22,6 +22,7 @@ interface Order {
   status: OrderStatus
   paymentStatus: PaymentStatus
   paymentMethod?: string | null
+  customerNotes?: string | null
   createdAt: string
   user: {
     id: string
@@ -49,37 +50,124 @@ interface Order {
     street?: string
     state?: string
   }
+  billingAddress?: {
+    name?: string
+    email?: string
+    phone?: string
+    address?: string
+    city?: string
+    district?: string
+    country?: string
+    street?: string
+    state?: string
+    company?: string
+  }
+}
+
+function hasMeaningfulAddress(addr?: {
+  name?: string
+  email?: string
+  phone?: string
+  address?: string
+  city?: string
+  district?: string
+  country?: string
+  street?: string
+  state?: string
+  company?: string
+} | null) {
+  if (!addr) return false
+  return Boolean(
+    (addr.address && String(addr.address).trim()) ||
+    (addr.street && String(addr.street).trim()) ||
+    (addr.city && String(addr.city).trim()) ||
+    (addr.district && String(addr.district).trim()) ||
+    (addr.country && String(addr.country).trim())
+  )
 }
 
 export default function OrdersPage() {
   const { t } = useLocale()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
+  const [page, setPage] = useState(1)
+  const [limit, setLimit] = useState(20)
+  const [total, setTotal] = useState(0)
+  const [totalPages, setTotalPages] = useState(1)
   const [searchQuery, setSearchQuery] = useState("")
   const [sortBy, setSortBy] = useState<string>("date-desc")
   const [filterStatus, setFilterStatus] = useState<string>("all")
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([])
   const [editedStatus, setEditedStatus] = useState<OrderStatus>("PENDING")
   const [editedPaymentStatus, setEditedPaymentStatus] = useState<PaymentStatus>("PENDING")
   const [updatingStatus, setUpdatingStatus] = useState(false)
+  const [cancelling, setCancelling] = useState(false)
 
   useEffect(() => {
-    fetchOrders()
-  }, [])
+    fetchOrders(page, limit, filterStatus)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, limit, filterStatus])
 
-  const fetchOrders = async () => {
+  const fetchOrders = async (requestedPage = 1, requestedLimit = 20, requestedStatus = "all") => {
     try {
       setLoading(true)
-      const response = await fetch("/api/orders")
+
+      const params = new URLSearchParams()
+      params.set("page", String(requestedPage))
+      params.set("limit", String(requestedLimit))
+      if (requestedStatus !== "all") {
+        params.set("status", requestedStatus)
+      }
+
+      const response = await fetch(`/api/orders?${params.toString()}`)
       if (!response.ok) throw new Error("Failed to fetch orders")
       const data = await response.json()
       setOrders(data.data || [])
+      setTotal(data.pagination?.total || 0)
+      setTotalPages(data.pagination?.totalPages || 1)
+      setSelectedOrderIds([])
     } catch (error) {
       console.error("Error fetching orders:", error)
       toast.error(t.admin.errorCreate)
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleCancelOrders = async (ids: string[]) => {
+    if (ids.length === 0) return
+    try {
+      setCancelling(true)
+      const response = await fetch("/api/orders/bulk-cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      })
+
+      const data = await response.json().catch(() => null)
+      if (!response.ok || !data?.success) {
+        const msg = data?.failed?.[0]?.error || data?.error || t.admin.errorUpdate
+        throw new Error(msg)
+      }
+
+      toast.success("Commande(s) annulée(s)")
+      await fetchOrders(page, limit, filterStatus)
+    } catch (error: unknown) {
+      console.error("Error cancelling orders:", error)
+      toast.error(error instanceof Error ? error.message : t.admin.errorUpdate)
+    } finally {
+      setCancelling(false)
+    }
+  }
+
+  const toggleSelection = (id: string) => {
+    setSelectedOrderIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+  }
+
+  const toggleSelectAll = () => {
+    const visibleIds = filteredAndSortedOrders.map((o) => o.id)
+    setSelectedOrderIds((prev) => (prev.length === visibleIds.length ? [] : visibleIds))
   }
 
   const filteredAndSortedOrders = useMemo(() => {
@@ -96,6 +184,9 @@ export default function OrdersPage() {
         status.includes(searchLower)
       
       const matchesStatus = filterStatus === "all" || order.status === filterStatus
+
+      // Par défaut, on masque les commandes annulées (elles restent visibles via le filtre CANCELLED)
+      if (filterStatus === "all" && order.status === "CANCELLED") return false
       
       return matchesSearch && matchesStatus
     })
@@ -188,7 +279,27 @@ export default function OrdersPage() {
     <div className="space-y-4 sm:space-y-6 pb-6 sm:pb-8">
       <div>
         <h1 className="heading-responsive-h1 text-slate-900 dark:text-white">{t.admin.allOrders}</h1>
-        <p className="text-responsive-sm text-muted-foreground">{t.common.total} : {orders.length} {t.admin.orders.toLowerCase()}</p>
+        <p className="text-responsive-sm text-muted-foreground">{t.common.total} : {total} {t.admin.orders.toLowerCase()}</p>
+      </div>
+
+      <div className="flex items-center justify-between gap-3">
+        <div className="text-sm text-muted-foreground">
+          {selectedOrderIds.length > 0 ? `${selectedOrderIds.length} sélectionnée(s)` : ""}
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={toggleSelectAll} disabled={filteredAndSortedOrders.length === 0}>
+            Tout sélectionner
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => handleCancelOrders(selectedOrderIds)}
+            disabled={selectedOrderIds.length === 0 || cancelling}
+          >
+            {cancelling && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            Annuler
+          </Button>
+        </div>
       </div>
 
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 sm:p-6 space-y-4">
@@ -203,7 +314,7 @@ export default function OrdersPage() {
             />
           </div>
 
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
+          <Select value={filterStatus} onValueChange={(value) => { setPage(1); setFilterStatus(value) }}>
             <SelectTrigger className="h-10 sm:h-11">
               <SelectValue placeholder={t.admin.filterByStatus} />
             </SelectTrigger>
@@ -236,6 +347,14 @@ export default function OrdersPage() {
           <table className="w-full">
             <thead className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
               <tr>
+                <th className="text-left py-4 px-6 text-sm font-semibold text-slate-700 dark:text-slate-300"> 
+                  <input
+                    type="checkbox"
+                    checked={filteredAndSortedOrders.length > 0 && selectedOrderIds.length === filteredAndSortedOrders.length}
+                    onChange={toggleSelectAll}
+                    aria-label="select all"
+                  />
+                </th>
                 <th className="text-left py-4 px-6 text-sm font-semibold text-slate-700 dark:text-slate-300">{t.admin.orderNumber}</th>
                 <th className="text-left py-4 px-6 text-sm font-semibold text-slate-700 dark:text-slate-300">{t.admin.customer}</th>
                 <th className="text-left py-4 px-6 text-sm font-semibold text-slate-700 dark:text-slate-300">{t.common.total}</th>
@@ -248,7 +367,7 @@ export default function OrdersPage() {
             <tbody>
               {filteredAndSortedOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-muted-foreground">
+                  <td colSpan={8} className="py-8 text-center text-muted-foreground">
                     {t.admin.noData}
                   </td>
                 </tr>
@@ -258,6 +377,14 @@ export default function OrdersPage() {
                     key={order.id}
                     className={index !== filteredAndSortedOrders.length - 1 ? "border-b border-slate-200 dark:border-slate-800" : ""}
                   >
+                    <td className="py-4 px-6">
+                      <input
+                        type="checkbox"
+                        checked={selectedOrderIds.includes(order.id)}
+                        onChange={() => toggleSelection(order.id)}
+                        aria-label={`select ${order.orderNumber}`}
+                      />
+                    </td>
                     <td className="py-4 px-6">
                       <span className="font-mono text-sm font-semibold">#{order.orderNumber}</span>
                     </td>
@@ -295,6 +422,16 @@ export default function OrdersPage() {
                           <Eye className="w-4 h-4 mr-2" />
                           {t.admin.view}
                         </Button>
+
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleCancelOrders([order.id])}
+                          disabled={cancelling || order.status === "CANCELLED"}
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Annuler
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -302,6 +439,32 @@ export default function OrdersPage() {
               )}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between gap-3">
+        <div className="text-sm text-muted-foreground">
+          Page {page} / {totalPages}
+        </div>
+        <div className="flex items-center gap-2">
+          <Select value={String(limit)} onValueChange={(value) => { setPage(1); setLimit(parseInt(value, 10)) }}>
+            <SelectTrigger className="h-9 w-[110px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="20">20</SelectItem>
+              <SelectItem value="50">50</SelectItem>
+              <SelectItem value="100">100</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1 || loading}>
+            Précédent
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages || loading}>
+            Suivant
+          </Button>
         </div>
       </div>
 
@@ -334,6 +497,15 @@ export default function OrdersPage() {
                 </div>
               )}
 
+              {selectedOrder.customerNotes && String(selectedOrder.customerNotes).trim() && (
+                <div>
+                  <Label className="text-sm font-medium mb-2 block">{((t as any).admin?.customerNotes as string) || "Notes client"}</Label>
+                  <div className="p-4 border rounded-lg bg-muted/30 whitespace-pre-wrap text-sm">
+                    {String(selectedOrder.customerNotes)}
+                  </div>
+                </div>
+              )}
+
               <div>
                 <Label className="text-sm font-medium mb-2 block">{t.admin.orderItems}</Label>
                 <div className="border rounded-lg divide-y">
@@ -349,23 +521,42 @@ export default function OrdersPage() {
                 </div>
               </div>
 
-              {selectedOrder.shippingAddress && (
-                <div>
-                  <Label className="text-sm font-medium mb-2 block">{t.admin.shippingAddress}</Label>
-                  <div className="p-4 border rounded-lg bg-muted/30">
-                    <p>{selectedOrder.shippingAddress.name || selectedOrder.user?.name || "-"}</p>
-                    <p>{selectedOrder.shippingAddress.phone || selectedOrder.user?.phone || "-"}</p>
-                    <p>{selectedOrder.shippingAddress.email || selectedOrder.user?.email || "-"}</p>
-                    <p>{selectedOrder.shippingAddress.address || selectedOrder.shippingAddress.street || "-"}</p>
-                    <p>
-                      {selectedOrder.shippingAddress.city || "-"}
-                      {selectedOrder.shippingAddress.state ? `, ${selectedOrder.shippingAddress.state}` : ""}
-                    </p>
-                    {selectedOrder.shippingAddress.district && (
-                      <p>{selectedOrder.shippingAddress.district}</p>
-                    )}
-                    <p>{selectedOrder.shippingAddress.country || "-"}</p>
+              {(hasMeaningfulAddress(selectedOrder.billingAddress) || hasMeaningfulAddress(selectedOrder.shippingAddress)) && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium mb-2 block">{((t as any).admin?.billingAddress as string) || "Adresse de facturation"}</Label>
+                    <div className="p-4 border rounded-lg bg-muted/30">
+                      <p>{selectedOrder.billingAddress?.name || selectedOrder.user?.name || "-"}</p>
+                      <p>{selectedOrder.billingAddress?.phone || selectedOrder.user?.phone || "-"}</p>
+                      <p>{selectedOrder.billingAddress?.email || selectedOrder.user?.email || "-"}</p>
+                      {selectedOrder.billingAddress?.company && <p>{selectedOrder.billingAddress.company}</p>}
+                      <p>{selectedOrder.billingAddress?.address || selectedOrder.billingAddress?.street || "-"}</p>
+                      <p>
+                        {selectedOrder.billingAddress?.city || "-"}
+                        {selectedOrder.billingAddress?.state ? `, ${selectedOrder.billingAddress.state}` : ""}
+                      </p>
+                      {selectedOrder.billingAddress?.district && <p>{selectedOrder.billingAddress.district}</p>}
+                      <p>{selectedOrder.billingAddress?.country || "-"}</p>
+                    </div>
                   </div>
+
+                  {hasMeaningfulAddress(selectedOrder.shippingAddress) && (
+                    <div>
+                      <Label className="text-sm font-medium mb-2 block">{t.admin.shippingAddress}</Label>
+                      <div className="p-4 border rounded-lg bg-muted/30">
+                        <p>{selectedOrder.shippingAddress?.name || selectedOrder.user?.name || "-"}</p>
+                        <p>{selectedOrder.shippingAddress?.phone || selectedOrder.user?.phone || "-"}</p>
+                        <p>{selectedOrder.shippingAddress?.email || selectedOrder.user?.email || "-"}</p>
+                        <p>{selectedOrder.shippingAddress?.address || selectedOrder.shippingAddress?.street || "-"}</p>
+                        <p>
+                          {selectedOrder.shippingAddress?.city || "-"}
+                          {selectedOrder.shippingAddress?.state ? `, ${selectedOrder.shippingAddress.state}` : ""}
+                        </p>
+                        {selectedOrder.shippingAddress?.district && <p>{selectedOrder.shippingAddress.district}</p>}
+                        <p>{selectedOrder.shippingAddress?.country || "-"}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

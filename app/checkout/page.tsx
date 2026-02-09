@@ -33,6 +33,202 @@ interface ShippingSettings {
 
 const GUEST_CART_LIMIT = 20000 // Limite du panier pour les guests en XOF
 
+ const COUNTRIES = [
+   "Afghanistan",
+   "Albanie",
+   "Algérie",
+   "Allemagne",
+   "Andorre",
+   "Angola",
+   "Antigua-et-Barbuda",
+   "Arabie saoudite",
+   "Argentine",
+   "Arménie",
+   "Australie",
+   "Autriche",
+   "Azerbaïdjan",
+   "Bahamas",
+   "Bahreïn",
+   "Bangladesh",
+   "Barbade",
+   "Belgique",
+   "Belize",
+   "Bénin",
+   "Bhoutan",
+   "Biélorussie",
+   "Birmanie",
+   "Bolivie",
+   "Bosnie-Herzégovine",
+   "Botswana",
+   "Brésil",
+   "Brunei",
+   "Bulgarie",
+   "Burkina Faso",
+   "Burundi",
+   "Cambodge",
+   "Cameroun",
+   "Canada",
+   "Cap-Vert",
+   "Chili",
+   "Chine",
+   "Chypre",
+   "Colombie",
+   "Comores",
+   "Congo",
+   "Corée du Nord",
+   "Corée du Sud",
+   "Costa Rica",
+   "Côte d'Ivoire",
+   "Croatie",
+   "Cuba",
+   "Danemark",
+   "Djibouti",
+   "Dominique",
+   "Égypte",
+   "Émirats arabes unis",
+   "Équateur",
+   "Érythrée",
+   "Espagne",
+   "Estonie",
+   "Eswatini",
+   "États-Unis",
+   "Éthiopie",
+   "Fidji",
+   "Finlande",
+   "France",
+   "Gabon",
+   "Gambie",
+   "Géorgie",
+   "Ghana",
+   "Grèce",
+   "Grenade",
+   "Guatemala",
+   "Guinée",
+   "Guinée-Bissau",
+   "Guinée équatoriale",
+   "Guyana",
+   "Haïti",
+   "Honduras",
+   "Hongrie",
+   "Inde",
+   "Indonésie",
+   "Irak",
+   "Iran",
+   "Irlande",
+   "Islande",
+   "Israël",
+   "Italie",
+   "Jamaïque",
+   "Japon",
+   "Jordanie",
+   "Kazakhstan",
+   "Kenya",
+   "Kirghizistan",
+   "Kiribati",
+   "Koweït",
+   "Laos",
+   "Lesotho",
+   "Lettonie",
+   "Liban",
+   "Liberia",
+   "Libye",
+   "Liechtenstein",
+   "Lituanie",
+   "Luxembourg",
+   "Macédoine du Nord",
+   "Madagascar",
+   "Malaisie",
+   "Malawi",
+   "Maldives",
+   "Mali",
+   "Malte",
+   "Maroc",
+   "Marshall",
+   "Maurice",
+   "Mauritanie",
+   "Mexique",
+   "Micronésie",
+   "Moldavie",
+   "Monaco",
+   "Mongolie",
+   "Monténégro",
+   "Mozambique",
+   "Namibie",
+   "Nauru",
+   "Népal",
+   "Nicaragua",
+   "Niger",
+   "Nigéria",
+   "Norvège",
+   "Nouvelle-Zélande",
+   "Oman",
+   "Ouganda",
+   "Ouzbékistan",
+   "Pakistan",
+   "Palaos",
+   "Panama",
+   "Papouasie-Nouvelle-Guinée",
+   "Paraguay",
+   "Pays-Bas",
+   "Pérou",
+   "Philippines",
+   "Pologne",
+   "Portugal",
+   "Qatar",
+   "République centrafricaine",
+   "République démocratique du Congo",
+   "République dominicaine",
+   "République tchèque",
+   "Roumanie",
+   "Royaume-Uni",
+   "Russie",
+   "Rwanda",
+   "Saint-Christophe-et-Niévès",
+   "Sainte-Lucie",
+   "Saint-Marin",
+   "Saint-Vincent-et-les-Grenadines",
+   "Salomon",
+   "Salvador",
+   "Samoa",
+   "Sao Tomé-et-Principe",
+   "Sénégal",
+   "Serbie",
+   "Seychelles",
+   "Sierra Leone",
+   "Singapour",
+   "Slovaquie",
+   "Slovénie",
+   "Somalie",
+   "Soudan",
+   "Soudan du Sud",
+   "Sri Lanka",
+   "Suède",
+   "Suisse",
+   "Suriname",
+   "Syrie",
+   "Tadjikistan",
+   "Tanzanie",
+   "Tchad",
+   "Thaïlande",
+   "Timor oriental",
+   "Togo",
+   "Tonga",
+   "Trinité-et-Tobago",
+   "Tunisie",
+   "Turkménistan",
+   "Turquie",
+   "Tuvalu",
+   "Ukraine",
+   "Uruguay",
+   "Vanuatu",
+   "Vatican",
+   "Venezuela",
+   "Viêt Nam",
+   "Yémen",
+   "Zambie",
+   "Zimbabwe",
+ ]
+
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart()
   const { user } = useAuth()
@@ -117,6 +313,7 @@ export default function CheckoutPage() {
           email: formData.get('email'),
           phone: formData.get('phone'),
         },
+        customerNotes: formData.get('notes'),
         // Billing address
         billingAddress: {
           company: formData.get('company'),
@@ -150,6 +347,7 @@ export default function CheckoutPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             customer: orderData.customer,
+            customerNotes: orderData.customerNotes,
             billingAddress: orderData.billingAddress,
             shippingAddress: orderData.shippingAddress,
             items: orderData.items,
@@ -195,6 +393,7 @@ export default function CheckoutPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             customer: orderData.customer,
+            customerNotes: orderData.customerNotes,
             billingAddress: orderData.billingAddress,
             shippingAddress: orderData.shippingAddress,
             items: orderData.items,
@@ -425,13 +624,13 @@ export default function CheckoutPage() {
                         required
                       >
                         <option value="">Sélectionnez votre pays</option>
-                        <option value="ml">Mali</option>
-                        <option value="bf">Burkina Faso</option>
-                        <option value="ci">Côte d&apos;Ivoire</option>
-                        <option value="sn">Sénégal</option>
-                        <option value="fr">France</option>
+                        {COUNTRIES.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
                       </select>
-                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50" />
                     </div>
                   </div>
 
@@ -500,6 +699,7 @@ export default function CheckoutPage() {
                 <Label htmlFor="notes">Notes supplémentaires (optionnel)</Label>
                 <Textarea
                   id="notes"
+                  name="notes"
                   placeholder="Notes concernant votre commande, par ex. instructions spéciales pour la livraison"
                   className="mt-2 min-h-[100px]"
                 />
@@ -776,11 +976,13 @@ export default function CheckoutPage() {
                             name="cardCountry"
                             className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring appearance-none"
                           >
-                            <option value="ml">Mali</option>
-                            <option value="us">United States</option>
-                            <option value="fr">France</option>
+                            {COUNTRIES.map((c) => (
+                              <option key={c} value={c}>
+                                {c}
+                              </option>
+                            ))}
                           </select>
-                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50" />
                         </div>
                       </div>
                     </div>

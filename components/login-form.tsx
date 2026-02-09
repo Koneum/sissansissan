@@ -68,7 +68,7 @@ export default function LoginForm() {
     try {
       await authClient.signIn.social({
         provider: "apple",
-        callbackURL: "/admin/dashboard",
+        callbackURL: "/check-role",
       })
     } catch {
       toast({
@@ -104,8 +104,8 @@ export default function LoginForm() {
           title: "Succès",
           description: "Connexion réussie",
         })
-        // Rediriger vers le dashboard ou la page d'accueil
-        router.push("/admin/dashboard")
+        // Rediriger selon le rôle et les permissions
+        router.push("/check-role")
       }
     } catch {
       toast({

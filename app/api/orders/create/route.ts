@@ -11,6 +11,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const {
       customer,
+      customerNotes,
       billingAddress,
       shippingAddress,
       items,
@@ -90,6 +91,7 @@ export async function POST(request: NextRequest) {
         status: "PENDING",
         paymentStatus: "PENDING",
         paymentMethod: paymentMethod.toUpperCase(),
+        customerNotes: customerNotes ? String(customerNotes) : undefined,
         items: {
           create: items.map((item: any) => ({
             productId: item.id,

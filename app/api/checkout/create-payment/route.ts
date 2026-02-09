@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
       shipping,
       total,
       promoCode,
+      notes,
     } = body
 
     console.log("📥 Checkout request:", { userId, guestInfo, items: items?.length, total })
@@ -240,7 +241,12 @@ export async function POST(request: NextRequest) {
           paymentMethod: "ORANGE_MONEY",
           shippingAddress,
           billingAddress: shippingAddress,
-          customerNotes: guestInfo ? `Commande invité: ${customerName}` : undefined,
+          customerNotes: guestInfo
+            ? [
+                `Commande invité: ${customerName}`,
+                notes ? String(notes) : null,
+              ].filter(Boolean).join("\n")
+            : (notes ? String(notes) : undefined),
         },
         include: {
           items: true
